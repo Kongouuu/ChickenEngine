@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{677b0f0d-d9c0-4961-9a12-289cdb706a6b}</ProjectGuid>
+    <RootNamespace>ChickenEngine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>$(SolutionDir)bin\intermediate\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\$(ProjectName)</OutDir>
+    <IntDir>$(SolutionDir)bin\intermediate\$(Configuration)\$(ProjectName)</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);PROJECT_DIR="$(ProjectDir)."</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)ChickenEngine\include;$(SolutionDir)ChickenEngine\ThirdParty\spdlog\include\;$(SolutionDir)ChickenEngine\ThirdParty\imgui</AdditionalIncludeDirectories>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)ChickenEngine\ThirdParty\spdlog\libs\$(Configuration);</AdditionalLibraryDirectories>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);spdlog.lib;</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>copy /Y "$(SolutionDir)bin\$(Configuration)\$(ProjectName)\$(ProjectName).dll" "$(SolutionDir)bin\$(Configuration)\TestProject\$(ProjectName).dll"</Command>
+    </PostBuildEvent>
+    <FxCompile>
+      <EntryPointName>main</EntryPointName>
+    </FxCompile>
+    <FxCompile>
+      <ShaderType>Effect</ShaderType>
+    </FxCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Renderer\DX12Texture.h" />
+    <ClInclude Include="include\Renderer\DX12InputLayout.h" />
+    <ClInclude Include="include\Renderer\DX12RootSignature.h" />
+    <ClInclude Include="include\Renderer\DX12Buffer.h" />
+    <ClInclude Include="include\Renderer\DX12CommonHeader.h" />
+    <ClInclude Include="include\Renderer\DX12Renderer.h" />
+    <ClInclude Include="include\Renderer\d3dx12.h" />
+    <ClInclude Include="include\Engine\GameTimer.h" />
+    <ClInclude Include="include\Engine\Layers\ImguiLayer.h" />
+    <ClInclude Include="include\Engine\ResourceManager.h" />
+    <ClInclude Include="include\resource.h" />
+    <ClInclude Include="include\Engine\Window.h" />
+    <ClInclude Include="include\Engine\ImguiManager.h" />
+    <ClInclude Include="include\Engine\LayerStack.h" />
+    <ClInclude Include="include\Engine\Layer.h" />
+    <ClInclude Include="include\pch.h" />
+    <ClInclude Include="include\Engine\Events\ApplicationEvent.h" />
+    <ClInclude Include="include\Engine\Events\Event.h" />
+    <ClInclude Include="include\Engine\Events\KeyEvent.h" />
+    <ClInclude Include="include\Engine\Events\MouseEvent.h" />
+    <ClInclude Include="include\Engine\Log.h" />
+    <ClInclude Include="include\ChickenEngine.h" />
+    <ClInclude Include="include\Engine\Application.h" />
+    <ClInclude Include="include\Engine\Core.h" />
+    <ClInclude Include="include\Engine\EntryPoint.h" />
+    <ClInclude Include="include\Renderer\DX12Shader.h" />
+    <ClInclude Include="ThirdParty\imgui\imconfig.h" />
+    <ClInclude Include="ThirdParty\imgui\imgui.h" />
+    <ClInclude Include="ThirdParty\imgui\imgui_impl_dx12.h" />
+    <ClInclude Include="ThirdParty\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="ThirdParty\imgui\imgui_internal.h" />
+    <ClInclude Include="ThirdParty\imgui\imstb_rectpack.h" />
+    <ClInclude Include="ThirdParty\imgui\imstb_textedit.h" />
+    <ClInclude Include="ThirdParty\imgui\imstb_truetype.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\async.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\async_logger-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\async_logger.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\cfg\argv.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\cfg\env.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\cfg\helpers-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\cfg\helpers.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\common-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\common.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\backtracer-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\backtracer.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\circular_q.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\console_globals.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\file_helper-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\file_helper.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\fmt_helper.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\log_msg-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\log_msg.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\log_msg_buffer-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\log_msg_buffer.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\mpmc_blocking_q.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\null_mutex.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\os-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\os.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\periodic_worker-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\periodic_worker.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\registry-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\registry.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\synchronous_factory.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\tcp_client-windows.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\tcp_client.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\thread_pool-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\thread_pool.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\udp_client-windows.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\udp_client.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\details\windows_include.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bin_to_hex.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\args.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\chrono.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\color.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\compile.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\core.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\format-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\format.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\locale.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\os.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\ostream.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\printf.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\ranges.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\bundled\xchar.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\chrono.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\compile.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\fmt.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\ostr.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fmt\xchar.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\formatter.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\fwd.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\logger-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\logger.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\pattern_formatter-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\pattern_formatter.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\android_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\ansicolor_sink-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\ansicolor_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\base_sink-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\base_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\basic_file_sink-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\basic_file_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\daily_file_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\dist_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\dup_filter_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\hourly_file_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\mongo_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\msvc_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\null_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\ostream_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\qt_sinks.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\ringbuffer_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\rotating_file_sink-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\rotating_file_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\sink-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\stdout_color_sinks-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\stdout_color_sinks.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\stdout_sinks-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\stdout_sinks.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\syslog_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\systemd_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\tcp_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\udp_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\wincolor_sink-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\wincolor_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\sinks\win_eventlog_sink.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\spdlog-inl.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\spdlog.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\stopwatch.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\tweakme.h" />
+    <ClInclude Include="ThirdParty\spdlog\include\spdlog\version.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Renderer\DX12Texture.cpp" />
+    <ClCompile Include="src\Engine\ResourceManager.cpp" />
+    <ClCompile Include="src\Renderer\DX12InputLayout.cpp" />
+    <ClCompile Include="src\Renderer\DX12RootSignature.cpp" />
+    <ClCompile Include="src\Renderer\DX12Shader.cpp" />
+    <ClCompile Include="src\Renderer\DX12Buffer.cpp" />
+    <ClCompile Include="src\Renderer\DX12Renderer.cpp" />
+    <ClCompile Include="src\Engine\GameTimer.cpp" />
+    <ClCompile Include="src\Engine\Layers\ImguiLayer.cpp" />
+    <ClCompile Include="src\Engine\Window.cpp" />
+    <ClCompile Include="src\Engine\ImguiManager.cpp" />
+    <ClCompile Include="src\Engine\LayerStack.cpp" />
+    <ClCompile Include="src\Engine\Layer.cpp" />
+    <ClCompile Include="src\pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Log.cpp" />
+    <ClCompile Include="src\Engine\Application.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_demo.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_draw.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_impl_dx12.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_tables.cpp" />
+    <ClCompile Include="ThirdParty\imgui\imgui_widgets.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ChickenEngine.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shaders\default.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
