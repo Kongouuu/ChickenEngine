@@ -155,4 +155,5 @@ namespace ChickenEngine
 			anisotropicWrap, anisotropicClamp,
 			shadow
 		};
+	}
 }

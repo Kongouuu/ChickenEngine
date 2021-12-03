@@ -11,4 +11,4 @@
 #define BIT(x) (1 << x)
 #define BIND_FN(x) std::bind(&x, this, std::placeholders::_1)
 
-#define uint unsigned int
+typedef unsigned int uint;

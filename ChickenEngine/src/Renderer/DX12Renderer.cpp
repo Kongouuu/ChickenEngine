@@ -2,6 +2,7 @@
 #include "Renderer/DX12Renderer.h"
 #include <Engine/Log.h>
 #include <DirectXColors.h>
+#include "Renderer/d3dx12.h"
 
 namespace ChickenEngine
 {
@@ -69,8 +70,8 @@ namespace ChickenEngine
 				IID_PPV_ARGS(&md3dDevice));
 		}
 
-		md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE,
-			IID_PPV_ARGS(&mFence));
+		ThrowIfFailed(md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE,
+			IID_PPV_ARGS(&mFence)));
 
 		mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
@@ -85,10 +86,10 @@ namespace ChickenEngine
 		msQualityLevels.SampleCount = 4;
 		msQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
 		msQualityLevels.NumQualityLevels = 0;
-		md3dDevice->CheckFeatureSupport(
+		ThrowIfFailed(md3dDevice->CheckFeatureSupport(
 			D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS,
 			&msQualityLevels,
-			sizeof(msQualityLevels));
+			sizeof(msQualityLevels)));
 
 		m4xMsaaQuality = msQualityLevels.NumQualityLevels;
 		assert(m4xMsaaQuality > 0 && "Unexpected MSAA quality level.");
@@ -106,18 +107,18 @@ namespace ChickenEngine
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 		queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-		md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue));
+		ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)));
 
-		md3dDevice->CreateCommandAllocator(
+		ThrowIfFailed(md3dDevice->CreateCommandAllocator(
 			D3D12_COMMAND_LIST_TYPE_DIRECT,
-			IID_PPV_ARGS(mDirectCmdListAlloc.GetAddressOf()));
+			IID_PPV_ARGS(mDirectCmdListAlloc.GetAddressOf())));
 
-		md3dDevice->CreateCommandList(
+		ThrowIfFailed(md3dDevice->CreateCommandList(
 			0,
 			D3D12_COMMAND_LIST_TYPE_DIRECT,
 			mDirectCmdListAlloc.Get(), // Associated command allocator
 			nullptr,                   // Initial PipelineStateObject
-			IID_PPV_ARGS(mCommandList.GetAddressOf()));
+			IID_PPV_ARGS(mCommandList.GetAddressOf())));
 
 		// Start off in a closed state.  This is because the first time we refer 
 		// to the command list we will Reset it, and it needs to be closed before
@@ -162,16 +163,16 @@ namespace ChickenEngine
 		SrvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 		SrvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		SrvHeapDesc.NodeMask = 0;
-		md3dDevice->CreateDescriptorHeap(
-			&SrvHeapDesc, IID_PPV_ARGS(mSrvHeap.GetAddressOf()));
+		ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
+			&SrvHeapDesc, IID_PPV_ARGS(mSrvHeap.GetAddressOf())));
 
 		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
 		rtvHeapDesc.NumDescriptors = SwapChainBufferCount;
 		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
 		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		rtvHeapDesc.NodeMask = 0;
-		md3dDevice->CreateDescriptorHeap(
-			&rtvHeapDesc, IID_PPV_ARGS(mRtvHeap.GetAddressOf()));
+		ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
+			&rtvHeapDesc, IID_PPV_ARGS(mRtvHeap.GetAddressOf())));
 
 
 		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
@@ -179,8 +180,8 @@ namespace ChickenEngine
 		dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 		dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		dsvHeapDesc.NodeMask = 0;
-		md3dDevice->CreateDescriptorHeap(
-			&dsvHeapDesc, IID_PPV_ARGS(mDsvHeap.GetAddressOf()));
+		ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
+			&dsvHeapDesc, IID_PPV_ARGS(mDsvHeap.GetAddressOf())));
 	}
 
 	void DX12Renderer::FlushCommandQueue()
@@ -264,13 +265,13 @@ namespace ChickenEngine
 		optClear.DepthStencil.Depth = 1.0f;
 		optClear.DepthStencil.Stencil = 0;
 		CD3DX12_HEAP_PROPERTIES HeapDefault(D3D12_HEAP_TYPE_DEFAULT);
-		md3dDevice->CreateCommittedResource(
+		ThrowIfFailed(md3dDevice->CreateCommittedResource(
 			&HeapDefault,
 			D3D12_HEAP_FLAG_NONE,
 			&depthStencilDesc,
 			D3D12_RESOURCE_STATE_COMMON,
 			&optClear,
-			IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf()));
+			IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf())));
 
 		// Create descriptor to mip level 0 of entire resource using the format of the resource.
 		md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), nullptr, DepthStencilView());

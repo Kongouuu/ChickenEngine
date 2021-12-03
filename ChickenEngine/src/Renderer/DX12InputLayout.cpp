@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Renderer/DX12InputLayout.h"
 
 namespace ChickenEngine
