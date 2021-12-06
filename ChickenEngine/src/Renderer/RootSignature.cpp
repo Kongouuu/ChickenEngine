@@ -1,36 +1,36 @@
 #include "pch.h"
-#include "Renderer\DX12RootSignature.h"
+#include "Renderer\RootSignature.h"
 
 namespace ChickenEngine
 {
-	DX12RootSignature::DX12RootSignature()
+	RootSignature::RootSignature()
 	{
 	}
 
-	DX12RootSignature::~DX12RootSignature()
+	RootSignature::~RootSignature()
 	{
 	}
 
-	DX12RootSignature& DX12RootSignature::GetInstance()
+	RootSignature& RootSignature::GetInstance()
 	{
-		static DX12RootSignature instance;
+		static RootSignature instance;
 		return instance;
 	}
 
 
-	void DX12RootSignature::Init(int numTextures, Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice)
+	void RootSignature::Init(int numTextures, Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice)
 	{
 		GetInstance().md3dDevice = d3dDevice;
 		GetInstance().LoadRootSignatures(numTextures);
 		
 	}
 
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> DX12RootSignature::GetRootSignature(std::string name)
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignature::GetRootSignature(std::string name)
 	{
 		return GetInstance().mRootSignatures[name];
 	}
 
-	void DX12RootSignature::LoadRootSignatures(int numTextures)
+	void RootSignature::LoadRootSignatures(int numTextures)
 	{
 		//  ---------------- ¼òÒ×root signature ----------------
 		// Root parameter can be a table, root descriptor or root constants.
@@ -87,7 +87,7 @@ namespace ChickenEngine
 		// other
 	}
 
-	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> DX12RootSignature::GetStaticSamplers()
+	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> RootSignature::GetStaticSamplers()
 	{
 		// Applications usually only need a handful of samplers.  So just define them all up front
 		// and keep them available as part of the root signature.  

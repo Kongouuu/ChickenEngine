@@ -1,9 +1,9 @@
 #include "pch.h"
-#include "Renderer/DX12InputLayout.h"
+#include "Renderer/InputLayout.h"
 
 namespace ChickenEngine
 {
-	const std::vector<D3D12_INPUT_ELEMENT_DESC>& DX12InputLayout::GetInputLayout(EVertexLayout layoutType, bool& result)
+	const std::vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout::GetInputLayout(EVertexLayout layoutType, bool& result)
 	{
 		result = true;
 		switch (layoutType)
@@ -19,6 +19,13 @@ namespace ChickenEngine
 					{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+			};
+		case POS_NORM_COL_TEX:
+			return {
+					{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+					{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 			};
 		case POS_NORM_TAN_TEX:
 			return {

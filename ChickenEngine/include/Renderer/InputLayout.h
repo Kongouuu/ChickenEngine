@@ -6,7 +6,7 @@
 
 namespace ChickenEngine
 {
-	class CHICKEN_API DX12InputLayout
+	class CHICKEN_API InputLayout
 	{
 	public:
 		static const std::vector<D3D12_INPUT_ELEMENT_DESC>& GetInputLayout(EVertexLayout layoutType, bool& result);

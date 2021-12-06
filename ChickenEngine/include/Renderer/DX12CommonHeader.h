@@ -27,7 +27,9 @@ namespace ChickenEngine
 	{
 		POS_NORM_COL = 0,
 		POS_NORM_TEX,
+		POS_NORM_COL_TEX,
 		POS_NORM_TAN_TEX,
+		POS_NORM_TAN_COL_TEX,
 		NONE
 	};
 
@@ -35,10 +37,10 @@ namespace ChickenEngine
 
 
 	inline void ThrowIfFailed(HRESULT hr)
-{
-    if (FAILED(hr))
-    {
-        throw std::exception();
-    }
-}
+	{
+		if (FAILED(hr))
+		{
+			throw std::exception();
+		}
+	}
 }

@@ -4,7 +4,8 @@
 #include "Engine/Core.h"
 #include <Engine/Events/Event.h>
 #include "DX12CommonHeader.h"
-#include "DX12Shader.h"
+#include "Shader.h"
+#include "Buffer.h"
 
 namespace ChickenEngine
 {
@@ -36,6 +37,7 @@ namespace ChickenEngine
 		void OnResize(int width, int height);
 
 		// Init pipeline
+		void InitSubsystem();
 		void InitShaders();
 
 		// Render

@@ -1,36 +1,36 @@
 #include "pch.h"
-#include "Renderer/DX12Texture.h"
+#include "Renderer/Texture.h"
 
 
 namespace ChickenEngine
 {
-    uint DX12TextureManager::textureCount = 0;
+    UINT TextureManager::textureCount = 0;
 
 
 
-    DX12TextureManager& DX12TextureManager::GetInstance()
+    TextureManager& TextureManager::GetInstance()
     {
-        static DX12TextureManager instance;
+        static TextureManager instance;
         return instance;
     }
 
-    void DX12TextureManager::Init(Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice, Microsoft::WRL::ComPtr<ID3D12CommandList> cmdList)
+    void TextureManager::Init(Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice, Microsoft::WRL::ComPtr<ID3D12CommandList> cmdList)
     {
         GetInstance().md3dDevice = d3dDevice;
         GetInstance().mCmdList = cmdList;
     }
 
-    std::shared_ptr<Texture> DX12TextureManager::GetTexture(std::string name)
+    std::shared_ptr<Texture> TextureManager::GetTexture(std::string name)
     {
         return GetInstance().mTextureMap[name];
     }
 
-    std::shared_ptr<Texture> DX12TextureManager::GetTexture(uint id)
+    std::shared_ptr<Texture> TextureManager::GetTexture(UINT id)
     {
         return GetTexture(GetInstance().mIdNameMap[id]);
     }
 
-    int DX12TextureManager::LoadTexture(std::wstring file, std::string texName)
+    int TextureManager::LoadTexture(std::wstring file, std::string texName)
     {
         std::filesystem::path filePath(file);
 
@@ -66,16 +66,16 @@ namespace ChickenEngine
     }
 
 
-    DX12TextureManager::DX12TextureManager()
+    TextureManager::TextureManager()
     {
     }
-    DX12TextureManager::~DX12TextureManager()
+    TextureManager::~TextureManager()
     {
     }
 
-    void DX12TextureManager::LoadTextureFromWIC(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap)
+    void TextureManager::LoadTextureFromWIC(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap)
     {
-        std::unique_ptr<uint8_t[]> data;
+        std::unique_ptr<UINT8_t[]> data;
         D3D12_SUBRESOURCE_DATA subresource;
 
         ThrowIfFailed(DirectX::LoadWICTextureFromFile(md3dDevice.Get(), fileName.c_str(), texture.GetAddressOf(), data, subresource));
@@ -102,7 +102,7 @@ namespace ChickenEngine
         mCmdList->ResourceBarrier(1, &barrier);
     }
 
-    void DX12TextureManager::LoadTextureFromDDS(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap)
+    void TextureManager::LoadTextureFromDDS(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap)
     {
 
     }

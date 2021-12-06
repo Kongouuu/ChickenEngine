@@ -4,7 +4,7 @@
 
 namespace ChickenEngine
 {
-	class CHICKEN_API DX12RootSignature
+	class CHICKEN_API RootSignature
 	{
 	public:
 
@@ -12,10 +12,10 @@ namespace ChickenEngine
 		static Microsoft::WRL::ComPtr<ID3D12RootSignature> GetRootSignature(std::string name);
 
 	private:
-		DX12RootSignature();
-		~DX12RootSignature();
+		RootSignature();
+		~RootSignature();
 
-		static DX12RootSignature& GetInstance();
+		static RootSignature& GetInstance();
 		void LoadRootSignatures(int numTextures);
 		std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
 	private:

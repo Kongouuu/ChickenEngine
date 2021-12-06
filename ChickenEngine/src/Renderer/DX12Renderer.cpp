@@ -305,9 +305,14 @@ namespace ChickenEngine
 #pragma endregion InitDX12
 
 #pragma region InitPipeline
+	void DX12Renderer::InitSubsystem()
+	{
+		BufferManager::InitBufferManager(md3dDevice, mCommandList);
+	}
+
 	void DX12Renderer::InitShaders()
 	{
-		DX12Shader::Init();
+		Shader::Init();
 	}
 #pragma endregion InitPipeline
 

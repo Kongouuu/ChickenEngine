@@ -72,25 +72,25 @@
     <ClInclude Include="include\Renderer\DX12Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Renderer\DX12Buffer.h">
+    <ClInclude Include="include\Renderer\Buffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Renderer\DX12Shader.h">
+    <ClInclude Include="include\Renderer\Shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Renderer\DX12CommonHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Renderer\DX12RootSignature.h">
+    <ClInclude Include="include\Renderer\RootSignature.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Engine\ResourceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Renderer\DX12InputLayout.h">
+    <ClInclude Include="include\Renderer\InputLayout.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Renderer\DX12Texture.h">
+    <ClInclude Include="include\Renderer\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\ThirdParty\spdlog\async.h">
@@ -165,10 +165,16 @@
     <ClInclude Include="include\ThirdParty\imgui\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="C:\Users\Daddy\Downloads\LearningDirectX12-0.0.4\LearningDirectX12-0.0.4\DirectXTex\WICTextureLoader\WICTextureLoader12.h">
+    <ClInclude Include="include\ThirdParty\WICTextureLoader\WICTextureLoader12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\ThirdParty\WICTextureLoader\WICTextureLoader12.h">
+    <ClInclude Include="include\Renderer\RenderItem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Renderer\MathHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Renderer\Mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -203,22 +209,22 @@
     <ClCompile Include="src\Renderer\DX12Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\DX12Buffer.cpp">
+    <ClCompile Include="src\Renderer\Buffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\DX12Shader.cpp">
+    <ClCompile Include="src\Renderer\Shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\DX12RootSignature.cpp">
+    <ClCompile Include="src\Renderer\RootSignature.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\ResourceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\DX12Texture.cpp">
+    <ClCompile Include="src\Renderer\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\DX12InputLayout.cpp">
+    <ClCompile Include="src\Renderer\InputLayout.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ThirdParty\imgui\imgui.cpp">
@@ -245,10 +251,16 @@
     <ClCompile Include="src\Renderer\DX12CommonHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\Daddy\Downloads\LearningDirectX12-0.0.4\LearningDirectX12-0.0.4\DirectXTex\WICTextureLoader\WICTextureLoader12.cpp">
+    <ClCompile Include="src\ThirdParty\WICTextureLoader\WICTextureLoader12.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\ThirdParty\WICTextureLoader\WICTextureLoader12.cpp">
+    <ClCompile Include="src\Renderer\RenderItem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\MathHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\Mesh.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

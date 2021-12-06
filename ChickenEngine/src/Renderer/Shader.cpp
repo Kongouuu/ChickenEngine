@@ -1,33 +1,32 @@
 #include "pch.h"
-#include "Renderer\DX12Shader.h"
+#include "Renderer\Shader.h"
 #include <tchar.h>
 
 
 namespace ChickenEngine
 {
-
-	DX12Shader::DX12Shader()
+	Shader::Shader()
 	{
 
 	}
 
-	DX12Shader::~DX12Shader()
+	Shader::~Shader()
 	{
 	}
 
-	DX12Shader& DX12Shader::GetInstance()
+	Shader& Shader::GetInstance()
 	{
-		static DX12Shader instance;
+		static Shader instance;
 		return instance;
 	}
 
-	void DX12Shader::Init()
+	void Shader::Init()
 	{
 		GetInstance().LoadVS();
 		GetInstance().LoadPS();
 	}
 
-	Microsoft::WRL::ComPtr<ID3DBlob> DX12Shader::GetVS(std::string name)
+	Microsoft::WRL::ComPtr<ID3DBlob> Shader::GetVS(std::string name)
 	{
 		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>>& vsMap = GetInstance().mVertexShaders;
 		if (vsMap.find(name) == vsMap.end())
@@ -35,7 +34,7 @@ namespace ChickenEngine
 		return vsMap[name];
 	}
 
-	Microsoft::WRL::ComPtr<ID3DBlob> DX12Shader::GetPS(std::string name)
+	Microsoft::WRL::ComPtr<ID3DBlob> Shader::GetPS(std::string name)
 	{
 		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>> &psMap = GetInstance().mPixelShaders;
 		if (psMap.find(name) == psMap.end())
@@ -44,17 +43,17 @@ namespace ChickenEngine
 	}
 
 
-	void DX12Shader::LoadVS()
+	void Shader::LoadVS()
 	{
 		mVertexShaders["default"] = CompileShader(GetShaderPath("default.hlsl"), nullptr, "VS", "vs_5_1");
 	}
 
-	void DX12Shader::LoadPS()
+	void Shader::LoadPS()
 	{
 		mPixelShaders["default"] =  CompileShader(GetShaderPath("default.hlsl"), nullptr, "PS", "ps_5_1");
 	}
 
-	Microsoft::WRL::ComPtr<ID3DBlob> DX12Shader::CompileShader(const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)
+	Microsoft::WRL::ComPtr<ID3DBlob> Shader::CompileShader(const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)
 	{
 		UINT compileFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)  
@@ -83,7 +82,7 @@ namespace ChickenEngine
 		return byteCode;
 	}
 
-	std::wstring DX12Shader::GetShaderPath(std::string name)
+	std::wstring Shader::GetShaderPath(std::string name)
 	{
 		std::string _projectDir = STRINGIFY(PROJECT_DIR);
 		_projectDir.erase(0, 1); // erase the first quote

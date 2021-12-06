@@ -6,7 +6,7 @@
 
 namespace ChickenEngine
 {
-	class CHICKEN_API DX12Shader
+	class CHICKEN_API Shader
 	{
 	public:
 
@@ -15,10 +15,10 @@ namespace ChickenEngine
 		static Microsoft::WRL::ComPtr<ID3DBlob> GetPS(std::string name);
 
 	private:
-		DX12Shader();
-		~DX12Shader();
+		Shader();
+		~Shader();
 
-		static DX12Shader& GetInstance();
+		static Shader& GetInstance();
 		void LoadVS();
 		void LoadPS();
 		Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(
