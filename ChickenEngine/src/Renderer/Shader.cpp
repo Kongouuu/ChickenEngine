@@ -22,6 +22,7 @@ namespace ChickenEngine
 
 	void Shader::Init()
 	{
+		LOG_INFO("Shader - Init");
 		GetInstance().LoadVS();
 		GetInstance().LoadPS();
 	}

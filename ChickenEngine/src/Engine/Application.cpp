@@ -41,10 +41,7 @@ namespace ChickenEngine
 			LOG_ERROR("Initialize D3D fail");
 			exit(1);
 		}
-		renderer.OnResize(mWindow->GetWidth(), mWindow->GetHeight());
 
-		// Init Imgui
-		ImguiManager::GetInstance().ImguiInit();
 
 
 
@@ -60,6 +57,13 @@ namespace ChickenEngine
 		// Load Texture
 
 		// TODO
+		renderer.InitSubsystem();
+
+		renderer.OnResize(mWindow->GetWidth(), mWindow->GetHeight());
+			// Init Imgui
+		ImguiManager::GetInstance().ImguiInit();
+
+
 
 
 	}

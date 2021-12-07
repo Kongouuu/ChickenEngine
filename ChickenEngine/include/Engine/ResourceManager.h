@@ -19,15 +19,15 @@ namespace ChickenEngine
 	struct RenderObject
 	{
 		std::string name;
-		uint objID;
+		UINT objID;
 		EDiffuseType diffuseType;
 
 		float position[3] = { 0.0,0.0,0.0 };
 		float rotation[3] = { 0.0,0.0,0.0 };
 		float scale[3] = { 1.0, 1.0, 1.0 };
 		float color[3] = { 1.0, 0.0, 0.0 };
-		std::vector<uint> meshIDs;
-		std::vector<uint> texIDs;
+		std::vector<UINT> renderItemIDs;
+		std::vector<UINT> texIDs;
 
 		RenderObject(std::string _name, EDiffuseType _diffuseType) : name(_name), diffuseType(_diffuseType){}
 	};
@@ -35,7 +35,7 @@ namespace ChickenEngine
 	struct Texture
 	{
 		std::string name;
-		uint texID;
+		UINT texID;
 	};
 
 	class ResourceManager
@@ -43,9 +43,9 @@ namespace ChickenEngine
 	public:
 		static ResourceManager& GetInstance();
 		static RenderObject& GetRenderObject(std::string name);
-		static RenderObject& GetRenderObject(uint ID);
+		static RenderObject& GetRenderObject(UINT ID);
 		static Texture& GetTexture(std::string name);
-		static Texture& GetTexture(uint ID);
+		static Texture& GetTexture(UINT ID);
 
 		static RenderObject& LoadObject(std::string name);
 		

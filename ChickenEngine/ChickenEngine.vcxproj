@@ -158,6 +158,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\Renderer\DescriptorHeap.h" />
     <ClInclude Include="include\Renderer\MathHelper.h" />
     <ClInclude Include="include\Renderer\Texture.h" />
     <ClInclude Include="include\Renderer\InputLayout.h" />
@@ -214,6 +215,7 @@
     <ClInclude Include="include\ThirdParty\spdlog\version.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Renderer\DescriptorHeap.cpp" />
     <ClCompile Include="src\Renderer\Mesh.cpp" />
     <ClCompile Include="src\Renderer\MathHelper.cpp" />
     <ClCompile Include="src\Renderer\RenderItem.cpp" />

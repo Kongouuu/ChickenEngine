@@ -4,6 +4,7 @@
 #include "Engine/Core.h"
 #include <Engine/Events/Event.h>
 #include "DX12CommonHeader.h"
+#include "DescriptorHeap.h"
 #include "Shader.h"
 #include "Buffer.h"
 

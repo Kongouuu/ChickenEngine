@@ -97,7 +97,7 @@ namespace ChickenEngine
 
 		CreateCommandObjects();
 		CreateSwapChain();
-		CreateSrvRtvDsvDescriptorHeaps();
+
 
 		return true;
 	}
@@ -308,6 +308,7 @@ namespace ChickenEngine
 	void DX12Renderer::InitSubsystem()
 	{
 		BufferManager::InitBufferManager(md3dDevice, mCommandList);
+		CreateSrvRtvDsvDescriptorHeaps();
 	}
 
 	void DX12Renderer::InitShaders()

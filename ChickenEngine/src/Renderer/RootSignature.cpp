@@ -20,9 +20,9 @@ namespace ChickenEngine
 
 	void RootSignature::Init(int numTextures, Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice)
 	{
+		LOG_INFO("RootSignature - Init");
 		GetInstance().md3dDevice = d3dDevice;
-		GetInstance().LoadRootSignatures(numTextures);
-		
+		GetInstance().LoadRootSignatures();
 	}
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignature::GetRootSignature(std::string name)
@@ -30,8 +30,9 @@ namespace ChickenEngine
 		return GetInstance().mRootSignatures[name];
 	}
 
-	void RootSignature::LoadRootSignatures(int numTextures)
+	void RootSignature::LoadRootSignatures()
 	{
+		LOG_INFO("RootSignature - Load root signatures");
 		//  ---------------- ¼òÒ×root signature ----------------
 		// Root parameter can be a table, root descriptor or root constants.
 		CD3DX12_ROOT_PARAMETER slotRootParameter[6];
@@ -51,7 +52,7 @@ namespace ChickenEngine
 		shadowTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
 
 		CD3DX12_DESCRIPTOR_RANGE diffuseTex;
-		diffuseTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, numTextures, 2, 0);
+		diffuseTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
 
 		slotRootParameter[3].InitAsDescriptorTable(1, &skyTex, D3D12_SHADER_VISIBILITY_PIXEL);
 		slotRootParameter[4].InitAsDescriptorTable(1, &shadowTex, D3D12_SHADER_VISIBILITY_PIXEL);

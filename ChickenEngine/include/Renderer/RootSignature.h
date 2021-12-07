@@ -16,7 +16,7 @@ namespace ChickenEngine
 		~RootSignature();
 
 		static RootSignature& GetInstance();
-		void LoadRootSignatures(int numTextures);
+		void LoadRootSignatures();
 		std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;

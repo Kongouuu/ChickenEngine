@@ -11,6 +11,7 @@ namespace ChickenEngine
 
     Mesh MeshManager::GenerateBox()
     {
+        LOG_INFO("MeshManager - Generate box");
         Mesh boxMesh;
         boxMesh.layout = EVertexLayout::POS_NORM_COL_TEX;
         boxMesh.vertices = std::vector<Vertex>(24);

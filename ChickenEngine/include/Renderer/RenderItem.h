@@ -21,6 +21,7 @@ namespace ChickenEngine
 
 		float roughness = 0.0;
 		float metallic = 0.0;
+		DirectX::XMFLOAT4 color = { 0.0,0.0,0.0,0.0 };
 	};
 
 	struct ObjectCB
@@ -30,7 +31,7 @@ namespace ChickenEngine
 
 	struct RenderItem
 	{
-		UINT id;
+		UINT renderItemID;
 		std::string name;
 		ERenderItemType riType;
 		
@@ -44,24 +45,27 @@ namespace ChickenEngine
 		ObjectCB objectCB;
 		Material materialCB;
 
+		CD3DX12_GPU_DESCRIPTOR_HANDLE textureHandle;
+
 		D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 		EVertexLayout GetLayoutType();
 	};
 
-
-
 	class RenderItemManager
 	{
 	public:
 		static RenderItemManager& GetInstance();
-		static std::shared_ptr<RenderItem> GetRenderItem(ERenderItemType riType, UINT id);
+		static std::shared_ptr<RenderItem> GetRenderItem(UINT id);
 		static std::shared_ptr<RenderItem> CreateRenderItem(std::string name, ERenderItemType riType);
-		static void InitRenderItem(const Mesh& mesh, ERenderItemType riType, UINT id);
+		static void InitRenderItem(const Mesh& mesh, UINT id);
+		static void InitRenderItem(const Mesh& mesh, ERenderItemType riType, UINT index);
 		static void InitRenderItem(const Mesh& mesh, std::shared_ptr<RenderItem> ri);
 	private:
 		// std::string ValidifyName(std::string name);
 	private:
 		std::unordered_map<ERenderItemType,std::vector<std::shared_ptr<RenderItem>>> mRenderItems;
+		std::unordered_map<UINT, std::pair< ERenderItemType, UINT>> mIdToItem;
+		static int renderItemCount;
 	};
 }
