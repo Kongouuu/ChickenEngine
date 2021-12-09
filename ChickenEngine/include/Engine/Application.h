@@ -7,7 +7,6 @@
 #include "Engine/Log.h"
 #include "Events/ApplicationEvent.h"
 #include "ImguiManager.h"
-#include "LayerStack.h"
 #include "Window.h"
 #include "Renderer/DX12Renderer.h"
 #include "GameTimer.h"
@@ -27,10 +26,6 @@ namespace ChickenEngine
 		void Render();
 		void OnEvent(Event& e);
 
-		void PushLayer(std::shared_ptr<Layer> layer);
-		void PushOverlay(std::shared_ptr<Layer> layer);
-		void PopLayer(std::shared_ptr<Layer> layer);
-
 		inline std::shared_ptr<Window> GetWindow() { return mWindow; }
 		inline static Application& Get() { return *s_Instance; }
 	protected:
@@ -41,7 +36,7 @@ namespace ChickenEngine
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 		bool m_Running = true;
-		LayerStack mLayerStack;
+
 	private:
 		static Application* s_Instance;
 

@@ -1,12 +1,12 @@
 #pragma once
 #include "pch.h"
 #include "Engine/Core.h"
-#include "DX12CommonHeader.h"
+#include "Helper/DX12CommonHeader.h"
 
 
 namespace ChickenEngine
 {
-	class CHICKEN_API Shader
+	class CHICKEN_API ShaderManager : public Singleton<ShaderManager>
 	{
 	public:
 
@@ -15,10 +15,7 @@ namespace ChickenEngine
 		static Microsoft::WRL::ComPtr<ID3DBlob> GetPS(std::string name);
 
 	private:
-		Shader();
-		~Shader();
 
-		static Shader& GetInstance();
 		void LoadVS();
 		void LoadPS();
 		Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(

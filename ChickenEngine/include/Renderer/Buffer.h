@@ -1,7 +1,7 @@
 #pragma once
-#include "DX12CommonHeader.h"
+#include "Helper/DX12CommonHeader.h"
 #include "Engine/Core.h"
-
+#include "UploadBuffer.h"
 namespace ChickenEngine
 {
 	enum EBufferType
@@ -58,22 +58,20 @@ namespace ChickenEngine
 
 			return ibv;
 		}
+
 	};
 
-
-	class CHICKEN_API BufferManager
+	class CHICKEN_API BufferManager : public Singleton<BufferManager>
 	{
 	public:
-		static BufferManager& GetInstance();
-		static void InitBufferManager(Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList);
 		static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
 			const void* initData,
 			UINT64 byteSize,
 			Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
 	private:
-		Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
 	};
+
+
 
 }
 

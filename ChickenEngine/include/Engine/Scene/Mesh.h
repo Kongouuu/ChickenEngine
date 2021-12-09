@@ -1,7 +1,12 @@
 #pragma once
 
-#include "DX12CommonHeader.h"
 #include <DirectXMath.h>
+#include "Engine/Core.h"
+#include "Engine/Log.h"
+#include "Helper/Singleton.h"
+#include "pch.h"
+#include "Helper/DX12Defines.h"
+
 
 namespace ChickenEngine
 {
@@ -27,12 +32,12 @@ namespace ChickenEngine
 
 	struct VertexPNT
 	{
-		VertexPNT() {}
-		VertexPNT(
-			DirectX::XMFLOAT3 p,
-			DirectX::XMFLOAT3 n,
-			DirectX::XMFLOAT2 t) :
-			pos(p), normal(n), texC(t) {}
+		//VertexPNT() {}
+		//VertexPNT(
+		//	DirectX::XMFLOAT3 p,
+		//	DirectX::XMFLOAT3 n,
+		//	DirectX::XMFLOAT2 t) :
+		//	pos(p), normal(n), texC(t) {}
 
 		DirectX::XMFLOAT3 pos = { 0.0,0.0,0.0 };
 		DirectX::XMFLOAT3 normal = { 0.0,0.0,0.0 };
@@ -59,13 +64,26 @@ namespace ChickenEngine
 		EVertexLayout layout;
 		std::vector<Vertex> vertices;
 		std::vector<UINT> indices;
+		std::vector<uint16_t>& GetIndices16()
+		{
+			if (indices16.empty())
+			{
+				indices16.resize(indices.size());
+				for (size_t i = 0; i < indices.size(); ++i)
+				{
+					indices16[i] = static_cast<uint16_t>(indices[i]);
+				}
+			}
+			return indices16;
+		}
+	private:
+		std::vector<uint16_t> indices16;
 	};
 
-	struct MeshManager
+	class CHICKEN_API MeshManager : public Singleton<MeshManager>
 	{
 	public:
-		static MeshManager& GetInstance();
-		Mesh GenerateBox();
+		static Mesh GenerateBox();
 	};
 }
 

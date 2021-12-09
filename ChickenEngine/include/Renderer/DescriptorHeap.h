@@ -1,41 +1,54 @@
 #pragma once
 
-#include "DX12CommonHeader.h"
+#include "Helper/DX12CommonHeader.h"
 
 namespace ChickenEngine
 {
-	class DescriptorHeapManager
+	class CHICKEN_API DescriptorHeapManager : public Singleton<DescriptorHeapManager>
 	{
 	public:
-		static DescriptorHeapManager& GetInstance();
-		static void InitDescriptorHeapManager(Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice, int swapChainBufferCount);
-		static void BuildRtvSrvDsvHeapDesc(int numTex2D, int numTex3D);
+		static void InitDescriptorHeapManager(int swapChainBufferCount);
+		static void BuildRtvSrvDsvHeapDesc(int numTex);
+		static void BuildCommonSrvHeap();
 		static void BuildTextureSrvHeap(ETextureType texType, UINT offset, Microsoft::WRL::ComPtr<ID3D12Resource> resource);
 
 	public:
-		inline static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> SrvHeap(){ return GetInstance().mSrvHeap; }
-		inline static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> RtvHeap(){ return GetInstance().mRtvHeap; }
-		inline static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DsvHeap(){ return GetInstance().mDsvHeap; }
+		inline static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> SrvHeap(){ return instance().mSrvHeap; }
+		inline static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> RtvHeap(){ return instance().mRtvHeap; }
+		inline static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> DsvHeap(){ return instance().mDsvHeap; }
 
-		inline static UINT NullSrvOffset2D() { return 1;}
-		inline static UINT NullSrvOffset3D() { return 2;}
-		inline static UINT TextureSrvOffsetStart() { return 3; }
+		inline static CD3DX12_GPU_DESCRIPTOR_HANDLE NullTexSrv() { return instance().mNullTexSrv; }
+		inline static CD3DX12_GPU_DESCRIPTOR_HANDLE NullCubeSrv() { return instance().mNullCubeSrv; }
 
-		inline static UINT RtvDescriptorSize() { return GetInstance().mRtvDescriptorSize; }
-		inline static UINT DsvDescriptorSize() { return GetInstance().mDsvDescriptorSize; }
-		inline static UINT CbvSrvUavDescriptorSize() { return GetInstance().mCbvSrvUavDescriptorSize; }
+		inline static UINT ImguiSrvOffset() { return instance().mImguiSrvOffset; }
+		inline static UINT NullTexSrvOffset() { return instance().mNullTexSrvOffset; }
+		inline static UINT NullCubeSrvOffset() { return instance().mNullCubeSrvOffset; }
+		inline static UINT ShadowSrvOffset() { return instance().mShadowSrvOffset; }
+		inline static UINT TextureSrvOffset() { return instance().mTextureSrvOffset; }
+
+		inline static UINT RtvDescriptorSize() { return instance().mRtvDescriptorSize; }
+		inline static UINT DsvDescriptorSize() { return instance().mDsvDescriptorSize; }
+		inline static UINT CbvSrvUavDescriptorSize() { return instance().mCbvSrvUavDescriptorSize; }
 
 	private:
-		Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
 		int mSwapChainBufferCount = 0;
 
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mSrvHeap;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
 		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
 
+		CD3DX12_GPU_DESCRIPTOR_HANDLE mNullTexSrv;
+		CD3DX12_GPU_DESCRIPTOR_HANDLE mNullCubeSrv;
+
 		UINT mRtvDescriptorSize = 0;
 		UINT mDsvDescriptorSize = 0;
 		UINT mCbvSrvUavDescriptorSize = 0;
+
+		UINT mImguiSrvOffset;
+		UINT mNullTexSrvOffset;
+		UINT mNullCubeSrvOffset;
+		UINT mShadowSrvOffset;
+		UINT mTextureSrvOffset;
 
 	};
 }

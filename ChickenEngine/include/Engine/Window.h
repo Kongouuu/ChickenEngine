@@ -19,8 +19,8 @@
 
 namespace ChickenEngine
 {
-	const int NUM_FRAMES_IN_FLIGHT = 3;
-	const int NUM_BACK_BUFFERS = 3;
+	const int NUM_FRAMES_IN_FLIGHT = 2;
+	const int NUM_BACK_BUFFERS = 2;
 	class CHICKEN_API Window
 	{
 	public:

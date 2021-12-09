@@ -2,7 +2,7 @@
 // MathHelper.cpp by Frank Luna (C) 2011 All Rights Reserved.
 //***************************************************************************************
 #include "pch.h"
-#include "Renderer/MathHelper.h"
+#include "Helper/MathHelper.h"
 #include <float.h>
 #include <cmath>
 

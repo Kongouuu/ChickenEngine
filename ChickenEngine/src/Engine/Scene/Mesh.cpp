@@ -1,14 +1,8 @@
 #include "pch.h"
-#include "Renderer\Mesh.h"
+#include "Engine/Scene/Mesh.h"
 
 namespace ChickenEngine
 {
-    MeshManager& MeshManager::GetInstance()
-    {
-        static MeshManager instance;
-        return instance;
-    }
-
     Mesh MeshManager::GenerateBox()
     {
         LOG_INFO("MeshManager - Generate box");

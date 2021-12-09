@@ -1,13 +1,11 @@
 #pragma once
 
-#include "DX12CommonHeader.h"
+#include "Helper/DX12CommonHeader.h"
 #include "DescriptorHeap.h"
 #include "WICTextureLoader/WICTextureLoader12.h"
 
 namespace ChickenEngine
 {
-
-
 	struct Texture
 	{
 		UINT id;
@@ -20,13 +18,10 @@ namespace ChickenEngine
 		Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
 	};
 
-	class CHICKEN_API TextureManager
+	class CHICKEN_API TextureManager : public Singleton<TextureManager>
 	{
 
 	public:
-		static TextureManager& GetInstance();
-		static void Init(Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList);
-
 		static std::shared_ptr<Texture> GetTexture(UINT id);
 		static std::shared_ptr<Texture> GetTexture(std::string name);
 		static int LoadTexture(std::wstring file, std::string texName, ETextureType textureType);
@@ -36,8 +31,6 @@ namespace ChickenEngine
 		
 
 	protected:
-		TextureManager();
-		virtual ~TextureManager();
 
 		void LoadTextureFromWIC(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap);
 		void LoadTextureFromDDS(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap);
@@ -48,8 +41,6 @@ namespace ChickenEngine
 		std::unordered_map<std::string, std::shared_ptr<Texture>> mTextureMap3D;
 		std::unordered_map<UINT, std::string> mIdNameMap;
 
-		Microsoft::WRL::ComPtr<ID3D12Device> md3dDevice;
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCmdList;
 		static UINT textureCount;
 	};
 

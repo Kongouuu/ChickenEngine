@@ -3,9 +3,8 @@
 
 namespace ChickenEngine
 {
-	const std::vector<D3D12_INPUT_ELEMENT_DESC>& InputLayout::GetInputLayout(EVertexLayout layoutType, bool& result)
+	std::vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::GetInputLayout(EVertexLayout layoutType)
 	{
-		result = true;
 		switch (layoutType)
 		{
 		case POS_NORM_COL:
@@ -15,6 +14,7 @@ namespace ChickenEngine
 					{ "COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 			};
 		case POS_NORM_TEX:
+			LOG_INFO("Pos norm tex");
 			return {
 					{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
 					{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
@@ -35,7 +35,7 @@ namespace ChickenEngine
 					{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 			};
 		default:
-			result = false;
+			assert(false);
 		}
 		return {};
 	}

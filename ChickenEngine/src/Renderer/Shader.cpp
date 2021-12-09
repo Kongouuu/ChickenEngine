@@ -5,56 +5,50 @@
 
 namespace ChickenEngine
 {
-	Shader::Shader()
-	{
-
-	}
-
-	Shader::~Shader()
-	{
-	}
-
-	Shader& Shader::GetInstance()
-	{
-		static Shader instance;
-		return instance;
-	}
-
-	void Shader::Init()
+	void ShaderManager::Init()
 	{
 		LOG_INFO("Shader - Init");
-		GetInstance().LoadVS();
-		GetInstance().LoadPS();
+		instance().LoadVS();
+		instance().LoadPS();
 	}
 
-	Microsoft::WRL::ComPtr<ID3DBlob> Shader::GetVS(std::string name)
+	Microsoft::WRL::ComPtr<ID3DBlob> ShaderManager::GetVS(std::string name)
 	{
-		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>>& vsMap = GetInstance().mVertexShaders;
+		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>>& vsMap = instance().mVertexShaders;
 		if (vsMap.find(name) == vsMap.end())
+		{
+			LOG_ERROR("ShaderManager - No VertexShader Found");
+			assert(0);
 			return nullptr;
+		}
+			
 		return vsMap[name];
 	}
 
-	Microsoft::WRL::ComPtr<ID3DBlob> Shader::GetPS(std::string name)
+	Microsoft::WRL::ComPtr<ID3DBlob> ShaderManager::GetPS(std::string name)
 	{
-		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>> &psMap = GetInstance().mPixelShaders;
+		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>> &psMap = instance().mPixelShaders;
 		if (psMap.find(name) == psMap.end())
+		{
+			LOG_ERROR("ShaderManager - No PixelShader Found");
+			assert(0);
 			return nullptr;
+		};
 		return psMap[name];
 	}
 
 
-	void Shader::LoadVS()
+	void ShaderManager::LoadVS()
 	{
 		mVertexShaders["default"] = CompileShader(GetShaderPath("default.hlsl"), nullptr, "VS", "vs_5_1");
 	}
 
-	void Shader::LoadPS()
+	void ShaderManager::LoadPS()
 	{
 		mPixelShaders["default"] =  CompileShader(GetShaderPath("default.hlsl"), nullptr, "PS", "ps_5_1");
 	}
 
-	Microsoft::WRL::ComPtr<ID3DBlob> Shader::CompileShader(const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)
+	Microsoft::WRL::ComPtr<ID3DBlob> ShaderManager::CompileShader(const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)
 	{
 		UINT compileFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)  
@@ -78,12 +72,11 @@ namespace ChickenEngine
 		{
 			assert(0);
 		}
-		LOG_TRACE("before return");
 
 		return byteCode;
 	}
 
-	std::wstring Shader::GetShaderPath(std::string name)
+	std::wstring ShaderManager::GetShaderPath(std::string name)
 	{
 		std::string _projectDir = STRINGIFY(PROJECT_DIR);
 		_projectDir.erase(0, 1); // erase the first quote

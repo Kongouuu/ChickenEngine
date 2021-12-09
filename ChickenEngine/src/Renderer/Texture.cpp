@@ -6,23 +6,10 @@ namespace ChickenEngine
 {
     UINT TextureManager::textureCount = 0;
 
-    TextureManager& TextureManager::GetInstance()
-    {
-        static TextureManager instance;
-        return instance;
-    }
-
-    void TextureManager::Init(Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice, Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> cmdList)
-    {
-        LOG_INFO("TextureManager - Init");
-        GetInstance().md3dDevice = d3dDevice;
-        GetInstance().mCmdList = cmdList;
-    }
-
     std::shared_ptr<Texture> TextureManager::GetTexture(std::string name)
     {
         LOG_INFO("TextureManager - Get texture. name: {0}", name);
-        TextureManager& tm = GetInstance();
+        TextureManager& tm = instance();
         // find in 2d
         if (tm.mTextureMap2D.find(name) != tm.mTextureMap2D.end())
             return tm.mTextureMap2D[name];
@@ -37,13 +24,13 @@ namespace ChickenEngine
 
     std::shared_ptr<Texture> TextureManager::GetTexture(UINT id)
     {
-        return GetTexture(GetInstance().mIdNameMap[id]);
+        return GetTexture(instance().mIdNameMap[id]);
     }
 
     int TextureManager::LoadTexture(std::wstring file, std::string texName, ETextureType textureType)
     {
         LOG_INFO("TextureManager - Load texture. name: {0}", texName);
-        TextureManager& tm = GetInstance();
+        TextureManager& tm = instance();
         
         // Check if name is used
         tm.CheckNameValidity(texName);
@@ -84,28 +71,19 @@ namespace ChickenEngine
         DescriptorHeapManager::BuildTextureSrvHeap(textureType, tex->id, tex->Resource);
     }
 
-
-    TextureManager::TextureManager()
-    {
-    }
-
-    TextureManager::~TextureManager()
-    {
-    }
-
     void TextureManager::LoadTextureFromWIC(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap)
     {
-        LOG_INFO("TextureManager - Load texture from wic. path: {0}", fileName);
+        LOG_INFO("TextureManager - Load texture from wic.");
         std::unique_ptr<uint8_t[]> data;
         D3D12_SUBRESOURCE_DATA subresource;
 
-        ThrowIfFailed(DirectX::LoadWICTextureFromFile(md3dDevice.Get(), fileName.c_str(), texture.GetAddressOf(), data, subresource));
+        ThrowIfFailed(DirectX::LoadWICTextureFromFile(Device::device().Get(), fileName.c_str(), texture.GetAddressOf(), data, subresource));
 
         const UINT64 uploadBufferSize = GetRequiredIntermediateSize(texture.Get(), 0, 1);
 
         auto heapProperty = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD);
         auto buffer = CD3DX12_RESOURCE_DESC::Buffer(uploadBufferSize);
-        ThrowIfFailed(md3dDevice->CreateCommittedResource(
+        ThrowIfFailed(Device::device()->CreateCommittedResource(
             &heapProperty, 
             D3D12_HEAP_FLAG_NONE, 
             &buffer,
@@ -116,13 +94,13 @@ namespace ChickenEngine
 
 
         auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(texture.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
-        mCmdList->ResourceBarrier(1, &barrier);
+        CommandList::cmdList()->ResourceBarrier(1, &barrier);
 
-        UpdateSubresources(mCmdList.Get(), texture.Get(), uploadHeap.Get(), 0, 0, 1, &subresource);
+        UpdateSubresources(CommandList::cmdList().Get(), texture.Get(), uploadHeap.Get(), 0, 0, 1, &subresource);
 
         barrier = CD3DX12_RESOURCE_BARRIER::Transition(texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
-        mCmdList->ResourceBarrier(1, &barrier);
+        CommandList::cmdList()->ResourceBarrier(1, &barrier);
     }
 
     void TextureManager::LoadTextureFromDDS(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap)

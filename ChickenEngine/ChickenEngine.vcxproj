@@ -119,7 +119,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_BUILD_DLL;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);PROJECT_DIR="$(ProjectDir)."</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)ChickenEngine\include;$(SolutionDir)ChickenEngine\ThirdParty\spdlog\include\;$(SolutionDir)ChickenEngine\include\ThirdParty</AdditionalIncludeDirectories>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -158,26 +158,31 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\Engine\Scene\Camera.h" />
+    <ClInclude Include="include\Helper\DX12Defines.h" />
+    <ClInclude Include="include\Helper\Singleton.h" />
+    <ClInclude Include="include\Renderer\CommandList.h" />
     <ClInclude Include="include\Renderer\DescriptorHeap.h" />
-    <ClInclude Include="include\Renderer\MathHelper.h" />
+    <ClInclude Include="include\Renderer\Device.h" />
+    <ClInclude Include="include\Helper\MathHelper.h" />
     <ClInclude Include="include\Renderer\Texture.h" />
     <ClInclude Include="include\Renderer\InputLayout.h" />
     <ClInclude Include="include\Renderer\RootSignature.h" />
     <ClInclude Include="include\Renderer\Buffer.h" />
-    <ClInclude Include="include\Renderer\DX12CommonHeader.h" />
+    <ClInclude Include="include\Helper\DX12CommonHeader.h" />
     <ClInclude Include="include\Renderer\DX12Renderer.h" />
-    <ClInclude Include="include\Renderer\d3dx12.h" />
+    <ClInclude Include="include\Helper\d3dx12.h" />
     <ClInclude Include="include\Engine\GameTimer.h" />
-    <ClInclude Include="include\Engine\Layers\ImguiLayer.h" />
     <ClInclude Include="include\Engine\ResourceManager.h" />
+    <ClInclude Include="include\Renderer\UploadBuffer.h" />
     <ClInclude Include="include\ThirdParty\WICTextureLoader\WICTextureLoader12.h" />
-    <ClInclude Include="include\Renderer\RenderItem.h" />
-    <ClInclude Include="include\Renderer\Mesh.h" />
+    <ClInclude Include="include\Engine\Scene\RenderItem.h" />
+    <ClInclude Include="include\Engine\Scene\Mesh.h" />
+    <ClInclude Include="include\Renderer\PSO.h" />
+    <ClInclude Include="include\Engine\Scene\PassConstants.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="include\Engine\Window.h" />
     <ClInclude Include="include\Engine\ImguiManager.h" />
-    <ClInclude Include="include\Engine\LayerStack.h" />
-    <ClInclude Include="include\Engine\Layer.h" />
     <ClInclude Include="include\pch.h" />
     <ClInclude Include="include\Engine\Events\ApplicationEvent.h" />
     <ClInclude Include="include\Engine\Events\Event.h" />
@@ -215,11 +220,14 @@
     <ClInclude Include="include\ThirdParty\spdlog\version.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Engine\Scene\PassConstants.cpp" />
+    <ClCompile Include="src\Engine\Scene\Camera.cpp" />
+    <ClCompile Include="src\Renderer\PSO.cpp" />
     <ClCompile Include="src\Renderer\DescriptorHeap.cpp" />
-    <ClCompile Include="src\Renderer\Mesh.cpp" />
+    <ClCompile Include="src\Engine\Scene\Mesh.cpp" />
     <ClCompile Include="src\Renderer\MathHelper.cpp" />
-    <ClCompile Include="src\Renderer\RenderItem.cpp" />
-    <ClCompile Include="src\Renderer\DX12CommonHeader.cpp" />
+    <ClCompile Include="src\Engine\Scene\RenderItem.cpp" />
+    <ClCompile Include="src\Helper\DX12CommonHeader.cpp" />
     <ClCompile Include="src\Renderer\Texture.cpp" />
     <ClCompile Include="src\Engine\ResourceManager.cpp" />
     <ClCompile Include="src\Renderer\InputLayout.cpp" />
@@ -228,11 +236,8 @@
     <ClCompile Include="src\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Renderer\DX12Renderer.cpp" />
     <ClCompile Include="src\Engine\GameTimer.cpp" />
-    <ClCompile Include="src\Engine\Layers\ImguiLayer.cpp" />
     <ClCompile Include="src\Engine\Window.cpp" />
     <ClCompile Include="src\Engine\ImguiManager.cpp" />
-    <ClCompile Include="src\Engine\LayerStack.cpp" />
-    <ClCompile Include="src\Engine\Layer.cpp" />
     <ClCompile Include="src\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

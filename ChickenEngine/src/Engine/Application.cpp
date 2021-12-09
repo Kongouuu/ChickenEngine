@@ -47,45 +47,13 @@ namespace ChickenEngine
 
 		// --------Init Pipeline--------
 		// Load Shader
-		renderer.InitShaders();
-		// Create Root Signature
-		
-		// Create PSO
-
-		// Load Scene and objects vbo
-
-		// Load Texture
-
-		// TODO
-		renderer.InitSubsystem();
+		renderer.InitPipeline();
 
 		renderer.OnResize(mWindow->GetWidth(), mWindow->GetHeight());
 			// Init Imgui
 		ImguiManager::GetInstance().ImguiInit();
-
-
-
-
 	}
 	
-
-	void Application::PushLayer(std::shared_ptr<Layer> layer)
-	{
-		mLayerStack.PushLayer(layer);
-		layer->OnAttach();
-	}
-
-	void Application::PushOverlay(std::shared_ptr<Layer> layer)
-	{
-		mLayerStack.PushOverlay(layer);
-		layer->OnAttach();
-	}
-
-	void Application::PopLayer(std::shared_ptr<Layer> layer)
-	{
-		mLayerStack.PopLayer(layer);
-		layer->OnDetatch();
-	}
 
 	void Application::Run()
 	{
@@ -115,10 +83,6 @@ namespace ChickenEngine
 		// Update
 		mWindow->Update();
 
-		for (auto it = mLayerStack.end(); it != mLayerStack.begin();)
-		{
-			(*--it)->OnUpdate();
-		}
 	}
 
 	void Application::Render()
@@ -139,6 +103,7 @@ namespace ChickenEngine
 		// set pso
 		// render
 
+		DX12Renderer::GetInstance().Draw();
 		//Imgui
 		ImguiManager::GetInstance().ImguiBegin();
 		ImguiManager::GetInstance().ImguiRender(); // later be substituted
@@ -151,17 +116,11 @@ namespace ChickenEngine
 	{
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(BIND_FN(Application::OnWindowClose));
-		LOG_INFO(e.ToString());
 
 		ImguiManager::GetInstance().OnEvent(e);
-		for (auto it = mLayerStack.end(); it != mLayerStack.begin();)
-		{
-			(*--it)->OnEvent(e);
-			if (e.Handled)
-				break;
-		}
 		
 	}
+
 	void Application::CalculateFrameStats()
 	{
 		static int frameCnt = 0;
@@ -193,13 +152,13 @@ namespace ChickenEngine
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
-		LOG_INFO("Inside win close event");
+		//LOG_INFO("Inside win close event");
 		m_Running = false;
 		return true;
 	}
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
-		LOG_ERROR("window resize application");
+		LOG_INFO("Window resize application");
 		DX12Renderer::GetInstance().OnResize(e.GetWidth(), e.GetHeight());
 		return false;
 	}

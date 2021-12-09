@@ -3,34 +3,19 @@
 
 namespace ChickenEngine
 {
-	RootSignature::RootSignature()
-	{
-	}
 
-	RootSignature::~RootSignature()
-	{
-	}
-
-	RootSignature& RootSignature::GetInstance()
-	{
-		static RootSignature instance;
-		return instance;
-	}
-
-
-	void RootSignature::Init(int numTextures, Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice)
+	void RootSignatureManager::Init()
 	{
 		LOG_INFO("RootSignature - Init");
-		GetInstance().md3dDevice = d3dDevice;
-		GetInstance().LoadRootSignatures();
+		instance().LoadRootSignatures();
 	}
 
-	Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignature::GetRootSignature(std::string name)
+	Microsoft::WRL::ComPtr<ID3D12RootSignature>& RootSignatureManager::GetRootSignature(std::string name)
 	{
-		return GetInstance().mRootSignatures[name];
+		return instance().mRootSignatures[name];
 	}
 
-	void RootSignature::LoadRootSignatures()
+	void RootSignatureManager::LoadRootSignatures()
 	{
 		LOG_INFO("RootSignature - Load root signatures");
 		//  ---------------- ¼òÒ×root signature ----------------
@@ -77,18 +62,18 @@ namespace ChickenEngine
 		}
 
 		mRootSignatures["default"] = nullptr;
-		md3dDevice->CreateRootSignature(
+		ThrowIfFailed(Device::device()->CreateRootSignature(
 			0,
 			serializedRootSig->GetBufferPointer(),
 			serializedRootSig->GetBufferSize(),
-			IID_PPV_ARGS(mRootSignatures["default"].GetAddressOf()));
+			IID_PPV_ARGS(mRootSignatures["default"].GetAddressOf())));
 
 
 
 		// other
 	}
 
-	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> RootSignature::GetStaticSamplers()
+	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> RootSignatureManager::GetStaticSamplers()
 	{
 		// Applications usually only need a handful of samplers.  So just define them all up front
 		// and keep them available as part of the root signature.  

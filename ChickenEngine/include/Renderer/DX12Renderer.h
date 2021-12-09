@@ -1,12 +1,15 @@
 #pragma once
 #include "pch.h"
 
-#include "Engine/Core.h"
-#include <Engine/Events/Event.h>
-#include "DX12CommonHeader.h"
+#include "Engine/Events/Event.h"
+#include "Helper/DX12CommonHeader.h"
+#include "RootSignature.h"
+#include "Texture.h"
+#include "PSO.h"
 #include "DescriptorHeap.h"
 #include "Shader.h"
 #include "Buffer.h"
+#include "Engine/Scene/RenderItem.h"
 
 namespace ChickenEngine
 {
@@ -25,29 +28,39 @@ namespace ChickenEngine
 
 	public:
 		inline Microsoft::WRL::ComPtr<ID3D12Device> D3dDevice() const { return md3dDevice; }
-		inline Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> SrvHeap() const { return mSrvHeap; }
-		inline Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> CommandList() const { return mCommandList; }
+		inline Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> SrvHeap() const { return DescriptorHeapManager::SrvHeap(); }
+		inline Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> CommandList() const { return mCmdList; }
 
 	protected:
 		// Init DX12
 		bool InitDX12(HWND hwnd, int width, int height);
 		void CreateCommandObjects();
 		void CreateSwapChain();
-		void CreateSrvRtvDsvDescriptorHeaps();
 		void FlushCommandQueue();
 		void OnResize(int width, int height);
 
 		// Init pipeline
-		void InitSubsystem();
-		void InitShaders();
+		void InitPipeline();
+		void LoadTextures();
+
 
 		// Render
 		void PrepareCommandList();
+		void Draw();
 		void CloseCommandList();
 
-		inline ID3D12Resource* CurrentBackBuffer()const { return mSwapChainBuffer[mCurrBackBuffer].Get(); }
-		inline D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(mRtvHeap->GetCPUDescriptorHandleForHeapStart(), mCurrBackBuffer, mRtvDescriptorSize); }
-		inline D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView()const { return mDsvHeap->GetCPUDescriptorHandleForHeapStart(); }
+		inline ID3D12Resource* CurrentBackBuffer()const 
+		{ 
+			return mSwapChainBuffer[mCurrBackBuffer].Get(); 
+		}
+		inline D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const 
+		{ 
+			return CD3DX12_CPU_DESCRIPTOR_HANDLE(DescriptorHeapManager::RtvHeap()->GetCPUDescriptorHandleForHeapStart(), mCurrBackBuffer, DescriptorHeapManager::RtvDescriptorSize()); 
+		}
+		inline D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView()const 
+		{ 
+			return DescriptorHeapManager::DsvHeap()->GetCPUDescriptorHandleForHeapStart(); 
+		}
 	private:
 		HWND      mhMainWnd = nullptr; // main window handle
 		int mWidth;
@@ -63,25 +76,18 @@ namespace ChickenEngine
 		Microsoft::WRL::ComPtr<ID3D12Fence> mFence;
 		UINT64 mCurrentFence = 0;
 
-		Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCmdQueue;
 		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
-		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
+		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCmdList;
 
 		static const int SwapChainBufferCount = 2;
 		int mCurrBackBuffer = 0;
 		Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
 		Microsoft::WRL::ComPtr<ID3D12Resource> mDepthStencilBuffer;
 
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mSrvHeap;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
-		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
 
 		D3D12_VIEWPORT mScreenViewport;
 		D3D12_RECT mScissorRect;
-
-		UINT mRtvDescriptorSize = 0;
-		UINT mDsvDescriptorSize = 0;
-		UINT mCbvSrvUavDescriptorSize = 0;
 
 		// Derived class should set these in derived constructor to customize starting values.
 		std::wstring mMainWndCaption = L"d3d App";
@@ -89,6 +95,11 @@ namespace ChickenEngine
 		DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
+
+		std::shared_ptr<RenderItem> ri;
+		std::unique_ptr<UploadBuffer<PassConstants>> passConst;
+		std::unique_ptr<UploadBuffer<ObjectConstants>> objConst;
+		std::unique_ptr<UploadBuffer<Material>> matConst;
 	};
 }
 

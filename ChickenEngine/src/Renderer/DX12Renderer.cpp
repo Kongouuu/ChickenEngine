@@ -1,11 +1,12 @@
 #include "pch.h"
 #include "Renderer/DX12Renderer.h"
-#include <Engine/Log.h>
-#include <DirectXColors.h>
-#include "Renderer/d3dx12.h"
+#include <Engine/Scene/Camera.h>
+
+using namespace DirectX;
 
 namespace ChickenEngine
 {
+
 	DX12Renderer::DX12Renderer()
 	{
 	}
@@ -19,6 +20,7 @@ namespace ChickenEngine
 		static DX12Renderer instance;
 		return instance;
 	}
+
 #pragma region Settings
 	bool DX12Renderer::Get4xMsaaState() const
 	{
@@ -69,13 +71,10 @@ namespace ChickenEngine
 				D3D_FEATURE_LEVEL_11_0,
 				IID_PPV_ARGS(&md3dDevice));
 		}
+		Device::SetDevice(md3dDevice);
 
 		ThrowIfFailed(md3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE,
 			IID_PPV_ARGS(&mFence)));
-
-		mRtvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		mDsvDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-		mCbvSrvUavDescriptorSize = md3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 		// Check 4X MSAA quality support for our back buffer format.
 		// All Direct3D 11 capable devices support 4X MSAA for all render 
@@ -107,7 +106,7 @@ namespace ChickenEngine
 		D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 		queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 		queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-		ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)));
+		ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCmdQueue)));
 
 		ThrowIfFailed(md3dDevice->CreateCommandAllocator(
 			D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -118,12 +117,12 @@ namespace ChickenEngine
 			D3D12_COMMAND_LIST_TYPE_DIRECT,
 			mDirectCmdListAlloc.Get(), // Associated command allocator
 			nullptr,                   // Initial PipelineStateObject
-			IID_PPV_ARGS(mCommandList.GetAddressOf())));
-
+			IID_PPV_ARGS(mCmdList.GetAddressOf())));
+		CommandList::SetCmdList(mCmdList);
 		// Start off in a closed state.  This is because the first time we refer 
 		// to the command list we will Reset it, and it needs to be closed before
 		// calling Reset.
-		mCommandList->Close();
+		mCmdList->Close();
 	}
 
 	void DX12Renderer::CreateSwapChain()
@@ -151,43 +150,15 @@ namespace ChickenEngine
 
 		// Note: Swap chain uses queue to perform flush.
 		mdxgiFactory->CreateSwapChain(
-			mCommandQueue.Get(),
+			mCmdQueue.Get(),
 			&sd,
 			mSwapChain.GetAddressOf());
-	}
-
-	void DX12Renderer::CreateSrvRtvDsvDescriptorHeaps()
-	{
-		D3D12_DESCRIPTOR_HEAP_DESC SrvHeapDesc;
-		SrvHeapDesc.NumDescriptors = 1;
-		SrvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		SrvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-		SrvHeapDesc.NodeMask = 0;
-		ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
-			&SrvHeapDesc, IID_PPV_ARGS(mSrvHeap.GetAddressOf())));
-
-		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
-		rtvHeapDesc.NumDescriptors = SwapChainBufferCount;
-		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		rtvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		rtvHeapDesc.NodeMask = 0;
-		ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
-			&rtvHeapDesc, IID_PPV_ARGS(mRtvHeap.GetAddressOf())));
-
-
-		D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc;
-		dsvHeapDesc.NumDescriptors = 1;
-		dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
-		dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		dsvHeapDesc.NodeMask = 0;
-		ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
-			&dsvHeapDesc, IID_PPV_ARGS(mDsvHeap.GetAddressOf())));
 	}
 
 	void DX12Renderer::FlushCommandQueue()
 	{
 		mCurrentFence++;
-		mCommandQueue->Signal(mFence.Get(), mCurrentFence);
+		ThrowIfFailed(mCmdQueue->Signal(mFence.Get(), mCurrentFence));
 
 		// Wait until the GPU has completed commands up to this fence point.
 		if (mFence->GetCompletedValue() < mCurrentFence)
@@ -195,7 +166,7 @@ namespace ChickenEngine
 			HANDLE eventHandle = CreateEventEx(nullptr, nullptr, false, EVENT_ALL_ACCESS);
 
 			// Fire event when GPU hits current fence.  
-			mFence->SetEventOnCompletion(mCurrentFence, eventHandle);
+			ThrowIfFailed(mFence->SetEventOnCompletion(mCurrentFence, eventHandle));
 
 			// Wait until the GPU hits current fence event is fired.
 			WaitForSingleObject(eventHandle, INFINITE);
@@ -221,7 +192,7 @@ namespace ChickenEngine
 		// Flush before changing any resources.
 		FlushCommandQueue();
 
-		mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr);
+		mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr);
 
 		// Release the previous resources we will be recreating.
 		for (int i = 0; i < SwapChainBufferCount; ++i)
@@ -238,12 +209,12 @@ namespace ChickenEngine
 
 		mCurrBackBuffer = 0;
 
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->GetCPUDescriptorHandleForHeapStart());
+		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(DescriptorHeapManager::RtvHeap()->GetCPUDescriptorHandleForHeapStart());
 		for (UINT i = 0; i < SwapChainBufferCount; i++)
 		{
 			mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i]));
 			md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
-			rtvHeapHandle.Offset(1, mRtvDescriptorSize);
+			rtvHeapHandle.Offset(1, DescriptorHeapManager::RtvDescriptorSize());
 		}
 
 		// Create the depth/stencil buffer and view.
@@ -280,12 +251,12 @@ namespace ChickenEngine
 		CD3DX12_RESOURCE_BARRIER Transition = CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(),
 			D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		// Transition the resource from its initial state to be used as a depth buffer.
-		mCommandList->ResourceBarrier(1, &Transition);
+		mCmdList->ResourceBarrier(1, &Transition);
 
 		// Execute the resize commands.
-		mCommandList->Close();
-		ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
-		mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+		mCmdList->Close();
+		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
+		mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 		// Wait until resize is complete.
 		FlushCommandQueue();
@@ -305,71 +276,154 @@ namespace ChickenEngine
 #pragma endregion InitDX12
 
 #pragma region InitPipeline
-	void DX12Renderer::InitSubsystem()
+	void DX12Renderer::InitPipeline()
 	{
-		BufferManager::InitBufferManager(md3dDevice, mCommandList);
-		CreateSrvRtvDsvDescriptorHeaps();
+		// Reset the command list to prep for initialization commands.
+		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+		// Load Textures
+		LoadTextures();
+
+		// Build Root Sinagture
+		RootSignatureManager::Init();
+
+		// Build descriptor heaps
+		DescriptorHeapManager::InitDescriptorHeapManager(SwapChainBufferCount);
+		DescriptorHeapManager::BuildRtvSrvDsvHeapDesc(TextureManager::TextureCount());
+		DescriptorHeapManager::BuildCommonSrvHeap();
+
+		// Init shader
+		ShaderManager::Init();
+ 
+		// set up render item and mesh
+		ri = RenderItemManager::CreateRenderItem("box", RI_OPAQUE);
+		Mesh boxMesh = MeshManager::GenerateBox();
+		ri->Init(boxMesh);
+		ri->materialCB.SetColor({ 1.0,1.0,1.0,1.0 });
+		passConst   = std::make_unique<UploadBuffer<PassConstants>>(1, true);
+		matConst    = std::make_unique<UploadBuffer<Material>>(1, true);
+		objConst    = std::make_unique<UploadBuffer<ObjectConstants>>(1, true);
+		ObjectConstants objConstants;
+		XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(XMLoadFloat4x4(&ri->objectCB.World)));
+		objConst->CopyData(0, objConstants);
+
+		Camera cam;
+		cam.SetPosition({ 0.0,0.0,-3.0 });
+		cam.UpdateViewMatrix();
+
+		XMMATRIX view = cam.GetView();
+		XMMATRIX proj = cam.GetProj();
+
+		XMMATRIX viewProj = XMMatrixMultiply(view, proj);
+		XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
+		XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
+		XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
+
+		PassConstants mMainPassCB;
+		XMStoreFloat4x4(&mMainPassCB.View, XMMatrixTranspose(view));
+		XMStoreFloat4x4(&mMainPassCB.InvView, XMMatrixTranspose(invView));
+		XMStoreFloat4x4(&mMainPassCB.Proj, XMMatrixTranspose(proj));
+		XMStoreFloat4x4(&mMainPassCB.InvProj, XMMatrixTranspose(invProj));
+		XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
+		XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
+		mMainPassCB.EyePosW = cam.GetPosition3f();
+		mMainPassCB.RenderTargetSize = XMFLOAT2((float)mWidth, (float)mHeight);
+		mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mWidth, 1.0f / mHeight);
+		mMainPassCB.NearZ = 1.0f;
+		mMainPassCB.FarZ = 1000.0f;
+		passConst->CopyData(0, mMainPassCB);
+
+		matConst->CopyData(0, ri->materialCB);
+
+		// build pso;
+		PSOManager::Init(mBackBufferFormat, mDepthStencilFormat, m4xMsaaState, m4xMsaaQuality);
+		PSOManager::BuildPSOs();
+
+		// Execute the initialization commands.
+		ThrowIfFailed(mCmdList->Close());
+		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
+
+
+		mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+		// Wait until initialization is complete.
+		FlushCommandQueue();
 	}
 
-	void DX12Renderer::InitShaders()
+	void DX12Renderer::LoadTextures()
 	{
-		Shader::Init();
+		// Later on move to application class
+
 	}
+
+
 #pragma endregion InitPipeline
 
 #pragma region Pipeline
 	void DX12Renderer::PrepareCommandList()
 	{
-		assert(mCommandList);
+		assert(mCmdList);
 		assert(mDirectCmdListAlloc);
 		// Reuse the memory associated with command recording.
 // We can only reset when the associated command lists have finished execution on the GPU.
-		mDirectCmdListAlloc->Reset();
+		ThrowIfFailed(mDirectCmdListAlloc->Reset()) ;
 
 		// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
 		// Reusing the command list reuses memory.
-		mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr);
+		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), PSOManager::GetPSO("default").Get()));
+		
+		// Set the viewport and scissor rect.  This needs to be reset whenever the command list is reset.
+		mCmdList->RSSetViewports(1, &mScreenViewport);
+		mCmdList->RSSetScissorRects(1, &mScissorRect);
 
 		// Indicate a state transition on the resource usage.
-		CD3DX12_RESOURCE_BARRIER Transition = CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		mCommandList->ResourceBarrier(1, &Transition);
-
-		// Set the viewport and scissor rect.  This needs to be reset whenever the command list is reset.
-		mCommandList->RSSetViewports(1, &mScreenViewport);
-		mCommandList->RSSetScissorRects(1, &mScissorRect);
+		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 		// Clear the back buffer and depth buffer.
-		mCommandList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::LightSteelBlue, 0, nullptr);
-		mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+		mCmdList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::LightSteelBlue, 0, nullptr);
+		mCmdList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 		// Specify the buffers we are going to render to.
-		D3D12_CPU_DESCRIPTOR_HANDLE CurBackBufferView = CurrentBackBufferView();
-		D3D12_CPU_DESCRIPTOR_HANDLE CurDepthStencilView = DepthStencilView();
-		mCommandList->OMSetRenderTargets(1, &CurBackBufferView, true, &CurDepthStencilView);
+		mCmdList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+	}
 
+	void DX12Renderer::Draw()
+	{
+		ID3D12DescriptorHeap* descriptorHeaps[] = { DescriptorHeapManager::SrvHeap().Get() };
+		mCmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
+		mCmdList->SetGraphicsRootSignature(RootSignatureManager::GetRootSignature("default").Get());
+
+		//mCmdList->SetGraphicsRootConstantBufferView(2, passConst->Resource()->GetGPUVirtualAddress());
+
+		mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
+		mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
+		mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
+
+		mCmdList->SetGraphicsRootConstantBufferView(0, objConst->Resource()->GetGPUVirtualAddress());
+		mCmdList->SetGraphicsRootConstantBufferView(1, matConst->Resource()->GetGPUVirtualAddress());
+		mCmdList->DrawIndexedInstanced(ri->indexCount, 1, 0, 0, 0);
+		
 		// Indicate a state transition on the resource usage.
-		mCommandList->ResourceBarrier(1, &Transition);
+		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
 	}
 
 	void DX12Renderer::CloseCommandList()
 	{
-		assert(mCommandList);
-		assert(mSwapChain);
 		// Done recording commands.
-		mCommandList->Close();
+		ThrowIfFailed(mCmdList->Close());
 
 		// Add the command list to the queue for execution.
-		ID3D12CommandList* cmdsLists[] = { mCommandList.Get() };
-		mCommandQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
+		mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
 		// swap the back and front buffers
-		mSwapChain->Present(0, 0);
+		ThrowIfFailed(mSwapChain->Present(0, 0));
 		mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount;
 
-		// Wait until frame commands are complete.  This waiting is inefficient and is
-		// done for simplicity.  Later we will show how to organize our rendering code
-		// so we do not have to wait per frame.
+		mCmdQueue->Signal(mFence.Get(), mCurrentFence);
 	}
 #pragma endregion Pipeline
 }
