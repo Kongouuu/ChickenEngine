@@ -36,6 +36,7 @@ namespace ChickenEngine
 		ThrowIfFailed(Device::device()->CreateDescriptorHeap(
 			&SrvHeapDesc, IID_PPV_ARGS(dhm.mSrvHeap.GetAddressOf())));
 
+		// RTV
 		D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
 		rtvHeapDesc.NumDescriptors = dhm.mSwapChainBufferCount;
 		rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;

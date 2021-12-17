@@ -20,7 +20,7 @@ namespace ChickenEngine
 
 	struct VertexBuffer
 	{
-		Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;
+		//Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
 
@@ -41,7 +41,7 @@ namespace ChickenEngine
 
 	struct IndexBuffer
 	{
-		Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU = nullptr;
+		//Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
 

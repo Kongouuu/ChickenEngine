@@ -83,7 +83,6 @@ namespace ChickenEngine
 			// Save the new client area dimensions.
 			mWidth = LOWORD(lParam);
 			mHeight = HIWORD(lParam);
-			LOG_INFO("On msg resize");
 			WindowResizeEvent e(mWidth, mHeight);
 			mEventCallback(e);
 			return 0;
@@ -115,38 +114,38 @@ namespace ChickenEngine
 
 		case WM_LBUTTONDOWN:
 		{
-			MouseButtonPressedEvent e(0);
+			MouseButtonPressedEvent e(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), 0);
 			mEventCallback(e);
 			return 0;
 		}
 		case WM_MBUTTONDOWN:
 		{
-			MouseButtonPressedEvent e(2);
+			MouseButtonPressedEvent e(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), 2);
 			mEventCallback(e);
 			return 0;
 		}
 		case WM_RBUTTONDOWN:
 		{
-			MouseButtonPressedEvent e(1);
+			MouseButtonPressedEvent e(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), 1);
 			mEventCallback(e);
 			return 0;
 		}
 			return 0;
 		case WM_LBUTTONUP:
 		{
-			MouseButtonReleasedEvent e(0);
+			MouseButtonReleasedEvent e(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), 0);
 			mEventCallback(e);
 			return 0;
 		}
 		case WM_MBUTTONUP:
 		{
-			MouseButtonReleasedEvent e(2);
+			MouseButtonReleasedEvent e(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), 2);
 			mEventCallback(e);
 			return 0;
 		}
 		case WM_RBUTTONUP:
 		{
-			MouseButtonReleasedEvent e(1);
+			MouseButtonReleasedEvent e(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), 1);
 			mEventCallback(e);
 			return 0;
 		}
@@ -158,6 +157,10 @@ namespace ChickenEngine
 		}
 		case WM_KEYDOWN:
 		{
+			if (wParam == VK_ESCAPE)
+			{
+				Shutdown();
+			}
 			KeyPressedEvent e(wParam, 1);
 			mEventCallback(e);
 			return 0;

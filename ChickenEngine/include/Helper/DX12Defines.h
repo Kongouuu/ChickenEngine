@@ -24,6 +24,13 @@ namespace ChickenEngine
 		TEXTURE3D
 	};
 
+	enum EBasicShapeType
+	{
+		CUBE = 0,
+		PLANE,
+		SPHERE
+	};
+
 
 	inline void ThrowIfFailed(HRESULT hr)
 	{

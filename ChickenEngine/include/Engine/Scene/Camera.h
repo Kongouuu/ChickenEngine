@@ -19,6 +19,7 @@ namespace ChickenEngine
 		DirectX::XMFLOAT3 GetPosition3f()const;
 		void SetPosition(float x, float y, float z);
 		void SetPosition(const DirectX::XMFLOAT3& v);
+		void SetAspect(float aspect);
 	
 		// Get camera basis vectors.
 		DirectX::XMVECTOR GetRight()const;

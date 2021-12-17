@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Engine/Scene/Camera.h"
+#include <Engine/Log.h>
 
 namespace ChickenEngine
 {
@@ -34,6 +35,12 @@ namespace ChickenEngine
 	{
 		mPosition = v;
 		mViewDirty = true;
+	}
+
+	void Camera::SetAspect(float aspect)
+	{
+		mAspect = aspect;
+		SetLens(mFovY, mAspect, mNearZ, mFarZ);
 	}
 
 	XMVECTOR Camera::GetRight()const
@@ -177,7 +184,6 @@ namespace ChickenEngine
 
 	void Camera::Strafe(float d)
 	{
-		// mPosition += d*mRight
 		XMVECTOR s = XMVectorReplicate(d);
 		XMVECTOR r = XMLoadFloat3(&mRight);
 		XMVECTOR p = XMLoadFloat3(&mPosition);

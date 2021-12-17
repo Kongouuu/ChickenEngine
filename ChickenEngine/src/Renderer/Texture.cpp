@@ -6,7 +6,7 @@ namespace ChickenEngine
 {
     UINT TextureManager::textureCount = 0;
 
-    std::shared_ptr<Texture> TextureManager::GetTexture(std::string name)
+    std::shared_ptr<DX12Texture> TextureManager::GetTexture(std::string name)
     {
         LOG_INFO("TextureManager - Get texture. name: {0}", name);
         TextureManager& tm = instance();
@@ -22,7 +22,7 @@ namespace ChickenEngine
         return nullptr;
     }
 
-    std::shared_ptr<Texture> TextureManager::GetTexture(UINT id)
+    std::shared_ptr<DX12Texture> TextureManager::GetTexture(UINT id)
     {
         return GetTexture(instance().mIdNameMap[id]);
     }
@@ -42,7 +42,7 @@ namespace ChickenEngine
         }
 
         // no lock, and didnt check if loaded be4
-        auto tex = std::make_shared<Texture>();
+        auto tex = std::make_shared<DX12Texture>();
         tex->Name = texName;
         tex->Filename = filePath.filename();
 

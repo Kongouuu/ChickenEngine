@@ -4,6 +4,8 @@
 #include <utility>
 #include <memory>
 #include <algorithm>
+#include <array>
+#include <queue>
 #include <functional>
 #include <exception>
 #include <stdio.h>

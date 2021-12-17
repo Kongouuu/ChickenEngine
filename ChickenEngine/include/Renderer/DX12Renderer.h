@@ -9,7 +9,8 @@
 #include "DescriptorHeap.h"
 #include "Shader.h"
 #include "Buffer.h"
-#include "Engine/Scene/RenderItem.h"
+#include "RenderItem.h"
+#include "FrameResource.h"
 
 namespace ChickenEngine
 {
@@ -33,21 +34,50 @@ namespace ChickenEngine
 
 	protected:
 		// Init DX12
-		bool InitDX12(HWND hwnd, int width, int height);
+		bool InitDX12(HWND hwnd, int width, int height, int numFrameResources = 3);
 		void CreateCommandObjects();
 		void CreateSwapChain();
 		void FlushCommandQueue();
-		void OnResize(int width, int height);
+		
+
+		// Pre Init Pipeline ( Called by Engine)
+		void SetPassCBByteSize(UINT size);
+		void SetMaterialCBByteSize(UINT size);
+		void SetObjectCBByteSize(UINT size);
 
 		// Init pipeline
 		void InitPipeline();
-		void LoadTextures();
+		void CreateFrameResources();
 
+		// Input Assembly ( Called by Engine)
+		void LoadTextures();
+		UINT CreateRenderItem(std::string name, UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
+		
+		
+		// Update {every loop}
+		void Update();
+		void SwapFrameResource();
+		void UpdatePassCB();
+		void UpdateRenderItemCB();
+		void UpdateObjectCB(std::shared_ptr<RenderItem>& ri);
+		void UpdateMaterialCB(std::shared_ptr<RenderItem>& ri);
+
+		// Called update
+		void SetPassSceneData(BYTE* data);
+		void SetRenderItemTransform(UINT renderItemID, BYTE* data);// XMFLOAT3 position, XMFLOAT3 rotation, XMFLOAT3 scale);
+		void SetRenderItemMaterial(UINT renderItemID, BYTE* data);//float roughness, float metallic, XMFLOAT4 color);
+		void OnResize(int width, int height);
 
 		// Render
-		void PrepareCommandList();
+		void PrepareDraw();
 		void Draw();
-		void CloseCommandList();
+		void DrawRenderItems();
+		void EndDraw();
+
+		// Other
+		void StartDirectCommands();
+		void ExecuteCommands();
+
 
 		inline ID3D12Resource* CurrentBackBuffer()const 
 		{ 
@@ -63,11 +93,17 @@ namespace ChickenEngine
 		}
 	private:
 		HWND      mhMainWnd = nullptr; // main window handle
-		int mWidth;
-		int mHeight;
+		int		  mWidth;
+		int		  mHeight;
 
 		bool      m4xMsaaState = false;    // 4X MSAA enabled
 		UINT      m4xMsaaQuality = 0;      // quality level of 4X MSAA
+
+
+		std::vector<std::shared_ptr<FrameResource>> mFrameResources;
+		FrameResource* mCurrFrameResource = nullptr;
+		int mCurrFrameResourceIndex = 0;
+		int mNumFrameResources = 3;
 
 		Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
 		Microsoft::WRL::ComPtr<IDXGISwapChain> mSwapChain;
@@ -90,16 +126,14 @@ namespace ChickenEngine
 		D3D12_RECT mScissorRect;
 
 		// Derived class should set these in derived constructor to customize starting values.
-		std::wstring mMainWndCaption = L"d3d App";
 		D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 		DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-
-		std::shared_ptr<RenderItem> ri;
-		std::unique_ptr<UploadBuffer<PassConstants>> passConst;
-		std::unique_ptr<UploadBuffer<ObjectConstants>> objConst;
-		std::unique_ptr<UploadBuffer<Material>> matConst;
+		UINT mPassCBByteSize;
+		UINT mObjectCBByteSize;
+		UINT mMaterialCBByteSize;
+		std::vector<BYTE> mPassCBData;
 	};
 }
 

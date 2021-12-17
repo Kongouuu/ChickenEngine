@@ -1,12 +1,9 @@
 #include "pch.h"
 #include "Renderer/DX12Renderer.h"
-#include <Engine/Scene/Camera.h>
-
-using namespace DirectX;
 
 namespace ChickenEngine
 {
-
+	using namespace DirectX;
 	DX12Renderer::DX12Renderer()
 	{
 	}
@@ -41,11 +38,12 @@ namespace ChickenEngine
 #pragma endregion Settings
 
 #pragma region InitDX12
-	bool DX12Renderer::InitDX12(HWND hwnd, int width, int height)
+	bool DX12Renderer::InitDX12(HWND hwnd, int width, int height, int numFrameRersources)
 	{
 		mhMainWnd = hwnd;
 		mWidth = width;
 		mHeight = height;
+		mNumFrameResources = numFrameRersources;
 
 		if (hwnd == NULL)
 		{
@@ -178,12 +176,11 @@ namespace ChickenEngine
 	{
 		mWidth = width;
 		mHeight = height;
-		if (md3dDevice == NULL)
+
+		if (md3dDevice == nullptr)
 		{
-			LOG_ERROR("null device");
 			return;
 		}
-			
 		LOG_INFO("OnResize");
 		assert(md3dDevice);
 		assert(mSwapChain);
@@ -192,7 +189,7 @@ namespace ChickenEngine
 		// Flush before changing any resources.
 		FlushCommandQueue();
 
-		mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr);
+		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
 		// Release the previous resources we will be recreating.
 		for (int i = 0; i < SwapChainBufferCount; ++i)
@@ -247,14 +244,12 @@ namespace ChickenEngine
 		// Create descriptor to mip level 0 of entire resource using the format of the resource.
 		md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), nullptr, DepthStencilView());
 
-
-		CD3DX12_RESOURCE_BARRIER Transition = CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(),
-			D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		// Transition the resource from its initial state to be used as a depth buffer.
-		mCmdList->ResourceBarrier(1, &Transition);
+		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(),
+			D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 
 		// Execute the resize commands.
-		mCmdList->Close();
+		ThrowIfFailed(mCmdList->Close());
 		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
 		mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
@@ -270,16 +265,35 @@ namespace ChickenEngine
 		mScreenViewport.MaxDepth = 1.0f;
 
 		mScissorRect = { 0, 0, (long)width, (long)height };
+
+		float aspectRatio = static_cast<float>(mWidth) / mHeight;
+		LOG_INFO("reset camera, new fov: {0}", aspectRatio);
+
+		XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, float(mWidth)/float(mHeight), 1.0f, 1000.0f);
 	}
 
 
 #pragma endregion InitDX12
 
 #pragma region InitPipeline
+	void DX12Renderer::SetPassCBByteSize(UINT size)
+	{
+		mPassCBByteSize = size;
+	}
+
+	void DX12Renderer::SetObjectCBByteSize(UINT size)
+	{
+		mObjectCBByteSize = size;
+	}
+
+	void DX12Renderer::SetMaterialCBByteSize(UINT size)
+	{
+		mMaterialCBByteSize = size;
+	}
+
 	void DX12Renderer::InitPipeline()
 	{
-		// Reset the command list to prep for initialization commands.
-		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+		LOG_TRACE("Init pipeline");
 		// Load Textures
 		LoadTextures();
 
@@ -293,60 +307,34 @@ namespace ChickenEngine
 
 		// Init shader
 		ShaderManager::Init();
- 
-		// set up render item and mesh
-		ri = RenderItemManager::CreateRenderItem("box", RI_OPAQUE);
-		Mesh boxMesh = MeshManager::GenerateBox();
-		ri->Init(boxMesh);
-		ri->materialCB.SetColor({ 1.0,1.0,1.0,1.0 });
-		passConst   = std::make_unique<UploadBuffer<PassConstants>>(1, true);
-		matConst    = std::make_unique<UploadBuffer<Material>>(1, true);
-		objConst    = std::make_unique<UploadBuffer<ObjectConstants>>(1, true);
-		ObjectConstants objConstants;
-		XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(XMLoadFloat4x4(&ri->objectCB.World)));
-		objConst->CopyData(0, objConstants);
-
-		Camera cam;
-		cam.SetPosition({ 0.0,0.0,-3.0 });
-		cam.UpdateViewMatrix();
-
-		XMMATRIX view = cam.GetView();
-		XMMATRIX proj = cam.GetProj();
-
-		XMMATRIX viewProj = XMMatrixMultiply(view, proj);
-		XMMATRIX invView = XMMatrixInverse(&XMMatrixDeterminant(view), view);
-		XMMATRIX invProj = XMMatrixInverse(&XMMatrixDeterminant(proj), proj);
-		XMMATRIX invViewProj = XMMatrixInverse(&XMMatrixDeterminant(viewProj), viewProj);
-
-		PassConstants mMainPassCB;
-		XMStoreFloat4x4(&mMainPassCB.View, XMMatrixTranspose(view));
-		XMStoreFloat4x4(&mMainPassCB.InvView, XMMatrixTranspose(invView));
-		XMStoreFloat4x4(&mMainPassCB.Proj, XMMatrixTranspose(proj));
-		XMStoreFloat4x4(&mMainPassCB.InvProj, XMMatrixTranspose(invProj));
-		XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
-		XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
-		mMainPassCB.EyePosW = cam.GetPosition3f();
-		mMainPassCB.RenderTargetSize = XMFLOAT2((float)mWidth, (float)mHeight);
-		mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mWidth, 1.0f / mHeight);
-		mMainPassCB.NearZ = 1.0f;
-		mMainPassCB.FarZ = 1000.0f;
-		passConst->CopyData(0, mMainPassCB);
-
-		matConst->CopyData(0, ri->materialCB);
+		CreateFrameResources();
 
 		// build pso;
 		PSOManager::Init(mBackBufferFormat, mDepthStencilFormat, m4xMsaaState, m4xMsaaQuality);
 		PSOManager::BuildPSOs();
 
-		// Execute the initialization commands.
-		ThrowIfFailed(mCmdList->Close());
-		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
-
-
-		mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
-
-		// Wait until initialization is complete.
+		
+		ExecuteCommands();
 		FlushCommandQueue();
+	
+	}
+
+	void DX12Renderer::CreateFrameResources()
+	{
+		for (int i = 0; i < mNumFrameResources; ++i)
+		{
+
+			mFrameResources.push_back(std::make_shared<FrameResource>(
+				1, (UINT)RenderItemManager::RenderItemCount(), (UINT)RenderItemManager::RenderItemCount(), mPassCBByteSize, mObjectCBByteSize, mMaterialCBByteSize));
+		}
+	}
+
+	UINT DX12Renderer::CreateRenderItem(std::string name, UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
+	{
+		auto ri = RenderItemManager::CreateRenderItem(name, RI_OPAQUE);
+		ri->Init(vertexCount, vertexSize, vertexData, indices);
+		ri->numFramesDirty = mNumFrameResources;
+		return ri->renderItemID;
 	}
 
 	void DX12Renderer::LoadTextures()
@@ -356,21 +344,116 @@ namespace ChickenEngine
 	}
 
 
+
+
 #pragma endregion InitPipeline
 
-#pragma region Pipeline
-	void DX12Renderer::PrepareCommandList()
+#pragma region Pipeline Update
+	void DX12Renderer::Update()
+	{
+		SwapFrameResource();
+		UpdatePassCB();
+		UpdateRenderItemCB();
+	}
+
+	void DX12Renderer::SwapFrameResource()
+	{
+		mCurrFrameResourceIndex = (mCurrFrameResourceIndex + 1) % mNumFrameResources;
+		mCurrFrameResource = mFrameResources[mCurrFrameResourceIndex].get();
+
+		// We have 3 frame resources, currently CPU is on the (n)th frame
+		// Check if gpu finished the (n-3)th frame
+		if (mCurrFrameResource->Fence != 0 && mFence->GetCompletedValue() < mCurrFrameResource->Fence)
+		{
+			HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
+			ThrowIfFailed(mFence->SetEventOnCompletion(mCurrFrameResource->Fence, eventHandle));
+			WaitForSingleObject(eventHandle, INFINITE);
+			CloseHandle(eventHandle);
+		}
+	}
+
+	void DX12Renderer::UpdatePassCB()
+	{
+		mCurrFrameResource->PassCB->CopyData(0, mPassCBData.data());
+	}
+
+	void DX12Renderer::UpdateRenderItemCB()
+	{
+		std::vector<std::shared_ptr<RenderItem>>& renderItems = RenderItemManager::GetAllRenderItems();
+		for (auto& ri : renderItems)
+		{
+			if (ri->numFramesDirty > 0)
+			{
+				UpdateObjectCB(ri);
+				UpdateMaterialCB(ri);
+				ri->numFramesDirty--;
+			}
+		}
+	}
+
+	void DX12Renderer::UpdateObjectCB(std::shared_ptr<RenderItem>& ri)
+	{
+		if (mCurrFrameResource == nullptr)
+			return;
+		auto currObjectCB = mCurrFrameResource->ObjectCB.get();
+		currObjectCB->CopyData(ri->objectCBIndex, ri->objCBData.data());
+	}
+
+	void DX12Renderer::UpdateMaterialCB(std::shared_ptr<RenderItem>& ri)
+	{
+		if (mCurrFrameResource == nullptr)
+			return;
+		auto currMatCB = mCurrFrameResource->MaterialCB.get();
+		currMatCB->CopyData(ri->materialCBIndex, ri->matCBData.data());
+	}
+
+	void DX12Renderer::SetPassSceneData(BYTE* data)
+	{
+		mPassCBData = std::vector<BYTE>(data, data + mPassCBByteSize);
+
+	}
+
+	void DX12Renderer::SetRenderItemTransform(UINT renderItemID, BYTE* data)//XMFLOAT3 position, XMFLOAT3 rotation, XMFLOAT3 scale)
+	{
+		std::shared_ptr<RenderItem> ri = RenderItemManager::GetRenderItem(renderItemID);
+		if (ri != nullptr)
+		{
+			ri->objCBData = std::vector(data, data + mObjectCBByteSize);
+
+			ri->numFramesDirty = mNumFrameResources;
+		}
+	}
+
+	void DX12Renderer::SetRenderItemMaterial(UINT renderItemID, BYTE* data)// float roughness, float metallic, XMFLOAT4 color)
+	{
+		std::shared_ptr<RenderItem> ri = RenderItemManager::GetRenderItem(renderItemID);
+		if (ri != nullptr)
+		{
+			ri->matCBData = std::vector(data, data + mMaterialCBByteSize);
+
+			ri->numFramesDirty = mNumFrameResources;
+		}
+	}
+
+
+
+#pragma endregion Pipeline Update
+
+#pragma region Pipeline Draw
+	void DX12Renderer::PrepareDraw()
 	{
 		assert(mCmdList);
-		assert(mDirectCmdListAlloc);
+
+		auto cmdListAlloc = mCurrFrameResource->CmdListAlloc;
+		assert(cmdListAlloc);
 		// Reuse the memory associated with command recording.
-// We can only reset when the associated command lists have finished execution on the GPU.
-		ThrowIfFailed(mDirectCmdListAlloc->Reset()) ;
+		// We can only reset when the associated command lists have finished execution on the GPU.
+		ThrowIfFailed(cmdListAlloc->Reset());
 
 		// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
 		// Reusing the command list reuses memory.
-		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), PSOManager::GetPSO("default").Get()));
-		
+		ThrowIfFailed(mCmdList->Reset(cmdListAlloc.Get(), PSOManager::GetPSO("default").Get()));
+
 		// Set the viewport and scissor rect.  This needs to be reset whenever the command list is reset.
 		mCmdList->RSSetViewports(1, &mScreenViewport);
 		mCmdList->RSSetScissorRects(1, &mScissorRect);
@@ -394,23 +477,65 @@ namespace ChickenEngine
 
 		mCmdList->SetGraphicsRootSignature(RootSignatureManager::GetRootSignature("default").Get());
 
-		//mCmdList->SetGraphicsRootConstantBufferView(2, passConst->Resource()->GetGPUVirtualAddress());
+		auto passCB = mCurrFrameResource->PassCB->Resource();
+		mCmdList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
 
-		mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
-		mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
-		mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
+		DrawRenderItems();
 
-		mCmdList->SetGraphicsRootConstantBufferView(0, objConst->Resource()->GetGPUVirtualAddress());
-		mCmdList->SetGraphicsRootConstantBufferView(1, matConst->Resource()->GetGPUVirtualAddress());
-		mCmdList->DrawIndexedInstanced(ri->indexCount, 1, 0, 0, 0);
-		
 		// Indicate a state transition on the resource usage.
 		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
 	}
 
-	void DX12Renderer::CloseCommandList()
+	void DX12Renderer::DrawRenderItems()
+	{
+
+		std::vector<std::shared_ptr<RenderItem>>& renderItems = RenderItemManager::GetAllRenderItems();
+
+		auto objectCBByteSize = UploadBufferUtil::CalcConstantBufferByteSize(mObjectCBByteSize);
+		auto materialCBByteSize = UploadBufferUtil::CalcConstantBufferByteSize(mMaterialCBByteSize);
+		auto objectCB = mCurrFrameResource->ObjectCB->Resource();
+		auto matCB = mCurrFrameResource->MaterialCB->Resource();
+
+		// For each render item...
+		for (auto& ri : renderItems)
+		{
+			mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
+			mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
+			mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
+
+			CD3DX12_GPU_DESCRIPTOR_HANDLE tex = ri->textureHandle;
+
+			D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() + ri->objectCBIndex * objectCBByteSize;
+			D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + ri->materialCBIndex * materialCBByteSize;
+
+			mCmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
+			mCmdList->SetGraphicsRootConstantBufferView(1, matCBAddress);
+
+			mCmdList->DrawIndexedInstanced(ri->indexCount, 1, 0, 0, 0);
+		}
+	}
+
+	void DX12Renderer::EndDraw()
+	{
+		ExecuteCommands();
+		// swap the back and front buffers
+		ThrowIfFailed(mSwapChain->Present(0, 0));
+		mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount;
+
+		mCurrFrameResource->Fence = ++mCurrentFence;
+
+		mCmdQueue->Signal(mFence.Get(), mCurrentFence);
+	}
+
+	void DX12Renderer::StartDirectCommands()
+	{
+		// Reset the command list to prep for initialization commands.
+		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+	}
+
+	void DX12Renderer::ExecuteCommands()
 	{
 		// Done recording commands.
 		ThrowIfFailed(mCmdList->Close());
@@ -419,11 +544,9 @@ namespace ChickenEngine
 		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
 		mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-		// swap the back and front buffers
-		ThrowIfFailed(mSwapChain->Present(0, 0));
-		mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount;
-
-		mCmdQueue->Signal(mFence.Get(), mCurrentFence);
 	}
 #pragma endregion Pipeline
+
+
+
 }

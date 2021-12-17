@@ -128,82 +128,9 @@ namespace ChickenEngine
 	{
 		if (!bEnabled)
 			return;
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_FN(ImguiManager::OnMouseButtonPressedEvent));
-		dispatcher.Dispatch<MouseButtonReleasedEvent>(BIND_FN(ImguiManager::OnMouseButtonReleasedEvent));
-		dispatcher.Dispatch<MouseMovedEvent>(BIND_FN(ImguiManager::OnMouseMovedEvent));
-		dispatcher.Dispatch<MouseScrolledEvent>(BIND_FN(ImguiManager::OnMouseScrolledEvent));
-		dispatcher.Dispatch<KeyTypedEvent>(BIND_FN(ImguiManager::OnKeyTypedEvent));
-		dispatcher.Dispatch<KeyPressedEvent>(BIND_FN(ImguiManager::OnKeyPressedEvent));
-		dispatcher.Dispatch<KeyReleasedEvent>(BIND_FN(ImguiManager::OnKeyReleasedEvent));
-		dispatcher.Dispatch<WindowResizeEvent>(BIND_FN(ImguiManager::OnWindowResizeEvent));
-
-	}
-
-
-
-#pragma region Event
-	bool ImguiManager::OnMouseButtonPressedEvent(MouseButtonPressedEvent& e)
-	{
 		ImGuiIO& io = ImGui::GetIO();
-		io.MouseDown[e.GetMouseButton()] = true;
-		return false;
+		event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
+		event.Handled |= event.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
 	}
 
-	bool ImguiManager::OnMouseButtonReleasedEvent(MouseButtonReleasedEvent& e)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.MouseDown[e.GetMouseButton()] = false;
-		return false;
-	}
-
-	bool ImguiManager::OnMouseMovedEvent(MouseMovedEvent& e)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.MousePos = ImVec2(e.GetX(), e.GetY());
-		return false;
-	}
-
-	bool ImguiManager::OnMouseScrolledEvent(MouseScrolledEvent& e)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.MouseWheel += e.GetXOffset();
-		io.MouseWheel += e.GetYOffset();
-		return false;
-	}
-
-	bool ImguiManager::OnKeyTypedEvent(KeyTypedEvent& e)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.AddInputCharacter(e.GetKeyCode());
-		return false;
-	}
-
-	bool ImguiManager::OnKeyPressedEvent(KeyPressedEvent& e)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.KeysDown[e.GetKeyCode()] = true;
-		io.KeyCtrl = io.KeysDown[VK_LCONTROL] || io.KeysDown[VK_RCONTROL];
-		io.KeyShift = io.KeysDown[VK_LSHIFT] || io.KeysDown[VK_RSHIFT];
-		io.KeyAlt = io.KeysDown[VK_MENU];
-		io.KeySuper = io.KeysDown[VK_LWIN] || io.KeysDown[VK_RWIN];
-
-		return false;
-	}
-
-	bool ImguiManager::OnKeyReleasedEvent(KeyReleasedEvent& e)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.KeysDown[e.GetKeyCode()] = false;
-		return false;
-	}
-
-	bool ImguiManager::OnWindowResizeEvent(WindowResizeEvent& e)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.DisplaySize = ImVec2(e.GetWidth(), e.GetHeight());
-		io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-
-		return false;
-	}
 }

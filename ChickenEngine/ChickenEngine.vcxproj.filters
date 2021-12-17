@@ -159,7 +159,7 @@
     <ClInclude Include="include\ThirdParty\WICTextureLoader\WICTextureLoader12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Engine\Scene\RenderItem.h">
+    <ClInclude Include="include\Renderer\RenderItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Helper\MathHelper.h">
@@ -186,13 +186,28 @@
     <ClInclude Include="include\Engine\Scene\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Engine\Scene\PassConstants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\Helper\DX12Defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\Renderer\UploadBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Helper\MouseButtonEnum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine\Scene\RenderObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Renderer\FrameResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine\Scene\Light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine\Scene\PassConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine\Scene\SceneManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -263,7 +278,7 @@
     <ClCompile Include="src\ThirdParty\WICTextureLoader\WICTextureLoader12.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\Scene\RenderItem.cpp">
+    <ClCompile Include="src\Renderer\RenderItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\MathHelper.cpp">
@@ -281,7 +296,13 @@
     <ClCompile Include="src\Engine\Scene\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Engine\Scene\PassConstants.cpp">
+    <ClCompile Include="src\Renderer\PassConstants.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\FrameResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Scene\SceneManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -292,5 +313,7 @@
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\default.hlsl" />
+    <FxCompile Include="shaders\Common.hlsl" />
+    <FxCompile Include="shaders\ShadingUtil.hlsl" />
   </ItemGroup>
 </Project>

@@ -10,9 +10,8 @@ namespace ChickenEngine
 		UploadBuffer(UINT elementCount, bool isConstantBuffer) :mIsConstantBuffer(isConstantBuffer)
 		{
 			mElementByteSize = sizeof(T);
-
 			if (isConstantBuffer)
-				mElementByteSize = CalcConstantBufferByteSize(sizeof(T));
+				mElementByteSize = UploadBufferUtil::CalcConstantBufferByteSize(sizeof(T));
 
 			ThrowIfFailed(Device::device()->CreateCommittedResource(
 				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
@@ -39,6 +38,60 @@ namespace ChickenEngine
 
 		inline void CopyData(int elementIndex, const T& data) { memcpy(&mMappedData[elementIndex * mElementByteSize], &data, sizeof(T)); }
 
+
+	private:
+		Microsoft::WRL::ComPtr<ID3D12Resource> mUploadBuffer;
+		BYTE* mMappedData = nullptr;
+		UINT mElementByteSize = 0;
+		bool mIsConstantBuffer = false;
+	};
+
+	class CHICKEN_API UploadBufferUtil
+	{
+	public:
+		inline static UINT CalcConstantBufferByteSize(UINT byteSize) { return (byteSize + 255) & ~255; }
+	};
+
+
+
+
+	/* Suppose use custom shader, will have to use this type of upload buffer*/
+	/* So that renderer can support custom passCB */
+	class CHICKEN_API UploadBufferV2
+	{
+	public:
+		UploadBufferV2(UINT elementCount, bool isConstantBuffer, UINT byteSize) :mIsConstantBuffer(isConstantBuffer)
+		{
+			mElementByteSize = byteSize;
+			mByteSize = byteSize;
+			if (isConstantBuffer)
+				mElementByteSize = CalcConstantBufferByteSize(byteSize);
+
+			ThrowIfFailed(Device::device()->CreateCommittedResource(
+				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+				D3D12_HEAP_FLAG_NONE,
+				&CD3DX12_RESOURCE_DESC::Buffer(mElementByteSize * elementCount),
+				D3D12_RESOURCE_STATE_GENERIC_READ,
+				nullptr,
+				IID_PPV_ARGS(&mUploadBuffer)));
+
+			ThrowIfFailed(mUploadBuffer->Map(0, nullptr, reinterpret_cast<void**>(&mMappedData)));
+		}
+
+		UploadBufferV2(const UploadBufferV2& rhs) = delete;
+		UploadBufferV2& operator=(const UploadBufferV2& rhs) = delete;
+		~UploadBufferV2()
+		{
+			if (mUploadBuffer != nullptr)
+				mUploadBuffer->Unmap(0, nullptr);
+
+			mMappedData = nullptr;
+		}
+
+		inline ID3D12Resource* Resource()const { return mUploadBuffer.Get(); }
+
+		inline void CopyData(int elementIndex, const BYTE* data) { memcpy(&mMappedData[elementIndex * mElementByteSize], data, mByteSize); }
+
 		inline UINT CalcConstantBufferByteSize(UINT byteSize) { return (byteSize + 255) & ~255; }
 
 
@@ -46,6 +99,7 @@ namespace ChickenEngine
 		Microsoft::WRL::ComPtr<ID3D12Resource> mUploadBuffer;
 		BYTE* mMappedData = nullptr;
 		UINT mElementByteSize = 0;
+		UINT mByteSize = 0;
 		bool mIsConstantBuffer = false;
 	};
 }

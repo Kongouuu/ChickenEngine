@@ -6,7 +6,7 @@
 
 namespace ChickenEngine
 {
-	struct Texture
+	struct DX12Texture
 	{
 		UINT id;
 		// Unique material name for lookup.
@@ -22,8 +22,8 @@ namespace ChickenEngine
 	{
 
 	public:
-		static std::shared_ptr<Texture> GetTexture(UINT id);
-		static std::shared_ptr<Texture> GetTexture(std::string name);
+		static std::shared_ptr<DX12Texture> GetTexture(UINT id);
+		static std::shared_ptr<DX12Texture> GetTexture(std::string name);
 		static int LoadTexture(std::wstring file, std::string texName, ETextureType textureType);
 		
 
@@ -37,8 +37,8 @@ namespace ChickenEngine
 
 		void CheckNameValidity(std::string name);
 	private:
-		std::unordered_map<std::string, std::shared_ptr<Texture>> mTextureMap2D;
-		std::unordered_map<std::string, std::shared_ptr<Texture>> mTextureMap3D;
+		std::unordered_map<std::string, std::shared_ptr<DX12Texture>> mTextureMap2D;
+		std::unordered_map<std::string, std::shared_ptr<DX12Texture>> mTextureMap3D;
 		std::unordered_map<UINT, std::string> mIdNameMap;
 
 		static UINT textureCount;
