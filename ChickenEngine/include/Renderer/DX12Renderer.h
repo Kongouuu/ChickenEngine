@@ -3,6 +3,7 @@
 
 #include "Engine/Events/Event.h"
 #include "Helper/DX12CommonHeader.h"
+#include "Helper/FileHelper.h"
 #include "RootSignature.h"
 #include "Texture.h"
 #include "PSO.h"
@@ -41,18 +42,19 @@ namespace ChickenEngine
 		
 
 		// Pre Init Pipeline ( Called by Engine)
+		void PreInputAssembly();
 		void SetPassCBByteSize(UINT size);
 		void SetMaterialCBByteSize(UINT size);
 		void SetObjectCBByteSize(UINT size);
+		
+		// Input Assembly ( Called by Engine)
+		UINT LoadTexture2D(std::string fileName, std::string texName);
+		UINT LoadTexture3D(std::string fileName, std::string texName);
+		UINT CreateRenderItem(std::string name, UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
 
 		// Init pipeline
 		void InitPipeline();
 		void CreateFrameResources();
-
-		// Input Assembly ( Called by Engine)
-		void LoadTextures();
-		UINT CreateRenderItem(std::string name, UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
-		
 		
 		// Update {every loop}
 		void Update();
@@ -66,6 +68,7 @@ namespace ChickenEngine
 		void SetPassSceneData(BYTE* data);
 		void SetRenderItemTransform(UINT renderItemID, BYTE* data);// XMFLOAT3 position, XMFLOAT3 rotation, XMFLOAT3 scale);
 		void SetRenderItemMaterial(UINT renderItemID, BYTE* data);//float roughness, float metallic, XMFLOAT4 color);
+		void SetRenderItemTexture(UINT renderItemID, UINT textureID);
 		void OnResize(int width, int height);
 
 		// Render
@@ -134,6 +137,8 @@ namespace ChickenEngine
 		UINT mObjectCBByteSize;
 		UINT mMaterialCBByteSize;
 		std::vector<BYTE> mPassCBData;
+
+		UINT mTextureCount;
 	};
 }
 

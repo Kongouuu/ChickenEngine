@@ -28,7 +28,7 @@ namespace ChickenEngine
         LOG_ERROR("Name: {0}, vertexCount: {1}, vertexSize: {2}, vbbytesize: {3}, ibbytsize: {4}",
             name.c_str(), vertexCount, vertexSize, vbByteSize, ibByteSize);
        
-        textureHandle = DescriptorHeapManager::NullTexSrv();
+        texOffset = DescriptorHeapManager::NullCubeSrvOffset();
     }
 
     int RenderItemManager::renderItemCount = 0;

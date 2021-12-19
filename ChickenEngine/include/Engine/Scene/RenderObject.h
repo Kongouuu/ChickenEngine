@@ -9,6 +9,7 @@ namespace ChickenEngine
 	{
 		std::string name = "";
 		UINT renderItemID = -1;
+		UINT texID = -1;
 		Mesh m;
 		XMFLOAT3 position;
 		XMFLOAT3 rotation ;
@@ -16,6 +17,8 @@ namespace ChickenEngine
 		XMFLOAT4 color;
 		float roughness = 0.0;
 		float metallic = 0.0;
+		
+		// TODO
 		std::vector<UINT> renderItemIDs;
 		std::vector<UINT> texIDs;
 

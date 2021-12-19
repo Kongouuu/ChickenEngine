@@ -210,6 +210,9 @@
     <ClInclude Include="include\Engine\Scene\SceneManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Helper\FileHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\Application.cpp">
@@ -303,6 +306,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Engine\Scene\SceneManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Helper\FileHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

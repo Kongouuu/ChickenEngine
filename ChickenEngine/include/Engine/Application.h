@@ -43,6 +43,7 @@ namespace ChickenEngine
 		void SetSceneData();
 		void SetRenderObjectTransform(RenderObject& ro);
 		void SetRenderObjectMaterial(RenderObject& ro);
+		void SetRenderObjectTexture(RenderObject& ro);
 		int CreateRenderItem(std::string name, Mesh m, EVertexLayout layout = EVertexLayout::POS_NORM_TEX);
 
 		inline std::shared_ptr<Window> GetWindow() { return mWindow; }

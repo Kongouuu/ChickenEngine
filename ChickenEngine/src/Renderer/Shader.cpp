@@ -40,12 +40,12 @@ namespace ChickenEngine
 
 	void ShaderManager::LoadVS()
 	{
-		mVertexShaders["default"] = CompileShader(GetShaderPath("default.hlsl"), nullptr, "VS", "vs_5_1");
+		mVertexShaders["default"] = CompileShader(FileHelper::GetShaderPath("default.hlsl"), nullptr, "VS", "vs_5_1");
 	}
 
 	void ShaderManager::LoadPS()
 	{
-		mPixelShaders["default"] =  CompileShader(GetShaderPath("default.hlsl"), nullptr, "PS", "ps_5_1");
+		mPixelShaders["default"] =  CompileShader(FileHelper::GetShaderPath("default.hlsl"), nullptr, "PS", "ps_5_1");
 	}
 
 	Microsoft::WRL::ComPtr<ID3DBlob> ShaderManager::CompileShader(const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)
@@ -74,21 +74,6 @@ namespace ChickenEngine
 		}
 
 		return byteCode;
-	}
-
-	std::wstring ShaderManager::GetShaderPath(std::string name)
-	{
-		std::string _projectDir = STRINGIFY(PROJECT_DIR);
-		_projectDir.erase(0, 1); // erase the first quote
-		_projectDir.erase(_projectDir.size() - 2); // erase the last quote and the dot
-		_projectDir += "shaders\\" + name;
-		if (!std::filesystem::exists(_projectDir))
-		{
-			LOG_ERROR("File {0} does not exist", name);
-			assert(0);
-		}
-		std::wstring projectDir = std::wstring(_projectDir.begin(), _projectDir.end());
-		return projectDir;
 	}
 
 }

@@ -11,8 +11,8 @@ namespace ChickenEngine
 		UINT id;
 		// Unique material name for lookup.
 		std::string Name;
-
 		std::wstring Filename;
+		ETextureType TextureType;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> Resource = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
@@ -23,9 +23,8 @@ namespace ChickenEngine
 
 	public:
 		static std::shared_ptr<DX12Texture> GetTexture(UINT id);
-		static std::shared_ptr<DX12Texture> GetTexture(std::string name);
 		static int LoadTexture(std::wstring file, std::string texName, ETextureType textureType);
-		
+		static void InitTextureHeaps();
 
 		static inline UINT TextureCount() { return textureCount; }
 		
@@ -35,11 +34,9 @@ namespace ChickenEngine
 		void LoadTextureFromWIC(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap);
 		void LoadTextureFromDDS(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap);
 
-		void CheckNameValidity(std::string name);
+		//void CheckNameValidity(std::string name);
 	private:
-		std::unordered_map<std::string, std::shared_ptr<DX12Texture>> mTextureMap2D;
-		std::unordered_map<std::string, std::shared_ptr<DX12Texture>> mTextureMap3D;
-		std::unordered_map<UINT, std::string> mIdNameMap;
+		std::vector<std::shared_ptr<DX12Texture>> mTextures;
 
 		static UINT textureCount;
 	};

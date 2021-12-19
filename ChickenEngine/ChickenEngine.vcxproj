@@ -158,6 +158,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\Helper\FileHelper.h" />
     <ClInclude Include="include\Engine\Scene\Light.h" />
     <ClInclude Include="include\Engine\Scene\PassConstants.h" />
     <ClInclude Include="include\Renderer\FrameResource.h" />
@@ -225,6 +226,7 @@
     <ClInclude Include="include\Engine\Scene\SceneManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Helper\FileHelper.cpp" />
     <ClCompile Include="src\Engine\Scene\SceneManager.cpp" />
     <ClCompile Include="src\Renderer\FrameResource.cpp" />
     <ClCompile Include="src\Renderer\PassConstants.cpp" />

@@ -35,10 +35,10 @@ namespace ChickenEngine
 		std::vector<BYTE> matCBData;
 		//ObjectConstants objConst;
 		//MaterialConstants matConst;
+		UINT texOffset;
 
 		int numFramesDirty = 0;
 
-		CD3DX12_GPU_DESCRIPTOR_HANDLE textureHandle;
 
 		D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 

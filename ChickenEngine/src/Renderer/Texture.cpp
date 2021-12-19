@@ -6,25 +6,9 @@ namespace ChickenEngine
 {
     UINT TextureManager::textureCount = 0;
 
-    std::shared_ptr<DX12Texture> TextureManager::GetTexture(std::string name)
-    {
-        LOG_INFO("TextureManager - Get texture. name: {0}", name);
-        TextureManager& tm = instance();
-        // find in 2d
-        if (tm.mTextureMap2D.find(name) != tm.mTextureMap2D.end())
-            return tm.mTextureMap2D[name];
-        // find in 3d
-        if (tm.mTextureMap3D.find(name) != tm.mTextureMap3D.end())
-            return tm.mTextureMap3D[name];
-
-        LOG_ERROR("Texture not found");
-        assert(false);
-        return nullptr;
-    }
-
     std::shared_ptr<DX12Texture> TextureManager::GetTexture(UINT id)
     {
-        return GetTexture(instance().mIdNameMap[id]);
+        return instance().mTextures[id];
     }
 
     int TextureManager::LoadTexture(std::wstring file, std::string texName, ETextureType textureType)
@@ -32,8 +16,6 @@ namespace ChickenEngine
         LOG_INFO("TextureManager - Load texture. name: {0}", texName);
         TextureManager& tm = instance();
         
-        // Check if name is used
-        tm.CheckNameValidity(texName);
         // Check if file exist
         std::filesystem::path filePath(file);
         if (!std::filesystem::exists(filePath))
@@ -45,7 +27,7 @@ namespace ChickenEngine
         auto tex = std::make_shared<DX12Texture>();
         tex->Name = texName;
         tex->Filename = filePath.filename();
-
+        tex->TextureType = textureType;
 
         if (filePath.extension() == ".dds")
         {
@@ -62,13 +44,18 @@ namespace ChickenEngine
 
         tex->id = textureCount;
         textureCount++;
-        if(textureType == TEXTURE2D)
-            tm.mTextureMap2D[tex->Name] = tex;
-        else
-            tm.mTextureMap3D[tex->Name] = tex;
-        tm.mIdNameMap[tex->id] = tex->Name;
+        instance().mTextures.push_back(tex);
 
-        DescriptorHeapManager::BuildTextureSrvHeap(textureType, tex->id, tex->Resource);
+        
+    }
+
+    void TextureManager::InitTextureHeaps()
+    {
+        for (auto& tex : instance().mTextures)
+        {
+            DescriptorHeapManager::BuildTextureSrvHeap(tex->TextureType, tex->id, tex->Resource);
+        }
+       
     }
 
     void TextureManager::LoadTextureFromWIC(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap)
@@ -108,7 +95,7 @@ namespace ChickenEngine
 
     }
 
-    void TextureManager::CheckNameValidity(std::string name)
+ /*   void TextureManager::CheckNameValidity(std::string name)
     {
         if (mTextureMap2D.find(name) != mTextureMap2D.end())
         {
@@ -118,5 +105,5 @@ namespace ChickenEngine
                 assert(false);
             }
         }
-    }
+    }*/
 }

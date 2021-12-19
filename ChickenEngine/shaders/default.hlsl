@@ -13,6 +13,7 @@ struct VertexOut
 	float4 PosH  : SV_POSITION;
 	float4 PosW  : POSITION_WORLD;
 	float3 Norm  : NORMAL;
+	float2 uv : TEXCOORD;
 };
 
 VertexOut VS(VertexIn vin)
@@ -23,13 +24,15 @@ VertexOut VS(VertexIn vin)
 	vout.PosH = mul(PosW,viewProj);
 	vout.PosW = PosW;
 	vout.Norm = vin.Norm;
+	vout.uv = vin.uv;
 	return vout;
 }
 
 float4 PS(VertexOut pin) : SV_Target
 {
+	float4 albedo = gDiffuseMap.Sample(gSamLinearWarp, pin.uv);
 	// Diffuse
-	float4 diffuse = mColor / PI;
+	float4 diffuse = float4(albedo.xyz / PI, 1.0f);
 
 	// Specular
 	float3 N = normalize(pin.Norm);
@@ -47,10 +50,11 @@ float4 PS(VertexOut pin) : SV_Target
 	float denominator = max((4.0f * NdotL * NdotV), 0.001);
 	float BRDF = numerator / denominator;
 
-	float4 specular = float4(BRDF * mColor.xyz * NdotL , 1.0f);
+	float4 specular = float4(BRDF * albedo.xyz * NdotL , 1.0f);
 
-	float4 color = diffuse + specular;
+	float4 color = specular;
+	//color = color / (color + float4(1.0f,1.0f,1.0f,0.0f));
 	color = pow(color, (1.0 / 2.2));
-	return color;
+	return albedo;
 }
 

@@ -38,3 +38,13 @@ cbuffer cbPass : register(b2)
 	DirLight gDirLight;
 };
 
+
+Texture2D    gDiffuseMap : register(t2);
+
+SamplerState gSamPointWrap : register(s0);
+SamplerState gSamPointClamp : register(s1);
+SamplerState gSamLinearWarp : register(s2);
+SamplerState gSamLinearClamp : register(s3);
+SamplerState gSamAnisotropicWarp : register(s4);
+SamplerState gSamAnisotropicClamp : register(s5);
+

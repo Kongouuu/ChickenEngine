@@ -44,6 +44,7 @@ namespace ChickenEngine
 		
 
 		// --------Init Pipeline--------
+		renderer.PreInputAssembly();
 		renderer.SetPassCBByteSize(sizeof(PassConstants));
 		renderer.SetObjectCBByteSize(sizeof(ObjectConstants));
 		renderer.SetMaterialCBByteSize(sizeof(MaterialConstants));
@@ -116,6 +117,7 @@ namespace ChickenEngine
 
 	void Application::LoadTextures()
 	{
+		UINT tex = DX12Renderer::GetInstance().LoadTexture2D("timg.jpg", "tutou");
 	}
 
 	void Application::LoadScene()
@@ -129,8 +131,11 @@ namespace ChickenEngine
 		std::shared_ptr<RenderObject> ro = SceneManager::CreateRenderObject(std::string("cube"), { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }, { 1.0,1.0,1.0, 1.0 }, 1.0, 1.0);
 		Mesh cube = MeshManager::GenerateBox();
 		ro->renderItemID = CreateRenderItem(ro->name, cube);
+		ro->texID = 0;
 		SetRenderObjectTransform(*ro);
 		SetRenderObjectMaterial(*ro);
+		SetRenderObjectTexture(*ro);
+		
 
 	}
 #pragma endregion PipeLine_Init
@@ -187,6 +192,11 @@ namespace ChickenEngine
 		memcpy(&data, &m, sizeof(MaterialConstants));
 
 		DX12Renderer::GetInstance().SetRenderItemMaterial(ro.renderItemID, data);
+	}
+
+	void Application::SetRenderObjectTexture(RenderObject& ro)
+	{
+		DX12Renderer::GetInstance().SetRenderItemTexture(ro.renderItemID, ro.texID);
 	}
 
 	int Application::CreateRenderItem(std::string name, Mesh m, EVertexLayout layout)

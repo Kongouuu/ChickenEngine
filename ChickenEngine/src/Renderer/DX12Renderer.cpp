@@ -276,6 +276,14 @@ namespace ChickenEngine
 #pragma endregion InitDX12
 
 #pragma region InitPipeline
+	/*****************************************************************/
+	/********************** Pre Input Assembly ***********************/
+	/*****************************************************************/
+	void DX12Renderer::PreInputAssembly()
+	{
+		DescriptorHeapManager::InitDescriptorHeapManager(SwapChainBufferCount);
+	}
+
 	void DX12Renderer::SetPassCBByteSize(UINT size)
 	{
 		mPassCBByteSize = size;
@@ -291,19 +299,49 @@ namespace ChickenEngine
 		mMaterialCBByteSize = size;
 	}
 
+
+	/*****************************************************************/
+	/*********************** Input Assembly **************************/
+	/*****************************************************************/
+	UINT DX12Renderer::LoadTexture2D(std::string fileName, std::string texName)
+	{
+		std::wstring wFilePath = FileHelper::GetTexturePath(fileName);
+		UINT id = TextureManager::LoadTexture(wFilePath, texName, ETextureType::TEXTURE2D);
+		
+		return id;
+	}
+
+	UINT DX12Renderer::LoadTexture3D(std::string fileName, std::string texName)
+	{
+		std::wstring wFilePath = FileHelper::GetShaderPath(fileName);
+		UINT id = TextureManager::LoadTexture(wFilePath, texName, ETextureType::TEXTURE3D);
+
+		return id;
+	}
+
+	UINT DX12Renderer::CreateRenderItem(std::string name, UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
+	{
+		auto ri = RenderItemManager::CreateRenderItem(name, RI_OPAQUE);
+		ri->Init(vertexCount, vertexSize, vertexData, indices);
+		ri->numFramesDirty = mNumFrameResources;
+		return ri->renderItemID;
+	}
+
+
+	/*****************************************************************/
+	/*********************** Init Pipeline ***************************/
+	/*****************************************************************/
 	void DX12Renderer::InitPipeline()
 	{
 		LOG_TRACE("Init pipeline");
-		// Load Textures
-		LoadTextures();
 
 		// Build Root Sinagture
 		RootSignatureManager::Init();
 
 		// Build descriptor heaps
-		DescriptorHeapManager::InitDescriptorHeapManager(SwapChainBufferCount);
 		DescriptorHeapManager::BuildRtvSrvDsvHeapDesc(TextureManager::TextureCount());
 		DescriptorHeapManager::BuildCommonSrvHeap();
+		TextureManager::InitTextureHeaps();
 
 		// Init shader
 		ShaderManager::Init();
@@ -328,23 +366,6 @@ namespace ChickenEngine
 				1, (UINT)RenderItemManager::RenderItemCount(), (UINT)RenderItemManager::RenderItemCount(), mPassCBByteSize, mObjectCBByteSize, mMaterialCBByteSize));
 		}
 	}
-
-	UINT DX12Renderer::CreateRenderItem(std::string name, UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
-	{
-		auto ri = RenderItemManager::CreateRenderItem(name, RI_OPAQUE);
-		ri->Init(vertexCount, vertexSize, vertexData, indices);
-		ri->numFramesDirty = mNumFrameResources;
-		return ri->renderItemID;
-	}
-
-	void DX12Renderer::LoadTextures()
-	{
-		// Later on move to application class
-
-	}
-
-
-
 
 #pragma endregion InitPipeline
 
@@ -435,6 +456,16 @@ namespace ChickenEngine
 		}
 	}
 
+	void DX12Renderer::SetRenderItemTexture(UINT renderItemID, UINT textureID)
+	{
+		std::shared_ptr<RenderItem> ri = RenderItemManager::GetRenderItem(renderItemID);
+		if (ri != nullptr)
+		{
+			ri->texOffset = textureID + DescriptorHeapManager::TextureSrvOffset();;
+			LOG_TRACE("texid set : {0}", ri->texOffset);
+		}
+	}
+
 
 
 #pragma endregion Pipeline Update
@@ -505,8 +536,9 @@ namespace ChickenEngine
 			mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
 			mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
 
-			CD3DX12_GPU_DESCRIPTOR_HANDLE tex = ri->textureHandle;
-
+			CD3DX12_GPU_DESCRIPTOR_HANDLE tex(DescriptorHeapManager::SrvHeap()->GetGPUDescriptorHandleForHeapStart());
+			tex.Offset(ri->texOffset, DescriptorHeapManager::CbvSrvUavDescriptorSize());
+			mCmdList->SetGraphicsRootDescriptorTable(5, tex);
 			D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() + ri->objectCBIndex * objectCBByteSize;
 			D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + ri->materialCBIndex * materialCBByteSize;
 

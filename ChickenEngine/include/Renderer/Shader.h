@@ -2,7 +2,7 @@
 #include "pch.h"
 #include "Engine/Core.h"
 #include "Helper/DX12CommonHeader.h"
-
+#include "Helper/FileHelper.h"
 
 namespace ChickenEngine
 {
@@ -23,8 +23,6 @@ namespace ChickenEngine
 			const D3D_SHADER_MACRO* defines,
 			const std::string& entrypoint,
 			const std::string& target);
-
-		std::wstring GetShaderPath(std::string name);
 
 	private:
 		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>> mVertexShaders;
