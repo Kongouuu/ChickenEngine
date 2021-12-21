@@ -4,6 +4,8 @@
 
 namespace ChickenEngine
 {
+	using namespace DirectX;
+
 	std::shared_ptr<RenderObject> SceneManager::GetRenderObject(UINT id)
 	{
 		std::deque<std::shared_ptr<RenderObject>>& mAllRO = GetAllRenderObjects();
@@ -58,5 +60,18 @@ namespace ChickenEngine
 		memcpy(&data, &pc, sizeof(pc));
 		std::vector<BYTE> dataVector(data, data + sizeof(pc));
 		return dataVector;
+	}
+	void SceneManager::SetDirLightRotation(float pitch, float yaw, float roll)
+	{
+		XMFLOAT3 initialDir = XMFLOAT3(0.0, -1.0, 0.0);
+		XMMATRIX transform = XMMatrixRotationRollPitchYaw(pitch, yaw, roll);
+		XMVECTOR dir = XMLoadFloat3(&initialDir);
+		XMVECTOR newDir = XMVector3Transform(dir, transform);
+		XMStoreFloat3(&instance().mDirLightRotation, newDir);
+	}
+
+	XMFLOAT3 SceneManager::GetDirLightRotation()
+	{
+		return XMFLOAT3();
 	}
 }

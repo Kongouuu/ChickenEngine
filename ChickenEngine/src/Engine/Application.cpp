@@ -89,6 +89,7 @@ namespace ChickenEngine
 		// Update
 		mWindow->Update();
 		UpdateCamera();
+		UpdateRenderObjects();
 		DX12Renderer::GetInstance().Update();
 	}
 
@@ -97,10 +98,7 @@ namespace ChickenEngine
 		DX12Renderer::GetInstance().PrepareDraw();
 		DX12Renderer::GetInstance().Draw();
 
-		//Imgui
-		ImguiManager::GetInstance().ImguiBegin();
 		ImguiManager::GetInstance().ImguiRender(); // later be substituted
-		ImguiManager::GetInstance().ImguiEnd();
 
 		DX12Renderer::GetInstance().EndDraw();
 	}
@@ -128,15 +126,13 @@ namespace ChickenEngine
 		DX12Renderer& renderer = DX12Renderer::GetInstance();
 
 		//Add simple object BOX!
-		std::shared_ptr<RenderObject> ro = SceneManager::CreateRenderObject(std::string("cube"), { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }, { 1.0,1.0,1.0, 1.0 }, 1.0, 1.0);
+		std::shared_ptr<RenderObject> ro = SceneManager::CreateRenderObject(std::string("cube"), { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }, { 1.0,1.0,1.0, 1.0 }, 0.15, 0.04);
 		Mesh cube = MeshManager::GenerateBox();
 		ro->renderItemID = CreateRenderItem(ro->name, cube);
 		ro->texID = 0;
 		SetRenderObjectTransform(*ro);
 		SetRenderObjectMaterial(*ro);
 		SetRenderObjectTexture(*ro);
-		
-
 	}
 #pragma endregion PipeLine_Init
 
@@ -157,6 +153,20 @@ namespace ChickenEngine
 		// View direction
 		camera.UpdateViewMatrix();
 		SetSceneData();
+	}
+
+	void Application::UpdateRenderObjects()
+	{
+		std::deque<std::shared_ptr<RenderObject>>& renderObjs = SceneManager::GetAllRenderObjects();
+		for (auto& ro : renderObjs)
+		{
+			if (ro->dirty)
+			{
+				SetRenderObjectMaterial(*ro);
+				SetRenderObjectTransform(*ro);
+				ro->dirty = false;
+			}
+		}
 	}
 #pragma endregion Update
 
@@ -312,6 +322,7 @@ namespace ChickenEngine
 		mKeyDown[e.GetKeyCode()] = true;
 		return true;
 	}
+
 
 	bool Application::OnKeyReleasedEvent(KeyReleasedEvent& e)
 	{

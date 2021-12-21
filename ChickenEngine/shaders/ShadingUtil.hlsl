@@ -2,8 +2,8 @@ static const float PI = 3.14159265359;
 
 float DistributionGGX(float3 N, float3 H, float roughness)
 {
-    float a = roughness * roughness;
-    float a2 = a * a;
+    float a = roughness * roughness; //0.0224
+    float a2 = a * a;   // 0.00050625
     float NdotH = max(dot(N, H), 0.0);
     float NdotH2 = NdotH * NdotH;
 
@@ -35,9 +35,9 @@ float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-float fresnelSchlick(float F0, float3 V, float3 H)
+float3 fresnelSchlick(float3 F0, float3 V, float3 H)
 {
     float VdotH = dot(V, H);
-    float F = F0 + (1.0- F0) * pow((1.0 - VdotH), 5.0);
+    float3 F = F0 + (1.0- F0) * pow((1.0 - VdotH), 5.0);
     return F;
 }

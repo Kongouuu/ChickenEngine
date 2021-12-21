@@ -38,6 +38,7 @@ namespace ChickenEngine
 
 		// Loop Update
 		virtual void UpdateCamera();
+		void UpdateRenderObjects();
 
 		// Called Update
 		void SetSceneData();

@@ -8,12 +8,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 namespace ChickenEngine
 {
 	int ImguiManager::IMcount = 0;
-	ImguiManager& ImguiManager::GetInstance()
-	{
-		static ImguiManager im;
-		return im;
-	}
-
 	ImguiManager::ImguiManager()
 	{
 		bEnabled = false;
@@ -106,10 +100,16 @@ namespace ChickenEngine
 
 	void ImguiManager::ImguiRender()
 	{
+		ImguiBegin();
 
-		static bool show = true;
+
+		static bool show = false;
 		ImGui::ShowDemoWindow(&show);
 
+		ShowScenePanel();
+		ShowDetailPanel();
+
+		ImguiEnd();
 	}
 
 	void ImguiManager::ImguiEnd()
@@ -131,6 +131,97 @@ namespace ChickenEngine
 		ImGuiIO& io = ImGui::GetIO();
 		event.Handled |= event.IsInCategory(EventCategoryMouse) & io.WantCaptureMouse;
 		event.Handled |= event.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
+	}
+
+	ImguiManager& ImguiManager::GetInstance()
+	{
+		static ImguiManager im;
+		return im;
+	}
+
+
+
+	void ImguiManager::ShowScenePanel()
+	{
+		ImGui::Begin("Scene Panel");
+
+		std::deque<std::shared_ptr<RenderObject>>& renderObjs = SceneManager::GetAllRenderObjects();
+		for (auto& ro : renderObjs)
+		{
+			if (ImGui::TreeNode(ro->name.c_str()))
+			{
+				ImGui::Text("Render Object id: %d",ro->renderItemID);
+				ImGui::Text("Texture id: %d", ro->texID);
+
+				// Position
+				static float posx = ro->position.x;
+				static float posy = ro->position.y;
+				static float posz = ro->position.z;
+				ImGui::Text("Local Position:");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos x: ", &ro->position.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos y: ", &ro->position.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos z: ", &ro->position.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+				if (posx != ro->position.x || posy != ro->position.y || posz != ro->position.z)
+					ro->dirty = true;
+
+				// Rotation
+				float rotx = ro->rotation.x;
+				float roty = ro->rotation.y;
+				float rotz = ro->rotation.z;
+				ImGui::Text("Rotation:");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot x: ", &ro->rotation.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot y: ", &ro->rotation.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot z: ", &ro->rotation.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+				if (rotx != ro->rotation.x || roty != ro->rotation.y || rotz != ro->rotation.z)
+					ro->dirty = true;
+
+				// Scale
+				float scax = ro->scale.x;
+				float scay = ro->scale.y;
+				float scaz = ro->scale.z;
+				ImGui::Text("Scale:");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca x: ", &ro->scale.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca y: ", &ro->scale.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca z: ", &ro->scale.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+				if (scax != ro->scale.x || scay != ro->scale.y || scaz != ro->scale.z)
+					ro->dirty = true;
+
+				ImGui::Text("Material:");
+				// Roughness
+				float roughness = ro->roughness;
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "roughness: ", &ro->roughness, 0.003f, 0.0f, 1.0f, "%.3f");
+				// Metallic
+				float metallic = ro->metallic;
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "metallic:  ", &ro->metallic, 0.003f, 0.0f, 1.0f, "%.3f");
+				if (roughness != ro->roughness || metallic != ro->metallic)
+					ro->dirty = true;
+
+				ImGui::TreePop();
+				ImGui::Separator();
+			}
+		}
+		
+		ImGui::End();
+	}
+
+	void ImguiManager::ShowDetailPanel()
+	{
+	}
+
+	void ImguiManager::ShowCameraPanel()
+	{
+	}
+
+	void ImguiManager::ShowLightPanel()
+	{
+	}
+
+	void ImguiManager::ShowSettingsPanel()
+	{
+	}
+
+	void ImguiManager::ShowStatsPanel()
+	{
 	}
 
 }

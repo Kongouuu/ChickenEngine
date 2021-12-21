@@ -17,6 +17,8 @@ namespace ChickenEngine
 		XMFLOAT4 color;
 		float roughness = 0.0;
 		float metallic = 0.0;
+
+		bool dirty = false;
 		
 		// TODO
 		std::vector<UINT> renderItemIDs;
