@@ -18,7 +18,7 @@ namespace ChickenEngine
 		NONE
 	};
 
-	enum ETextureType
+	enum ETextureDimension
 	{
 		TEXTURE2D = 0,
 		TEXTURE3D

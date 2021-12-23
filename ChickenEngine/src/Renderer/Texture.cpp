@@ -11,9 +11,8 @@ namespace ChickenEngine
         return instance().mTextures[id];
     }
 
-    int TextureManager::LoadTexture(std::wstring file, std::string texName, ETextureType textureType)
+    int TextureManager::LoadTexture(std::wstring file, ETextureDimension textureType)
     {
-        LOG_INFO("TextureManager - Load texture. name: {0}", texName);
         TextureManager& tm = instance();
         
         // Check if file exist
@@ -25,7 +24,6 @@ namespace ChickenEngine
 
         // no lock, and didnt check if loaded be4
         auto tex = std::make_shared<DX12Texture>();
-        tex->Name = texName;
         tex->Filename = filePath.filename();
         tex->TextureType = textureType;
 

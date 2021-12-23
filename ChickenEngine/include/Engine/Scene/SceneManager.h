@@ -20,15 +20,15 @@ namespace ChickenEngine
 		static std::shared_ptr<RenderObject> CreateRenderObject(std::string n, XMFLOAT3 p, XMFLOAT3 r, XMFLOAT3 s, XMFLOAT4 c, float ro, float me);
 		static std::vector<BYTE> GetSceneData(int width, int height);
 
-		static void SetDirLightRotation(float pitch, float yaw, float row);
-		static XMFLOAT3 GetDirLightRotation();
+		static void UpdateDirLightDirection();
+		inline static XMFLOAT3& GetDirLightRotation(){return instance().mDirLight.Rotation;	}
+		inline static XMFLOAT3 GetDirLightDirection() { return instance().mDirLight.data.Direction; }
+		inline static XMFLOAT3 GetDirLightStrength() { return instance().mDirLight.data.Strength; }
 	private:
 		Camera mCamera;
 		DirectionLight mDirLight;
 		PassConstants mPassCB;
 		std::deque<std::shared_ptr<RenderObject>> mRenderObjects;
-
-		XMFLOAT3 mDirLightRotation = XMFLOAT3(0.0, 0.0, 0.0);
 	};
 }
 

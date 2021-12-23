@@ -20,7 +20,7 @@ namespace ChickenEngine
 		float FarZ = 0.0f;
 		float cbPerObjectPad2 = 0.0f;
 		float cbPerObjectPad3 = 0.0f;
-		DirectionLight DirLight;
+		DirectionLightData DirLight;
 	};
 
 	struct ObjectConstants

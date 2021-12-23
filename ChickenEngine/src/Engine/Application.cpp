@@ -89,6 +89,7 @@ namespace ChickenEngine
 		// Update
 		mWindow->Update();
 		UpdateCamera();
+		SetSceneData();
 		UpdateRenderObjects();
 		DX12Renderer::GetInstance().Update();
 	}
@@ -152,7 +153,6 @@ namespace ChickenEngine
 
 		// View direction
 		camera.UpdateViewMatrix();
-		SetSceneData();
 	}
 
 	void Application::UpdateRenderObjects()
@@ -173,6 +173,7 @@ namespace ChickenEngine
 #pragma region Renderer_Communication
 	void Application::SetSceneData()
 	{
+		SceneManager::UpdateDirLightDirection();
 		std::vector<BYTE> data = SceneManager::GetSceneData(mWindow->GetWidth(), mWindow->GetHeight());
 		DX12Renderer::GetInstance().SetPassSceneData(data.data());
 	}
@@ -197,7 +198,6 @@ namespace ChickenEngine
 		m.Metallic = ro.metallic;
 		m.Color = ro.color;
 
-		LOG_ERROR("sizeof: {0}",sizeof(DirectX::XMFLOAT4));
 		BYTE data[sizeof(MaterialConstants)];
 		memcpy(&data, &m, sizeof(MaterialConstants));
 

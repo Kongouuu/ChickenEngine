@@ -15,19 +15,20 @@ namespace ChickenEngine
 	struct Vertex
 	{
 		Vertex() {}
+
 		Vertex(
 			DirectX::XMFLOAT3 p,
 			DirectX::XMFLOAT3 n,
 			DirectX::XMFLOAT3 t,
-			DirectX::XMFLOAT3 c,
+			DirectX::XMFLOAT3 b,
 			DirectX::XMFLOAT2 t1) :
-			pos(p), normal(n),tangent(t), color(c), texC(t1) {}
+			pos(p), normal(n),tangent(t), bitangent(b),texC(t1) {}
 
 		
 		DirectX::XMFLOAT3 pos = { 0.0,0.0,0.0 };
 		DirectX::XMFLOAT3 normal = { 0.0,0.0,0.0 };
 		DirectX::XMFLOAT3 tangent = { 0.0,0.0,0.0 };
-		DirectX::XMFLOAT3 color = { 0.0,0.0,0.0 };
+		DirectX::XMFLOAT3 bitangent = { 0.0,0.0,0.0 };
 		DirectX::XMFLOAT2 texC = { 0.0,0.0 };
 
 	};
@@ -46,19 +47,18 @@ namespace ChickenEngine
 		DirectX::XMFLOAT2 texC = { 0.0,0.0 };
 	};
 
-	struct VertexPNCT
+	enum ETextureType
 	{
-		VertexPNCT(
-			DirectX::XMFLOAT3 p,
-			DirectX::XMFLOAT3 n,
-			DirectX::XMFLOAT3 c,
-			DirectX::XMFLOAT2 t) :
-			pos(p), normal(n), color(c), texC(t) {}
+		DIFFUSE = 0,
+		SPECULAR,
+		NORMAL,
+		HEIGHT
+	};
 
-		DirectX::XMFLOAT3 pos;
-		DirectX::XMFLOAT3 normal;
-		DirectX::XMFLOAT3 color;
-		DirectX::XMFLOAT2 texC;
+	struct Texture {
+		UINT id;
+		ETextureType type;
+		std::string path;
 	};
 
 	struct Mesh
@@ -66,6 +66,7 @@ namespace ChickenEngine
 		EVertexLayout layout;
 		std::vector<Vertex> vertices;
 		std::vector<UINT> indices;
+		std::vector<Texture> textures;
 		std::vector<uint16_t>& GetIndices16()
 		{
 			if (indices16.empty())

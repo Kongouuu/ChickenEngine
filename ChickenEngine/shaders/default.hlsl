@@ -23,7 +23,7 @@ VertexOut VS(VertexIn vin)
 	PosW = mul(PosW, gWorldViewProj);
 	vout.PosH = mul(PosW,viewProj);
 	vout.PosW = PosW;
-	vout.Norm = vin.Norm;
+	vout.Norm = mul(vin.Norm, gWorldViewProj);
 	vout.uv = vin.uv;
 	return vout;
 }

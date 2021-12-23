@@ -19,7 +19,7 @@ namespace ChickenEngine
 	class CHICKEN_API DX12Renderer
 	{
 		using EventCallbackFn = std::function<void(Event&)>;
-		friend class Application;
+
 	public:
 		DX12Renderer();
 		~DX12Renderer();
@@ -33,7 +33,7 @@ namespace ChickenEngine
 		inline Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> SrvHeap() const { return DescriptorHeapManager::SrvHeap(); }
 		inline Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> CommandList() const { return mCmdList; }
 
-	protected:
+	public:
 		// Init DX12
 		bool InitDX12(HWND hwnd, int width, int height, int numFrameResources = 3);
 		void CreateCommandObjects();
@@ -48,8 +48,8 @@ namespace ChickenEngine
 		void SetObjectCBByteSize(UINT size);
 		
 		// Input Assembly ( Called by Engine)
-		UINT LoadTexture2D(std::string fileName, std::string texName);
-		UINT LoadTexture3D(std::string fileName, std::string texName);
+		UINT LoadTexture2D(std::string fileName);
+		UINT LoadTexture3D(std::string fileName);
 		UINT CreateRenderItem(std::string name, UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
 
 		// Init pipeline

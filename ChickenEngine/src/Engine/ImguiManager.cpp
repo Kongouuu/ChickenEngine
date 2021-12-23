@@ -107,7 +107,7 @@ namespace ChickenEngine
 		ImGui::ShowDemoWindow(&show);
 
 		ShowScenePanel();
-		ShowDetailPanel();
+		ShowLightPanel();
 
 		ImguiEnd();
 	}
@@ -154,9 +154,9 @@ namespace ChickenEngine
 				ImGui::Text("Texture id: %d", ro->texID);
 
 				// Position
-				static float posx = ro->position.x;
-				static float posy = ro->position.y;
-				static float posz = ro->position.z;
+				float posx = ro->position.x;
+				float posy = ro->position.y;
+				float posz = ro->position.z;
 				ImGui::Text("Local Position:");
 				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos x: ", &ro->position.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
 				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos y: ", &ro->position.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
@@ -195,7 +195,7 @@ namespace ChickenEngine
 				IMGUI_LEFT_LABEL(ImGui::DragFloat, "metallic:  ", &ro->metallic, 0.003f, 0.0f, 1.0f, "%.3f");
 				if (roughness != ro->roughness || metallic != ro->metallic)
 					ro->dirty = true;
-
+	
 				ImGui::TreePop();
 				ImGui::Separator();
 			}
@@ -214,6 +214,25 @@ namespace ChickenEngine
 
 	void ImguiManager::ShowLightPanel()
 	{
+		ImGui::Begin("Light Panel");
+		if(ImGui::TreeNode("Direction Light"))
+		{
+			DirectX::XMFLOAT3 str = SceneManager::GetDirLightStrength();
+			DirectX::XMFLOAT3 dir = SceneManager::GetDirLightDirection();
+			DirectX::XMFLOAT3& rot = SceneManager::GetDirLightRotation();
+			ImGui::Text("Strength: ");
+			ImGui::Text("%.2f  %.2f  %.2f", str.x, str.y, str.z);
+			ImGui::Text("Direction: ");
+			ImGui::Text("%.2f  %.2f  %.2f", dir.x, dir.y, dir.z);
+			ImGui::Text("Rotation: ");
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "x: ", &rot.x, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "y: ", &rot.y, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "z: ", &rot.z, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+
+			ImGui::TreePop();
+			ImGui::Separator();
+		}
+		ImGui::End();
 	}
 
 	void ImguiManager::ShowSettingsPanel()

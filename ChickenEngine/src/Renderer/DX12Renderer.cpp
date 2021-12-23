@@ -303,18 +303,18 @@ namespace ChickenEngine
 	/*****************************************************************/
 	/*********************** Input Assembly **************************/
 	/*****************************************************************/
-	UINT DX12Renderer::LoadTexture2D(std::string fileName, std::string texName)
+	UINT DX12Renderer::LoadTexture2D(std::string fileName)
 	{
 		std::wstring wFilePath = FileHelper::GetTexturePath(fileName);
-		UINT id = TextureManager::LoadTexture(wFilePath, texName, ETextureType::TEXTURE2D);
+		UINT id = TextureManager::LoadTexture(wFilePath, ETextureDimension::TEXTURE2D);
 		
 		return id;
 	}
 
-	UINT DX12Renderer::LoadTexture3D(std::string fileName, std::string texName)
+	UINT DX12Renderer::LoadTexture3D(std::string fileName)
 	{
 		std::wstring wFilePath = FileHelper::GetShaderPath(fileName);
-		UINT id = TextureManager::LoadTexture(wFilePath, texName, ETextureType::TEXTURE3D);
+		UINT id = TextureManager::LoadTexture(wFilePath, ETextureDimension::TEXTURE3D);
 
 		return id;
 	}

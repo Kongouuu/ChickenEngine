@@ -10,7 +10,6 @@ namespace ChickenEngine
 	{
 		UINT id;
 		// Unique material name for lookup.
-		std::string Name;
 		std::wstring Filename;
 		ETextureType TextureType;
 
@@ -23,7 +22,7 @@ namespace ChickenEngine
 
 	public:
 		static std::shared_ptr<DX12Texture> GetTexture(UINT id);
-		static int LoadTexture(std::wstring file, std::string texName, ETextureType textureType);
+		static int LoadTexture(std::wstring file, ETextureDimension textureType);
 		static void InitTextureHeaps();
 
 		static inline UINT TextureCount() { return textureCount; }
