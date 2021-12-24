@@ -93,7 +93,7 @@ namespace ChickenEngine
 		// shadow
 	}
 
-	void DescriptorHeapManager::BuildTextureSrvHeap(ETextureType texType, UINT offset, Microsoft::WRL::ComPtr<ID3D12Resource> resource)
+	void DescriptorHeapManager::BuildTextureSrvHeap(ETextureDimension texType, UINT offset, Microsoft::WRL::ComPtr<ID3D12Resource> resource)
 	{
 		LOG_INFO("DescriptorHeapManager - Build texture srv heap");
 		DescriptorHeapManager& dhm = instance();

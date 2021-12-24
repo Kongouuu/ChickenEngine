@@ -305,7 +305,12 @@ namespace ChickenEngine
 	/*****************************************************************/
 	UINT DX12Renderer::LoadTexture2D(std::string fileName)
 	{
-		std::wstring wFilePath = FileHelper::GetTexturePath(fileName);
+		wchar_t tmp[256] = L"\0";
+		setlocale(LC_ALL, "chs");
+		MultiByteToWideChar(CP_ACP, 0, fileName.c_str(), fileName.length(), tmp, fileName.length());
+		std::wstring wFilePath;
+		wFilePath.assign(tmp);
+		//std::wstring wFilePath(fileName.begin(), fileName.end());
 		UINT id = TextureManager::LoadTexture(wFilePath, ETextureDimension::TEXTURE2D);
 		
 		return id;
@@ -313,19 +318,32 @@ namespace ChickenEngine
 
 	UINT DX12Renderer::LoadTexture3D(std::string fileName)
 	{
-		std::wstring wFilePath = FileHelper::GetShaderPath(fileName);
+		std::wstring wFilePath(fileName.begin(), fileName.end());
 		UINT id = TextureManager::LoadTexture(wFilePath, ETextureDimension::TEXTURE3D);
 
 		return id;
 	}
 
-	UINT DX12Renderer::CreateRenderItem(std::string name, UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
+	UINT DX12Renderer::AddObjectCB()
 	{
-		auto ri = RenderItemManager::CreateRenderItem(name, RI_OPAQUE);
+		UINT id = mObjectCBCount++;
+		return id;
+	}
+
+	UINT DX12Renderer::AddMaterialCB()
+	{
+		UINT id = mMaterialCBCount++;
+		return id;
+	}
+
+	UINT DX12Renderer::CreateRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
+	{
+		auto ri = RenderItemManager::CreateRenderItem(RI_OPAQUE);
 		ri->Init(vertexCount, vertexSize, vertexData, indices);
 		ri->numFramesDirty = mNumFrameResources;
 		return ri->renderItemID;
 	}
+
 
 
 	/*****************************************************************/
@@ -345,7 +363,6 @@ namespace ChickenEngine
 
 		// Init shader
 		ShaderManager::Init();
-		CreateFrameResources();
 
 		// build pso;
 		PSOManager::Init(mBackBufferFormat, mDepthStencilFormat, m4xMsaaState, m4xMsaaQuality);
@@ -357,24 +374,26 @@ namespace ChickenEngine
 	
 	}
 
-	void DX12Renderer::CreateFrameResources()
+	void DX12Renderer::CreateFrameResources(int numFrames)
 	{
+		mNumFrameResources = numFrames;
 		for (int i = 0; i < mNumFrameResources; ++i)
 		{
 
 			mFrameResources.push_back(std::make_shared<FrameResource>(
-				1, (UINT)RenderItemManager::RenderItemCount(), (UINT)RenderItemManager::RenderItemCount(), mPassCBByteSize, mObjectCBByteSize, mMaterialCBByteSize));
+				1, mObjectCBCount, mMaterialCBCount, mPassCBByteSize, mObjectCBByteSize, mMaterialCBByteSize));
 		}
 	}
 
 #pragma endregion InitPipeline
 
 #pragma region Pipeline Update
-	void DX12Renderer::Update()
+	void DX12Renderer::UpdateFrame()
 	{
 		SwapFrameResource();
 		UpdatePassCB();
-		UpdateRenderItemCB();
+		UpdateObjectCB();
+		UpdateMaterialCB();
 	}
 
 	void DX12Renderer::SwapFrameResource()
@@ -398,79 +417,129 @@ namespace ChickenEngine
 		mCurrFrameResource->PassCB->CopyData(0, mPassCBData.data());
 	}
 
-	void DX12Renderer::UpdateRenderItemCB()
+	void DX12Renderer::UpdateObjectCB()
 	{
-		std::vector<std::shared_ptr<RenderItem>>& renderItems = RenderItemManager::GetAllRenderItems();
-		for (auto& ri : renderItems)
+		if (mCurrFrameResource == nullptr)
+			return;
+
+		auto currObjectCB = mCurrFrameResource->ObjectCB.get();
+		for (int i = 0; i < mObjectCBCount; i++)
 		{
-			if (ri->numFramesDirty > 0)
+			if (mObjectCBFramesDirty[i])
 			{
-				UpdateObjectCB(ri);
-				UpdateMaterialCB(ri);
-				ri->numFramesDirty--;
+				currObjectCB->CopyData(i, mObjectCBData[i].data());
+				mObjectCBFramesDirty[i]--;
 			}
 		}
+		
 	}
 
-	void DX12Renderer::UpdateObjectCB(std::shared_ptr<RenderItem>& ri)
+	void DX12Renderer::UpdateMaterialCB()
 	{
 		if (mCurrFrameResource == nullptr)
 			return;
-		auto currObjectCB = mCurrFrameResource->ObjectCB.get();
-		currObjectCB->CopyData(ri->objectCBIndex, ri->objCBData.data());
-	}
 
-	void DX12Renderer::UpdateMaterialCB(std::shared_ptr<RenderItem>& ri)
-	{
-		if (mCurrFrameResource == nullptr)
-			return;
-		auto currMatCB = mCurrFrameResource->MaterialCB.get();
-		currMatCB->CopyData(ri->materialCBIndex, ri->matCBData.data());
+		auto currMaterialCB = mCurrFrameResource->MaterialCB.get();
+		for (int i = 0; i <mMaterialCBCount; i++)
+		{
+			if (mMaterialCBFramesDirty[i])
+			{
+				currMaterialCB->CopyData(i, mMaterialCBData[i].data());
+				mMaterialCBFramesDirty[i]--;
+			}
+		}
 	}
 
 	void DX12Renderer::SetPassSceneData(BYTE* data)
 	{
 		mPassCBData = std::vector<BYTE>(data, data + mPassCBByteSize);
-
 	}
 
-	void DX12Renderer::SetRenderItemTransform(UINT renderItemID, BYTE* data)//XMFLOAT3 position, XMFLOAT3 rotation, XMFLOAT3 scale)
+	void DX12Renderer::SetObjectCB(UINT objCBIndex, BYTE* data)//XMFLOAT3 position, XMFLOAT3 rotation, XMFLOAT3 scale)
 	{
-		std::shared_ptr<RenderItem> ri = RenderItemManager::GetRenderItem(renderItemID);
-		if (ri != nullptr)
-		{
-			ri->objCBData = std::vector(data, data + mObjectCBByteSize);
-
-			ri->numFramesDirty = mNumFrameResources;
-		}
+		mObjectCBData[objCBIndex] = std::vector(data, data + mObjectCBByteSize);
+		mObjectCBFramesDirty[objCBIndex] = mNumFrameResources;
 	}
 
-	void DX12Renderer::SetRenderItemMaterial(UINT renderItemID, BYTE* data)// float roughness, float metallic, XMFLOAT4 color)
+	void DX12Renderer::SetMaterialCB(UINT matCBIndex, BYTE* data)// float roughness, float metallic, XMFLOAT4 color)
 	{
-		std::shared_ptr<RenderItem> ri = RenderItemManager::GetRenderItem(renderItemID);
-		if (ri != nullptr)
-		{
-			ri->matCBData = std::vector(data, data + mMaterialCBByteSize);
-
-			ri->numFramesDirty = mNumFrameResources;
-		}
+		mMaterialCBData[matCBIndex] = std::vector(data, data + mMaterialCBByteSize);
+		mMaterialCBFramesDirty[matCBIndex] = mNumFrameResources;
 	}
 
-	void DX12Renderer::SetRenderItemTexture(UINT renderItemID, UINT textureID)
-	{
-		std::shared_ptr<RenderItem> ri = RenderItemManager::GetRenderItem(renderItemID);
-		if (ri != nullptr)
-		{
-			ri->texOffset = textureID + DescriptorHeapManager::TextureSrvOffset();;
-			LOG_TRACE("texid set : {0}", ri->texOffset);
-		}
-	}
+	//void DX12Renderer::SetRenderItemTexture(UINT renderItemID, UINT textureID)
+	//{
+	//	std::shared_ptr<RenderItem> ri = RenderItemManager::GetRenderItem(renderItemID);
+	//	if (ri != nullptr)
+	//	{
+	//		ri->texOffset = textureID + DescriptorHeapManager::TextureSrvOffset();;
+	//		LOG_TRACE("texid set : {0}", ri->texOffset);
+	//	}
+	//}
 
 
 
 #pragma endregion Pipeline Update
 
 #pragma region Pipeline Draw
+	void DX12Renderer::BindObjectCB(UINT id)
+	{
+		auto objectCBByteSize = UploadBufferUtil::CalcConstantBufferByteSize(mObjectCBByteSize);
+		auto objectCB = mCurrFrameResource->ObjectCB->Resource();
+		D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() + id * objectCBByteSize;
+		mCmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
+	}
+
+	void DX12Renderer::BindMaterialCB(UINT id)
+	{
+		auto materialCBByteSize = UploadBufferUtil::CalcConstantBufferByteSize(mMaterialCBByteSize);
+		auto matCB = mCurrFrameResource->MaterialCB->Resource();
+		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + id * materialCBByteSize;
+		mCmdList->SetGraphicsRootConstantBufferView(1, matCBAddress);
+	}
+
+	void DX12Renderer::BindAllMapToNull()
+	{
+		mCmdList->SetGraphicsRootDescriptorTable(3, DescriptorHeapManager::NullCubeSrv());
+		mCmdList->SetGraphicsRootDescriptorTable(4, DescriptorHeapManager::NullTexSrv());
+		mCmdList->SetGraphicsRootDescriptorTable(5, DescriptorHeapManager::NullTexSrv());
+		mCmdList->SetGraphicsRootDescriptorTable(6, DescriptorHeapManager::NullTexSrv());
+		mCmdList->SetGraphicsRootDescriptorTable(7, DescriptorHeapManager::NullTexSrv());
+		mCmdList->SetGraphicsRootDescriptorTable(8, DescriptorHeapManager::NullTexSrv());
+	}
+
+	/* 这里也可以考虑用单个函数+enum，不过个人不想让renderer这里和engine那共用enum */
+	/* 之后的开发中如果能从engine侧去定义root signature,就可以删掉这些函数了 */
+	void DX12Renderer::BindDiffuseMap(UINT id)
+	{
+		BindMap(id, 5);
+	}
+
+	void DX12Renderer::BindSpecularMap(UINT id)
+	{
+		BindMap(id, 6);
+	}
+
+	void DX12Renderer::BindNormalMap(UINT id)
+	{
+		BindMap(id, 7);
+	}
+
+	void DX12Renderer::BindHeightMap(UINT id)
+	{
+		BindMap(id, 8);
+	}
+
+	void DX12Renderer::BindMap(UINT id, UINT slot)
+	{
+		if (id >= 0)
+		{
+			CD3DX12_GPU_DESCRIPTOR_HANDLE tex(DescriptorHeapManager::SrvHeap()->GetGPUDescriptorHandleForHeapStart());
+			tex.Offset(id + DescriptorHeapManager::TextureSrvOffset(), DescriptorHeapManager::CbvSrvUavDescriptorSize());
+			mCmdList->SetGraphicsRootDescriptorTable(slot, tex);
+		}
+	}
+
 	void DX12Renderer::PrepareDraw()
 	{
 		assert(mCmdList);
@@ -499,10 +568,7 @@ namespace ChickenEngine
 
 		// Specify the buffers we are going to render to.
 		mCmdList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
-	}
 
-	void DX12Renderer::Draw()
-	{
 		ID3D12DescriptorHeap* descriptorHeaps[] = { DescriptorHeapManager::SrvHeap().Get() };
 		mCmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
@@ -510,47 +576,24 @@ namespace ChickenEngine
 
 		auto passCB = mCurrFrameResource->PassCB->Resource();
 		mCmdList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
+	}
 
-		DrawRenderItems();
+	void DX12Renderer::DrawRenderItem(UINT renderItemID)
+	{
+		std::shared_ptr<RenderItem>& ri = RenderItemManager::GetRenderItem(renderItemID);
+		mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
+		mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
+		mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
+		mCmdList->DrawIndexedInstanced(ri->indexCount, 1, 0, 0, 0);
+	}
 
+
+	void DX12Renderer::EndDraw()
+	{
 		// Indicate a state transition on the resource usage.
 		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
 
-	}
-
-	void DX12Renderer::DrawRenderItems()
-	{
-
-		std::vector<std::shared_ptr<RenderItem>>& renderItems = RenderItemManager::GetAllRenderItems();
-
-		auto objectCBByteSize = UploadBufferUtil::CalcConstantBufferByteSize(mObjectCBByteSize);
-		auto materialCBByteSize = UploadBufferUtil::CalcConstantBufferByteSize(mMaterialCBByteSize);
-		auto objectCB = mCurrFrameResource->ObjectCB->Resource();
-		auto matCB = mCurrFrameResource->MaterialCB->Resource();
-
-		// For each render item...
-		for (auto& ri : renderItems)
-		{
-			mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
-			mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
-			mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
-
-			CD3DX12_GPU_DESCRIPTOR_HANDLE tex(DescriptorHeapManager::SrvHeap()->GetGPUDescriptorHandleForHeapStart());
-			tex.Offset(ri->texOffset, DescriptorHeapManager::CbvSrvUavDescriptorSize());
-			mCmdList->SetGraphicsRootDescriptorTable(5, tex);
-			D3D12_GPU_VIRTUAL_ADDRESS objCBAddress = objectCB->GetGPUVirtualAddress() + ri->objectCBIndex * objectCBByteSize;
-			D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + ri->materialCBIndex * materialCBByteSize;
-
-			mCmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
-			mCmdList->SetGraphicsRootConstantBufferView(1, matCBAddress);
-
-			mCmdList->DrawIndexedInstanced(ri->indexCount, 1, 0, 0, 0);
-		}
-	}
-
-	void DX12Renderer::EndDraw()
-	{
 		ExecuteCommands();
 		// swap the back and front buffers
 		ThrowIfFailed(mSwapChain->Present(0, 0));

@@ -33,40 +33,33 @@ namespace ChickenEngine
 
 	};
 
-	struct VertexPNT
-	{
-		//VertexPNT() {}
-		//VertexPNT(
-		//	DirectX::XMFLOAT3 p,
-		//	DirectX::XMFLOAT3 n,
-		//	DirectX::XMFLOAT2 t) :
-		//	pos(p), normal(n), texC(t) {}
-
-		DirectX::XMFLOAT3 pos = { 0.0,0.0,0.0 };
-		DirectX::XMFLOAT3 normal = { 0.0,0.0,0.0 };
-		DirectX::XMFLOAT2 texC = { 0.0,0.0 };
-	};
-
 	enum ETextureType
 	{
 		DIFFUSE = 0,
 		SPECULAR,
 		NORMAL,
-		HEIGHT
+		HEIGHT,
+		NULL_TYPE
 	};
 
 	struct Texture {
-		UINT id;
-		ETextureType type;
+		UINT id = -1;
+		ETextureType type = ETextureType::NULL_TYPE;
 		std::string path;
+		Texture() {}
+		Texture(UINT id, ETextureType type, std::string path) : id(id), type(type), path(path) {}
 	};
 
 	struct Mesh
 	{
 		EVertexLayout layout;
+		UINT renderItemID;
 		std::vector<Vertex> vertices;
 		std::vector<UINT> indices;
-		std::vector<Texture> textures;
+		Texture diffuseMap;
+		Texture specularMap;
+		Texture normalMap;
+		Texture heightMap;
 		std::vector<uint16_t>& GetIndices16()
 		{
 			if (indices16.empty())
@@ -79,6 +72,8 @@ namespace ChickenEngine
 			}
 			return indices16;
 		}
+
+		void AddDiffuseTexture(Texture tex);
 	private:
 		std::vector<uint16_t> indices16;
 	};

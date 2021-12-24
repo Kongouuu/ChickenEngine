@@ -40,7 +40,6 @@ cbuffer cbPass : register(b2)
 
 
 Texture2D    gDiffuseMap : register(t2);
-
 SamplerState gSamPointWrap : register(s0);
 SamplerState gSamPointClamp : register(s1);
 SamplerState gSamLinearWarp : register(s2);

@@ -40,7 +40,6 @@ namespace ChickenEngine
 		// data to fill
 		std::vector<Vertex> vertices;
 		std::vector<UINT> indices;
-		std::vector<Texture> textures;
 
 		// walk through each of the mesh's vertices
 		for (unsigned int i = 0; i < mesh->mNumVertices; i++)
@@ -86,24 +85,18 @@ namespace ChickenEngine
 		// process materials
 		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-		// 1. diffuse map
-		Texture diffuseMap = LoadMaterialTexture(material, aiTextureType_DIFFUSE, ETextureType::DIFFUSE);
-		textures.push_back(diffuseMap);
-		// 2. specular map
-		Texture specularMap = LoadMaterialTexture(material, aiTextureType_SPECULAR, ETextureType::SPECULAR);
-		textures.push_back(specularMap);
-		// 3. normal map
-		Texture normalMap = LoadMaterialTexture(material, aiTextureType_NORMALS, ETextureType::NORMAL);
-		textures.push_back(normalMap);
-		// 4. height map
-		Texture heightMap = LoadMaterialTexture(material, aiTextureType_HEIGHT, ETextureType::HEIGHT);
-		textures.push_back(heightMap);
-
-		// return a mesh object created from the extracted mesh data
 		Mesh m;
+		// 1. diffuse map
+		m.diffuseMap = LoadMaterialTexture(material, aiTextureType_DIFFUSE, ETextureType::DIFFUSE);
+		// 2. specular map
+		m.specularMap = LoadMaterialTexture(material, aiTextureType_SPECULAR, ETextureType::SPECULAR);
+		// 3. normal map
+		m.normalMap = LoadMaterialTexture(material, aiTextureType_NORMALS, ETextureType::NORMAL);
+		// 4. height map
+		m.heightMap = LoadMaterialTexture(material, aiTextureType_HEIGHT, ETextureType::HEIGHT);
+
 		m.vertices = vertices;
 		m.indices = indices;
-		m.textures = textures;
 
 		return m;
 	}
@@ -128,9 +121,10 @@ namespace ChickenEngine
 			}
 			if (!skip)
 			{   // if texture hasn't been loaded already, load it
-				texture.id = DX12Renderer::GetInstance().LoadTexture2D(this->directory + str.C_Str());
+				texture.id = ResourceManager::LoadTexture(this->directory + "/" + str.C_Str());
 				texture.type = typeName;
 				texture.path = str.C_Str();
+
 				mTexturesLoaded.push_back(texture);
 			}
 		}

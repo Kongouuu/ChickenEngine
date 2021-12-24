@@ -13,8 +13,9 @@ namespace ChickenEngine
 
 		static std::string GetProjectPath();
 
-		static std::wstring GetShaderPath(std::string name);
-		static std::wstring GetTexturePath(std::string name);
+		static std::string GetShaderPath(std::string name);
+		static std::string GetTexturePath(std::string name);
+		static std::string GetModelPath(std::string name);
 		
 	};
 }

@@ -5,6 +5,8 @@ struct VertexIn
 {
 	float3 PosL  : POSITION;
 	float3 Norm : NORMAL;
+	float3 Tan : TANGENT;
+	float3 BiTan : BITANGENT;
 	float2 uv : TEXCOORD;
 };
 

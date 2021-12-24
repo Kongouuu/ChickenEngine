@@ -10,7 +10,7 @@ namespace ChickenEngine
 		static void InitDescriptorHeapManager(int swapChainBufferCount);
 		static void BuildRtvSrvDsvHeapDesc(int numTex);
 		static void BuildCommonSrvHeap();
-		static void BuildTextureSrvHeap(ETextureType texType, UINT offset, Microsoft::WRL::ComPtr<ID3D12Resource> resource);
+		static void BuildTextureSrvHeap(ETextureDimension texType, UINT offset, Microsoft::WRL::ComPtr<ID3D12Resource> resource);
 
 	public:
 		inline static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> SrvHeap(){ return instance().mSrvHeap; }

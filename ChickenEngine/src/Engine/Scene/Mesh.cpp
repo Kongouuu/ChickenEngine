@@ -72,4 +72,10 @@ namespace ChickenEngine
         return boxMesh;
     }
 
+    void Mesh::AddDiffuseTexture(Texture tex)
+    {
+        diffuseMap = tex;
+        diffuseMap.type = ETextureType::DIFFUSE;
+    }
+
 }

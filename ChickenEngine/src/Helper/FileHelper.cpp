@@ -9,31 +9,42 @@ namespace ChickenEngine
 		return wstr;
 	}
 
-	std::wstring FileHelper::GetShaderPath(std::string name)
+	std::string FileHelper::GetShaderPath(std::string name)
 	{
 		std::string filePath = GetProjectPath();
-		filePath += "shaders\\" + name;
+		filePath += "shaders/" + name;
 		if (!std::filesystem::exists(filePath))
 		{
 			LOG_ERROR("File {0} does not exist", name);
 			assert(0);
 		}
-		std::wstring wFilePath = String2WString(filePath);
-		return wFilePath;
+		return filePath;
 	}
 
-	std::wstring FileHelper::GetTexturePath(std::string name)
+	std::string FileHelper::GetTexturePath(std::string name)
 	{
 		std::string filePath = GetProjectPath();
-		filePath += "assets\\textures\\" + name;
+		filePath += "assets/textures/" + name;
 		
 		if (!std::filesystem::exists(filePath))
 		{
 			LOG_ERROR("File {0} does not exist", filePath);
 			assert(0);
 		}
-		std::wstring wFilePath = String2WString(filePath);
-		return wFilePath;
+		return filePath;
+	}
+
+	std::string FileHelper::GetModelPath(std::string name)
+	{
+		std::string filePath = GetProjectPath();
+		filePath += "assets/models/" + name;
+
+		if (!std::filesystem::exists(filePath))
+		{
+			LOG_ERROR("File {0} does not exist", filePath);
+			assert(0);
+		}
+		return filePath;
 	}
 
 	std::string FileHelper::GetProjectPath()

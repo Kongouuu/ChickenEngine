@@ -11,7 +11,7 @@ namespace ChickenEngine
 		UINT id;
 		// Unique material name for lookup.
 		std::wstring Filename;
-		ETextureType TextureType;
+		ETextureDimension TextureType;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> Resource = nullptr;
 		Microsoft::WRL::ComPtr<ID3D12Resource> UploadHeap = nullptr;
@@ -22,7 +22,7 @@ namespace ChickenEngine
 
 	public:
 		static std::shared_ptr<DX12Texture> GetTexture(UINT id);
-		static int LoadTexture(std::wstring file, ETextureDimension textureType);
+		static UINT LoadTexture(std::wstring file, ETextureDimension textureType);
 		static void InitTextureHeaps();
 
 		static inline UINT TextureCount() { return textureCount; }

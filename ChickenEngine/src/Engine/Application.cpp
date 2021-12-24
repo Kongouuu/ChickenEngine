@@ -51,6 +51,7 @@ namespace ChickenEngine
 		renderer.StartDirectCommands();
 		LoadTextures();
 		LoadScene();
+		renderer.CreateFrameResources(numFrameResources);
 		renderer.InitPipeline();
 		
 
@@ -91,17 +92,32 @@ namespace ChickenEngine
 		UpdateCamera();
 		SetSceneData();
 		UpdateRenderObjects();
-		DX12Renderer::GetInstance().Update();
+		DX12Renderer::GetInstance().UpdateFrame();
 	}
 
 	void Application::Render()
 	{
-		DX12Renderer::GetInstance().PrepareDraw();
-		DX12Renderer::GetInstance().Draw();
+		DX12Renderer& renderer = DX12Renderer::GetInstance();
+
+
+		renderer.PrepareDraw();
+		renderer.BindAllMapToNull();
+		std::deque<std::shared_ptr<RenderObject>>& renderObjects =  SceneManager::GetAllRenderObjects();
+		for (auto& ro : renderObjects)
+		{
+			renderer.BindObjectCB(ro->objectCBOffset);
+			renderer.BindMaterialCB(ro->materialCBOffset);
+			for (auto& mesh : ro->mMeshes)
+			{
+				if(mesh.diffuseMap.id >=0)
+					renderer.BindDiffuseMap(mesh.diffuseMap.id);
+				renderer.DrawRenderItem(mesh.renderItemID);
+			}
+		}
 
 		ImguiManager::GetInstance().ImguiRender(); // later be substituted
 
-		DX12Renderer::GetInstance().EndDraw();
+		renderer.EndDraw();
 	}
 
 #pragma endregion Basic_Procedure
@@ -116,7 +132,8 @@ namespace ChickenEngine
 
 	void Application::LoadTextures()
 	{
-		UINT tex = DX12Renderer::GetInstance().LoadTexture2D("timg.jpg", "tutou");
+		std::string filePath = FileHelper::GetTexturePath("timg.jpg");
+		ResourceManager::LoadTexture(filePath, "tutou");
 	}
 
 	void Application::LoadScene()
@@ -129,11 +146,33 @@ namespace ChickenEngine
 		//Add simple object BOX!
 		std::shared_ptr<RenderObject> ro = SceneManager::CreateRenderObject(std::string("cube"), { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }, { 1.0,1.0,1.0, 1.0 }, 0.15, 0.04);
 		Mesh cube = MeshManager::GenerateBox();
-		ro->renderItemID = CreateRenderItem(ro->name, cube);
-		ro->texID = 0;
+		cube.AddDiffuseTexture(ResourceManager::GetTexture("tutou"));
+		ro->mMeshes.push_back(cube);
+		LoadRenderObject(ro);
 		SetRenderObjectTransform(*ro);
 		SetRenderObjectMaterial(*ro);
-		SetRenderObjectTexture(*ro);
+
+
+		// Load model
+		Model m;
+		m.LoadModel(FileHelper::GetModelPath("qiuqiuren/qiuqiuren.pmx"));
+		std::shared_ptr<RenderObject> ro1 = SceneManager::CreateRenderObject(std::string("qiuqiuren"), { 0.0,0.0,0.0 }, { 0.0,180.0,0.0 }, { 0.1,0.1,0.1 }, { 1.0,1.0,1.0, 1.0 }, 0.15, 0.04);
+		ro1->mMeshes.insert(ro1->mMeshes.end(), m.mMeshes.begin(), m.mMeshes.end());
+		LoadRenderObject(ro1);
+		SetRenderObjectTransform(*ro1);
+		SetRenderObjectMaterial(*ro1);
+	}
+
+	void Application::LoadRenderObject(std::shared_ptr<RenderObject> ro)
+	{
+		ro->objectCBOffset = DX12Renderer::GetInstance().AddObjectCB();
+		ro->materialCBOffset = DX12Renderer::GetInstance().AddMaterialCB();
+		for (auto& m : ro->mMeshes)
+		{
+			BYTE* data = reinterpret_cast<BYTE*>(m.vertices.data());
+			m.renderItemID =  DX12Renderer::GetInstance().CreateRenderItem( m.vertices.size(), sizeof(Vertex), data, m.GetIndices16());
+		}
+		
 	}
 #pragma endregion PipeLine_Init
 
@@ -182,13 +221,17 @@ namespace ChickenEngine
 	{
 		XMMATRIX world;
 		ObjectConstants oc;
+		XMFLOAT3 rotationPI = ro.rotation;
+		rotationPI.x *= (DirectX::XM_PI / 180.0f);
+		rotationPI.y *= (DirectX::XM_PI / 180.0f);
+		rotationPI.z *= (DirectX::XM_PI / 180.0f);
 		world = XMMatrixTranslationFromVector(XMLoadFloat3(&ro.position)) *
-			(XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&ro.rotation)) * XMMatrixScalingFromVector(XMLoadFloat3(&ro.scale)));
+			(XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotationPI)) * XMMatrixScalingFromVector(XMLoadFloat3(&ro.scale)));
 		XMStoreFloat4x4(&oc.World, XMMatrixTranspose(world));
 		BYTE data[sizeof(ObjectConstants)];
 		memcpy(&data, &oc, sizeof(ObjectConstants));
 		
-		DX12Renderer::GetInstance().SetRenderItemTransform(ro.renderItemID, data);
+		DX12Renderer::GetInstance().SetObjectCB(ro.objectCBOffset, data);
 	}
 
 	void Application::SetRenderObjectMaterial(RenderObject& ro)
@@ -201,32 +244,14 @@ namespace ChickenEngine
 		BYTE data[sizeof(MaterialConstants)];
 		memcpy(&data, &m, sizeof(MaterialConstants));
 
-		DX12Renderer::GetInstance().SetRenderItemMaterial(ro.renderItemID, data);
+		DX12Renderer::GetInstance().SetMaterialCB(ro.materialCBOffset, data);
 	}
 
-	void Application::SetRenderObjectTexture(RenderObject& ro)
-	{
-		DX12Renderer::GetInstance().SetRenderItemTexture(ro.renderItemID, ro.texID);
-	}
+	//void Application::SetRenderObjectTexture(RenderObject& ro)
+	//{
+	//	DX12Renderer::GetInstance().SetRenderItemTexture(ro.renderItemID, ro.texID);
+	//}
 
-	int Application::CreateRenderItem(std::string name, Mesh m, EVertexLayout layout)
-	{
-		if (layout != EVertexLayout::POS_NORM_TEX)
-		{
-			LOG_ERROR("Create render item fail");
-			return -1;
-		}
-
-		std::vector<VertexPNT> vertices(m.vertices.size());
-		for (size_t i = 0; i < m.vertices.size(); ++i)
-		{
-			vertices[i].pos = m.vertices[i].pos;
-			vertices[i].normal = m.vertices[i].normal;
-			vertices[i].texC = m.vertices[i].texC;
-		}
-		BYTE* data = reinterpret_cast<BYTE*>(vertices.data());
-		return DX12Renderer::GetInstance().CreateRenderItem(name, vertices.size(), sizeof(VertexPNT), data, m.GetIndices16());
-	}
 #pragma endregion Renderer_Communication
 
 #pragma region Util
@@ -284,6 +309,7 @@ namespace ChickenEngine
 		DX12Renderer::GetInstance().OnResize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
+
 
 	bool Application::OnMouseMove(MouseMovedEvent& e)
 	{

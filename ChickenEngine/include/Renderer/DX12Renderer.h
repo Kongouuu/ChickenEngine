@@ -50,31 +50,41 @@ namespace ChickenEngine
 		// Input Assembly ( Called by Engine)
 		UINT LoadTexture2D(std::string fileName);
 		UINT LoadTexture3D(std::string fileName);
-		UINT CreateRenderItem(std::string name, UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
+		UINT CreateRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
+		UINT AddObjectCB();
+		UINT AddMaterialCB();
 
 		// Init pipeline
+		void CreateFrameResources(int numFrames);
 		void InitPipeline();
-		void CreateFrameResources();
+		
 		
 		// Update {every loop}
-		void Update();
+		void UpdateFrame();
 		void SwapFrameResource();
 		void UpdatePassCB();
-		void UpdateRenderItemCB();
-		void UpdateObjectCB(std::shared_ptr<RenderItem>& ri);
-		void UpdateMaterialCB(std::shared_ptr<RenderItem>& ri);
+		void UpdateObjectCB();
+		void UpdateMaterialCB();
 
 		// Called update
 		void SetPassSceneData(BYTE* data);
-		void SetRenderItemTransform(UINT renderItemID, BYTE* data);// XMFLOAT3 position, XMFLOAT3 rotation, XMFLOAT3 scale);
-		void SetRenderItemMaterial(UINT renderItemID, BYTE* data);//float roughness, float metallic, XMFLOAT4 color);
+		void SetObjectCB(UINT objCBIndex, BYTE* data);
+		void SetMaterialCB(UINT matCBIndex, BYTE* data);
 		void SetRenderItemTexture(UINT renderItemID, UINT textureID);
 		void OnResize(int width, int height);
 
 		// Render
 		void PrepareDraw();
 		void Draw();
-		void DrawRenderItems();
+		void BindObjectCB(UINT id);
+		void BindMaterialCB(UINT id);
+		void BindAllMapToNull();
+		void BindDiffuseMap(UINT id);
+		void BindSpecularMap(UINT id);
+		void BindNormalMap(UINT id);
+		void BindHeightMap(UINT id);
+		void BindMap(UINT id, UINT slot);
+		void DrawRenderItem(UINT renderItemID);
 		void EndDraw();
 
 		// Other
@@ -137,6 +147,14 @@ namespace ChickenEngine
 		UINT mObjectCBByteSize;
 		UINT mMaterialCBByteSize;
 		std::vector<BYTE> mPassCBData;
+		UINT mObjectCBCount = 0;
+		UINT mMaterialCBCount = 0;
+
+		std::unordered_map<UINT, std::vector<BYTE>> mObjectCBData;
+		std::unordered_map<UINT, UINT> mObjectCBFramesDirty;
+
+		std::unordered_map<UINT, std::vector<BYTE>> mMaterialCBData;
+		std::unordered_map<UINT, UINT> mMaterialCBFramesDirty;
 
 		UINT mTextureCount;
 	};

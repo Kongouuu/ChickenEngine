@@ -7,22 +7,20 @@ namespace ChickenEngine
 	using namespace DirectX;
 	struct CHICKEN_API RenderObject
 	{
+		UINT renderObjectID = 0;
 		std::string name = "";
-		UINT renderItemID = -1;
-		UINT texID = -1;
-		Mesh m;
 		XMFLOAT3 position;
 		XMFLOAT3 rotation ;
 		XMFLOAT3 scale;
 		XMFLOAT4 color;
 		float roughness = 0.0;
 		float metallic = 0.0;
-
 		bool dirty = false;
 		
-		// TODO
-		std::vector<UINT> renderItemIDs;
-		std::vector<UINT> texIDs;
+		UINT objectCBOffset;
+		UINT materialCBOffset;
+		std::vector<Mesh> mMeshes;
+
 
 		RenderObject(std::string n) : name(n) {
 			position = XMFLOAT3(0.0, 0.0, 0.0);

@@ -6,12 +6,13 @@ namespace ChickenEngine
 {
 	using namespace DirectX;
 
+	UINT SceneManager::renderObjectCount = 0;
 	std::shared_ptr<RenderObject> SceneManager::GetRenderObject(UINT id)
 	{
 		std::deque<std::shared_ptr<RenderObject>>& mAllRO = GetAllRenderObjects();
 		for (auto& ro : mAllRO)
 		{
-			if (ro->renderItemID == id)
+			if (ro->renderObjectID == id)
 				return ro;
 		}
 		return nullptr;
@@ -20,6 +21,7 @@ namespace ChickenEngine
 	std::shared_ptr<RenderObject> SceneManager::CreateRenderObject(std::string n)
 	{
 		std::shared_ptr<RenderObject> renderObject = std::make_shared<RenderObject>(n);
+		renderObject->renderObjectID = renderObjectCount++;
 		instance().mRenderObjects.push_back(renderObject);
 		return renderObject;
 	}
@@ -27,6 +29,7 @@ namespace ChickenEngine
 	std::shared_ptr<RenderObject> SceneManager::CreateRenderObject(std::string n, XMFLOAT3 p, XMFLOAT3 r, XMFLOAT3 s, XMFLOAT4 c, float ro, float me)
 	{
 		std::shared_ptr<RenderObject> renderObject = std::make_shared<RenderObject>(n,p,r,s,c,ro,me);
+		renderObject->renderObjectID = renderObjectCount++;
 		instance().mRenderObjects.push_back(renderObject);
 		return renderObject;
 	}

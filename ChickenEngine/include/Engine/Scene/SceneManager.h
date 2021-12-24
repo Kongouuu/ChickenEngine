@@ -23,12 +23,14 @@ namespace ChickenEngine
 		static void UpdateDirLightDirection();
 		inline static XMFLOAT3& GetDirLightRotation(){return instance().mDirLight.Rotation;	}
 		inline static XMFLOAT3 GetDirLightDirection() { return instance().mDirLight.data.Direction; }
-		inline static XMFLOAT3 GetDirLightStrength() { return instance().mDirLight.data.Strength; }
+		inline static XMFLOAT3& GetDirLightStrength() { return instance().mDirLight.data.Strength; }
 	private:
 		Camera mCamera;
 		DirectionLight mDirLight;
 		PassConstants mPassCB;
 		std::deque<std::shared_ptr<RenderObject>> mRenderObjects;
+
+		static UINT renderObjectCount;
 	};
 }
 

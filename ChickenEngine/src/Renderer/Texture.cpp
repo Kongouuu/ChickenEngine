@@ -11,19 +11,23 @@ namespace ChickenEngine
         return instance().mTextures[id];
     }
 
-    int TextureManager::LoadTexture(std::wstring file, ETextureDimension textureType)
+    UINT TextureManager::LoadTexture(std::wstring file, ETextureDimension textureType)
     {
         TextureManager& tm = instance();
-        
+        LOG_ERROR("enter file load");
         // Check if file exist
         std::filesystem::path filePath(file);
+
         if (!std::filesystem::exists(filePath))
         {
+            LOG_ERROR("file not found");
             throw std::exception("File not found.");
         }
 
         // no lock, and didnt check if loaded be4
-        auto tex = std::make_shared<DX12Texture>();
+        LOG_ERROR("Before Error in Texture");
+        std::shared_ptr<DX12Texture> tex = std::make_shared<DX12Texture>();
+        LOG_ERROR("After Error in Texture");
         tex->Filename = filePath.filename();
         tex->TextureType = textureType;
 
@@ -44,7 +48,7 @@ namespace ChickenEngine
         textureCount++;
         instance().mTextures.push_back(tex);
 
-        
+        return tex->id;
     }
 
     void TextureManager::InitTextureHeaps()

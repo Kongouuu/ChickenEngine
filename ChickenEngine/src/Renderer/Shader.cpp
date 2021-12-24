@@ -40,12 +40,12 @@ namespace ChickenEngine
 
 	void ShaderManager::LoadVS()
 	{
-		mVertexShaders["default"] = CompileShader(FileHelper::GetShaderPath("default.hlsl"), nullptr, "VS", "vs_5_1");
+		mVertexShaders["default"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("default.hlsl")), nullptr, "VS", "vs_5_1");
 	}
 
 	void ShaderManager::LoadPS()
 	{
-		mPixelShaders["default"] =  CompileShader(FileHelper::GetShaderPath("default.hlsl"), nullptr, "PS", "ps_5_1");
+		mPixelShaders["default"] =  CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("default.hlsl")), nullptr, "PS", "ps_5_1");
 	}
 
 	Microsoft::WRL::ComPtr<ID3DBlob> ShaderManager::CompileShader(const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)

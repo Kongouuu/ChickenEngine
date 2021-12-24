@@ -16,6 +16,7 @@
 #include "Helper/MouseButtonEnum.h"
 #include "Scene/PassConstants.h"
 #include "Scene/SceneManager.h"
+#include "Scene/Model.h"
 
 namespace ChickenEngine
 {
@@ -35,6 +36,7 @@ namespace ChickenEngine
 		virtual void LoadTextures();
 		virtual void LoadScene();
 		virtual void InitCamera();
+		void LoadRenderObject(std::shared_ptr<RenderObject> ro);
 
 		// Loop Update
 		virtual void UpdateCamera();
@@ -44,8 +46,8 @@ namespace ChickenEngine
 		void SetSceneData();
 		void SetRenderObjectTransform(RenderObject& ro);
 		void SetRenderObjectMaterial(RenderObject& ro);
-		void SetRenderObjectTexture(RenderObject& ro);
-		int CreateRenderItem(std::string name, Mesh m, EVertexLayout layout = EVertexLayout::POS_NORM_TEX);
+		//void SetRenderObjectTexture(RenderObject& ro);
+		//int CreateRenderItem(std::string name, Mesh m);
 
 		inline std::shared_ptr<Window> GetWindow() { return mWindow; }
 		inline static Application& Get() { return *s_Instance; }
@@ -53,7 +55,7 @@ namespace ChickenEngine
 		std::shared_ptr<Window> mWindow;
 		GameTimer mTimer;
 		Camera mCamera;
-
+		UINT numFrameResources = 3;
 		std::array<bool, 255> mKeyDown;
 		std::array<bool, 5> mMouseDown;
 		float previousMouseX;

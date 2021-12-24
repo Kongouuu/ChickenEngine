@@ -102,10 +102,6 @@ namespace ChickenEngine
 	{
 		ImguiBegin();
 
-
-		static bool show = false;
-		ImGui::ShowDemoWindow(&show);
-
 		ShowScenePanel();
 		ShowLightPanel();
 
@@ -150,8 +146,7 @@ namespace ChickenEngine
 		{
 			if (ImGui::TreeNode(ro->name.c_str()))
 			{
-				ImGui::Text("Render Object id: %d",ro->renderItemID);
-				ImGui::Text("Texture id: %d", ro->texID);
+				ImGui::Text("Render Object id: %u",ro->renderObjectID);
 
 				// Position
 				float posx = ro->position.x;
@@ -217,13 +212,17 @@ namespace ChickenEngine
 		ImGui::Begin("Light Panel");
 		if(ImGui::TreeNode("Direction Light"))
 		{
-			DirectX::XMFLOAT3 str = SceneManager::GetDirLightStrength();
 			DirectX::XMFLOAT3 dir = SceneManager::GetDirLightDirection();
+			DirectX::XMFLOAT3& str = SceneManager::GetDirLightStrength();
 			DirectX::XMFLOAT3& rot = SceneManager::GetDirLightRotation();
-			ImGui::Text("Strength: ");
-			ImGui::Text("%.2f  %.2f  %.2f", str.x, str.y, str.z);
+
 			ImGui::Text("Direction: ");
 			ImGui::Text("%.2f  %.2f  %.2f", dir.x, dir.y, dir.z);
+			ImGui::Text("Strength: ");
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "r: ", &str.x, 0.2f, 0.0, +FLT_MAX, "%.3f");
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "g: ", &str.y, 0.2f, 0.0, +FLT_MAX, "%.3f");
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "b: ", &str.z, 0.2f, 0.0, +FLT_MAX, "%.3f");
+
 			ImGui::Text("Rotation: ");
 			IMGUI_LEFT_LABEL(ImGui::DragFloat, "x: ", &rot.x, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
 			IMGUI_LEFT_LABEL(ImGui::DragFloat, "y: ", &rot.y, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");

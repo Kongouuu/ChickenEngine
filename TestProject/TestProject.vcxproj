@@ -120,11 +120,12 @@
       <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)ChickenEngine\include;$(SolutionDir)ChickenEngine\ThirdParty\spdlog\include;$(SolutionDir)ChickenEngine\include\ThirdParty</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)ChickenEngine\lib\spdlog;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)ChickenEngine\lib\spdlog;$(SolutionDir)ChickenEngine\lib\assimp\</AdditionalLibraryDirectories>
       <EntryPointSymbol>
       </EntryPointSymbol>
     </Link>

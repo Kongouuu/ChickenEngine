@@ -1,15 +1,15 @@
 #pragma once
 
-
 #include "Mesh.h"
 #include "Renderer/DX12Renderer.h"
-#include "assimp/Importer.hpp"
-#include "assimp/scene.h"
-#include "assimp/postprocess.h"
+#include "Engine/ResourceManager.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 namespace ChickenEngine
 {
-	class Model
+	class CHICKEN_API Model
 	{
 	public:
 		std::vector<Mesh> mMeshes;

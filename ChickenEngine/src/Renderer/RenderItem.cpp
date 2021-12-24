@@ -65,9 +65,8 @@ namespace ChickenEngine
         return instance().mRenderItems[id];
     }
 
-    std::shared_ptr<RenderItem> RenderItemManager::CreateRenderItem(std::string name, ERenderItemType riType)
+    std::shared_ptr<RenderItem> RenderItemManager::CreateRenderItem(ERenderItemType riType)
     {
-        LOG_INFO("RenderItemManager - Create render item. name: {0}", name.c_str());
         RenderItemManager& rim = instance();
         std::shared_ptr<RenderItem> ri = std::make_shared<RenderItem>();
 
@@ -76,10 +75,7 @@ namespace ChickenEngine
 
         // Get current render item count;
         ri->renderItemID = renderItemCount;
-        ri->name = name;
         ri->riType = riType;
-        ri->objectCBIndex = renderItemCount;
-        ri->materialCBIndex = renderItemCount;
 
         rim.mRenderItems.emplace_back(ri);
        // rim.mRenderItemOfType[(int)riType].emplace_back(ri);

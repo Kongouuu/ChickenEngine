@@ -27,14 +27,6 @@ namespace ChickenEngine
 		UINT indexCount = 0;
 		VertexBuffer vb;
 		IndexBuffer ib;
-
-		UINT objectCBIndex = 0;
-		UINT materialCBIndex = 0;
-
-		std::vector<BYTE> objCBData;
-		std::vector<BYTE> matCBData;
-		//ObjectConstants objConst;
-		//MaterialConstants matConst;
 		UINT texOffset;
 
 		int numFramesDirty = 0;
@@ -56,7 +48,7 @@ namespace ChickenEngine
 	public:
 		
 		static std::shared_ptr<RenderItem> GetRenderItem(UINT id);
-		static std::shared_ptr<RenderItem> CreateRenderItem(std::string name, ERenderItemType riType);
+		static std::shared_ptr<RenderItem> CreateRenderItem(ERenderItemType riType);
 
 		inline static std::vector<std::shared_ptr<RenderItem>>& GetAllRenderItems() { return instance().mRenderItems; }
 		inline static int RenderItemCount() { return renderItemCount; }

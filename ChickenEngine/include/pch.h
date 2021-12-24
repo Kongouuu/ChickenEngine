@@ -16,5 +16,8 @@
 #include <queue>
 #include <unordered_map>
 #include <filesystem>
+#include <locale>  
+#include <codecvt>   
+#include <cstdint> 
 
 #include <Windows.h>

@@ -3,27 +3,22 @@
 #include "Core.h"
 #include "Helper/Singleton.h"
 #include "Scene/RenderObject.h"
+#include "Renderer/DX12Renderer.h"
 
 namespace ChickenEngine
 {
-	struct Texture
-	{
-		std::string name;
-		UINT texID;
-	};
 
 	class CHICKEN_API ResourceManager : public Singleton<ResourceManager>
 	{
 	public:
-		static RenderObject& GetRenderObject(std::string name);
-		static RenderObject& GetRenderObject(UINT ID);
-		static Texture& GetTexture(std::string name);
-		static Texture& GetTexture(UINT ID);
+		inline static Texture& GetTexture(std::string name) { return GetTexture(instance().name2id[name]); }
+		inline static Texture& GetTexture(UINT id) { return instance().mTextures[id]; }
+		static UINT LoadTexture(std::string path, std::string name);
+		static UINT LoadTexture(std::string path);
 		
 	private:
-		std::vector<RenderObject> mObjects;
-		std::vector<Texture> mTextures;
-
+		std::unordered_map<UINT,Texture> mTextures;
+		std::unordered_map<std::string, UINT> name2id;
 	};
 
 
