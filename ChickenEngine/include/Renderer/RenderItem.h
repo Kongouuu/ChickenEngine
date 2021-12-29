@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Helper/DX12CommonHeader.h"
+#include "Interface/IResource.h"
 #include "Buffer.h"
 #include "Texture.h"
 #include "DescriptorHeap.h"
@@ -9,8 +10,6 @@
 namespace ChickenEngine
 {
 	/* TMP */
-
-
 	enum ERenderItemType
 	{
 		RI_OPAQUE = 0,
@@ -27,14 +26,17 @@ namespace ChickenEngine
 		UINT indexCount = 0;
 		VertexBuffer vb;
 		IndexBuffer ib;
-		UINT texOffset;
+		UINT diffuseOffset = DescriptorHeapManager::NullCubeSrvOffset();
+		UINT specularOffset = DescriptorHeapManager::NullCubeSrvOffset();
+		UINT normalOffset = DescriptorHeapManager::NullCubeSrvOffset();
+		UINT heightOffset = DescriptorHeapManager::NullCubeSrvOffset();
 
+		UINT cbOffset;
 		int numFramesDirty = 0;
 
-
+		bool visible = true;
 		D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-		EVertexLayout GetLayoutType();
 		void Init(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
 		//void AddTexture(std::string name);
 
@@ -46,14 +48,12 @@ namespace ChickenEngine
 	class CHICKEN_API RenderItemManager : public Singleton<RenderItemManager>
 	{
 	public:
-		
 		static std::shared_ptr<RenderItem> GetRenderItem(UINT id);
 		static std::shared_ptr<RenderItem> CreateRenderItem(ERenderItemType riType);
 
 		inline static std::vector<std::shared_ptr<RenderItem>>& GetAllRenderItems() { return instance().mRenderItems; }
 		inline static int RenderItemCount() { return renderItemCount; }
 
-		static void UpdateAllRenderItemCB();
 		//static void InitRenderItem(const Mesh& mesh, UINT id);
 		//static void InitRenderItem(const Mesh& mesh, ERenderItemType riType, UINT index);
 		//static void InitRenderItem(const Mesh& mesh, std::shared_ptr<RenderItem> ri);
@@ -62,6 +62,7 @@ namespace ChickenEngine
 	private:
 		//std::unordered_map<ERenderItemType,std::vector<std::shared_ptr<RenderItem>>> mRenderItems;
 		std::vector<std::shared_ptr<RenderItem>> mRenderItems;
+		std::shared_ptr<RenderItem> mDebugRenderItem;
 		//std::vector < std::vector<std::shared_ptr<RenderItem>>> mRenderItemOfType[ERenderItemType::RI_COUNT];
 		//std::unordered_map<UINT, std::pair< ERenderItemType, UINT>> mIdToItem;
 		static int renderItemCount;

@@ -201,12 +201,6 @@
     <ClInclude Include="include\Renderer\FrameResource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Engine\Scene\Light.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Engine\Scene\PassConstants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\Engine\Scene\SceneManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -441,6 +435,15 @@
     <ClInclude Include="include\Engine\Scene\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Interface\IResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Engine\GameLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Renderer\ShadowMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\Application.cpp">
@@ -527,9 +530,6 @@
     <ClCompile Include="src\Engine\Scene\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\PassConstants.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\Renderer\FrameResource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -542,6 +542,9 @@
     <ClCompile Include="src\Engine\Scene\Model.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\ShadowMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ChickenEngine.rc">
@@ -549,9 +552,11 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders\default.hlsl" />
+    <FxCompile Include="shaders\Default.hlsl" />
     <FxCompile Include="shaders\Common.hlsl" />
     <FxCompile Include="shaders\ShadingUtil.hlsl" />
+    <FxCompile Include="shaders\Shadow.hlsl" />
+    <FxCompile Include="shaders\ShadowDebug.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\ThirdParty\assimp\.editorconfig" />

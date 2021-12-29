@@ -16,9 +16,6 @@ namespace ChickenEngine
 		float roughness = 0.0;
 		float metallic = 0.0;
 		bool dirty = false;
-		
-		UINT objectCBOffset;
-		UINT materialCBOffset;
 		std::vector<Mesh> mMeshes;
 
 

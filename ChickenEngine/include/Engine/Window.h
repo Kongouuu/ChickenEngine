@@ -29,7 +29,6 @@ namespace ChickenEngine
 		virtual ~Window();
 
 		void Init(std::string title, unsigned int width, unsigned int height);
-		virtual void Update();
 		void Shutdown();
 
 		virtual LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);

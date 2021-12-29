@@ -1,9 +1,9 @@
 //#pragma once
 
 #include "Core.h"
-
 #include "pch.h"
 #include "Events/Event.h"
+#include "GameLayer.h"
 #include "Events/ApplicationEvent.h"
 #include "Log.h"
 #include "ImguiManager.h"
@@ -14,7 +14,6 @@
 #include "ResourceManager.h"
 #include "Helper/DX12Defines.h"
 #include "Helper/MouseButtonEnum.h"
-#include "Scene/PassConstants.h"
 #include "Scene/SceneManager.h"
 #include "Scene/Model.h"
 
@@ -26,28 +25,17 @@ namespace ChickenEngine
 	public:
 		Application();
 		virtual ~Application();
-		void Init();
+		virtual void Init();
 		void Run();
 		void Update();
 		void Render();
 		void OnEvent(Event& e);
 
-		// Init
-		virtual void LoadTextures();
-		virtual void LoadScene();
-		virtual void InitCamera();
-		void LoadRenderObject(std::shared_ptr<RenderObject> ro);
+		// Attach specific game app
+		void AttachGameLayer(GameLayer* _gl) { gl = _gl; }
 
-		// Loop Update
-		virtual void UpdateCamera();
-		void UpdateRenderObjects();
-
-		// Called Update
-		void SetSceneData();
-		void SetRenderObjectTransform(RenderObject& ro);
-		void SetRenderObjectMaterial(RenderObject& ro);
-		//void SetRenderObjectTexture(RenderObject& ro);
-		//int CreateRenderItem(std::string name, Mesh m);
+		// temp
+		void UpdateCamera();
 
 		inline std::shared_ptr<Window> GetWindow() { return mWindow; }
 		inline static Application& Get() { return *s_Instance; }
@@ -55,6 +43,8 @@ namespace ChickenEngine
 		std::shared_ptr<Window> mWindow;
 		GameTimer mTimer;
 		Camera mCamera;
+		GameLayer* gl;
+
 		UINT numFrameResources = 3;
 		std::array<bool, 255> mKeyDown;
 		std::array<bool, 5> mMouseDown;

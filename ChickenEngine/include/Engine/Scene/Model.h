@@ -12,6 +12,8 @@ namespace ChickenEngine
 	class CHICKEN_API Model
 	{
 	public:
+		Model() {}
+		Model(std::string path) { LoadModel(path); }
 		std::vector<Mesh> mMeshes;
 		std::vector<Texture> mTexturesLoaded;
 		std::string directory;

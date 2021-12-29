@@ -13,6 +13,7 @@ struct VertexIn
 struct VertexOut
 { 
 	float4 PosH  : SV_POSITION;
+	float4 ShadowPosH : POSITION_SHADOW;
 	float4 PosW  : POSITION_WORLD;
 	float3 Norm  : NORMAL;
 	float2 uv : TEXCOORD;
@@ -22,23 +23,24 @@ VertexOut VS(VertexIn vin)
 {
 	VertexOut vout;
 	float4 PosW = float4(vin.PosL, 1.0f);
-	PosW = mul(PosW, gWorldViewProj);
-	vout.PosH = mul(PosW,viewProj);
+	PosW = mul(PosW, gWorld);
+	vout.PosH = mul(PosW,gViewProj);
 	vout.PosW = PosW;
-	vout.Norm = mul(vin.Norm, gWorldViewProj);
+	vout.ShadowPosH = mul(PosW, gShadowTransform);
+	vout.Norm = mul(float4(vin.Norm,1.0), gWorld).xyz;
 	vout.uv = vin.uv;
 	return vout;
 }
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	float4 albedo = gDiffuseMap.Sample(gSamLinearWarp, pin.uv);
+	float4 albedo = gDiffuseMap.Sample(gSamLinearWarp, pin.uv) + mColor;
 	// Diffuse
 	float3 diffuse = albedo.xyz / PI;
 
 	// Specular
 	float3 N = normalize(pin.Norm);
-	float3 V = normalize(eyePos - pin.PosW.xyz);
+	float3 V = normalize(gEyePos - pin.PosW.xyz);
 	float NdotV = max(dot(N, V), 0.0f);
 	float3 L = normalize(-gDirLight.dir);
 	float3 H = normalize(V + L);
@@ -60,7 +62,13 @@ float4 PS(VertexOut pin) : SV_Target
 	float3 kD = float3(1.0, 1.0, 1.0) - kS;
 	kD *= (1.0f - mMetallic);
 
-	float3 color = (kD * diffuse +  kS * specular) * gDirLight.strength * NdotL;;
+	// Only the first light casts a shadow.
+	float shadowFactor = 1.0f;
+#ifdef SHADOW_MAP_ENABLED
+	shadowFactor = CalcShadowFactor(pin.ShadowPosH);
+#endif
+
+	float3 color = shadowFactor * (kD * diffuse +  kS * specular) * gDirLight.strength * NdotL;;
 	float3 ambient = albedo.xyz * 0.02;
 	color += ambient;
 	color = pow(color, (1.0 / 2.2));

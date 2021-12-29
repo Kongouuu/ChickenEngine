@@ -160,9 +160,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\Engine\GameLayer.h" />
     <ClInclude Include="include\Helper\FileHelper.h" />
-    <ClInclude Include="include\Engine\Scene\Light.h" />
-    <ClInclude Include="include\Engine\Scene\PassConstants.h" />
+    <ClInclude Include="include\Interface\IResource.h" />
     <ClInclude Include="include\Renderer\FrameResource.h" />
     <ClInclude Include="include\Engine\Scene\Camera.h" />
     <ClInclude Include="include\Engine\Scene\RenderObject.h" />
@@ -302,13 +302,14 @@
     <ClInclude Include="include\ThirdParty\spdlog\tweakme.h" />
     <ClInclude Include="include\ThirdParty\spdlog\version.h" />
     <ClInclude Include="include\Engine\Scene\SceneManager.h" />
+    <ClInclude Include="include\Renderer\ShadowMap.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Renderer\ShadowMap.cpp" />
     <ClCompile Include="src\Engine\Scene\Model.cpp" />
     <ClCompile Include="src\Helper\FileHelper.cpp" />
     <ClCompile Include="src\Engine\Scene\SceneManager.cpp" />
     <ClCompile Include="src\Renderer\FrameResource.cpp" />
-    <ClCompile Include="src\Renderer\PassConstants.cpp" />
     <ClCompile Include="src\Engine\Scene\Camera.cpp" />
     <ClCompile Include="src\Renderer\PSO.cpp" />
     <ClCompile Include="src\Renderer\DescriptorHeap.cpp" />
@@ -349,7 +350,7 @@
     <FxCompile Include="shaders\Common.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
-    <FxCompile Include="shaders\default.hlsl">
+    <FxCompile Include="shaders\Default.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
@@ -357,6 +358,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shaders\ShadingUtil.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="shaders\Shadow.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="shaders\ShadowDebug.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>

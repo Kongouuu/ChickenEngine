@@ -38,12 +38,6 @@ namespace ChickenEngine
 		}
 	}
 
-	void Window::Update()
-	{
-	}
-
-
-
 	void Window::Shutdown()
 	{
 		WindowCloseEvent e;

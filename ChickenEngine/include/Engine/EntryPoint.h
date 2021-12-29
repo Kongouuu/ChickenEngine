@@ -6,9 +6,8 @@ int main(int argc, char** argv)
 {
 	ChickenEngine::Log::Init();
 
-	LOG_INFO("test");
-	LOG_WARN("2");
 	auto App = ChickenEngine::CreateApplication();
+	App->Init();
 	App->Run();
 	delete App;
 

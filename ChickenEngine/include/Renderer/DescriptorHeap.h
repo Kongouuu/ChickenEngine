@@ -10,7 +10,8 @@ namespace ChickenEngine
 		static void InitDescriptorHeapManager(int swapChainBufferCount);
 		static void BuildRtvSrvDsvHeapDesc(int numTex);
 		static void BuildCommonSrvHeap();
-		static void BuildTextureSrvHeap(ETextureDimension texType, UINT offset, Microsoft::WRL::ComPtr<ID3D12Resource> resource);
+		static void BuildShadowMapHeap(Microsoft::WRL::ComPtr<ID3D12Resource> shadowMap);
+		static void BuildTextureSrvHeap(ETextureDimension texType, UINT offset, Microsoft::WRL::ComPtr<ID3D12Resource> resource);\
 
 	public:
 		inline static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> SrvHeap(){ return instance().mSrvHeap; }
@@ -19,6 +20,8 @@ namespace ChickenEngine
 
 		inline static CD3DX12_GPU_DESCRIPTOR_HANDLE NullTexSrv() { return instance().mNullTexSrv; }
 		inline static CD3DX12_GPU_DESCRIPTOR_HANDLE NullCubeSrv() { return instance().mNullCubeSrv; }
+
+		inline static CD3DX12_CPU_DESCRIPTOR_HANDLE ShadowDsv() { return CD3DX12_CPU_DESCRIPTOR_HANDLE(DsvHeap()->GetCPUDescriptorHandleForHeapStart(), 1, instance().mDsvDescriptorSize); }
 
 		inline static UINT ImguiSrvOffset() { return instance().mImguiSrvOffset; }
 		inline static UINT NullTexSrvOffset() { return instance().mNullTexSrvOffset; }

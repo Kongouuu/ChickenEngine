@@ -95,6 +95,12 @@ namespace ChickenEngine
 		CreateCommandObjects();
 		CreateSwapChain();
 
+		// Init subsystems
+		DescriptorHeapManager::InitDescriptorHeapManager(SwapChainBufferCount);
+
+		// Init constants
+		mPassCBByteSize = sizeof(PassConstants);
+		mObjectCBByteSize = sizeof(ObjectConstants);
 
 		return true;
 	}
@@ -172,104 +178,115 @@ namespace ChickenEngine
 		}
 	}
 
-	void DX12Renderer::OnResize(int width, int height)
+void DX12Renderer::OnResize(int width, int height)
+{
+	mWidth = width;
+	mHeight = height;
+
+	if (md3dDevice == nullptr)
 	{
-		mWidth = width;
-		mHeight = height;
+		return;
+	}
+	LOG_INFO("OnResize");
+	assert(md3dDevice);
+	assert(mSwapChain);
+	assert(mDirectCmdListAlloc);
 
-		if (md3dDevice == nullptr)
-		{
-			return;
-		}
-		LOG_INFO("OnResize");
-		assert(md3dDevice);
-		assert(mSwapChain);
-		assert(mDirectCmdListAlloc);
+	// Flush before changing any resources.
+	FlushCommandQueue();
 
-		// Flush before changing any resources.
-		FlushCommandQueue();
+	ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
-		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+	// Release the previous resources we will be recreating.
+	for (int i = 0; i < SwapChainBufferCount; ++i)
+		mSwapChainBuffer[i].Reset();
+	mDepthStencilBuffer.Reset();
 
-		// Release the previous resources we will be recreating.
-		for (int i = 0; i < SwapChainBufferCount; ++i)
-			mSwapChainBuffer[i].Reset();
-		mDepthStencilBuffer.Reset();
+	// Resize the swap chain.
+	LOG_INFO("Resize width {0} height {1}", width, height);
+	mSwapChain->ResizeBuffers(
+		SwapChainBufferCount,
+		width, height,
+		mBackBufferFormat,
+		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
-		// Resize the swap chain.
-		LOG_INFO("Resize width {0} height {1}", width, height);
-		mSwapChain->ResizeBuffers(
-			SwapChainBufferCount,
-			width, height,
-			mBackBufferFormat,
-			DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+	mCurrBackBuffer = 0;
 
-		mCurrBackBuffer = 0;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(DescriptorHeapManager::RtvHeap()->GetCPUDescriptorHandleForHeapStart());
+	for (UINT i = 0; i < SwapChainBufferCount; i++)
+	{
+		mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i]));
+		md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
+		rtvHeapHandle.Offset(1, DescriptorHeapManager::RtvDescriptorSize());
+	}
 
-		CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(DescriptorHeapManager::RtvHeap()->GetCPUDescriptorHandleForHeapStart());
-		for (UINT i = 0; i < SwapChainBufferCount; i++)
-		{
-			mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i]));
-			md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
-			rtvHeapHandle.Offset(1, DescriptorHeapManager::RtvDescriptorSize());
-		}
+	// Create the depth/stencil buffer and view.
+	D3D12_RESOURCE_DESC depthStencilDesc;
+	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	depthStencilDesc.Alignment = 0;
+	depthStencilDesc.Width = width;
+	depthStencilDesc.Height = height;
+	depthStencilDesc.DepthOrArraySize = 1;
+	depthStencilDesc.MipLevels = 1;
+	depthStencilDesc.Format = mDepthStencilFormat;
+	depthStencilDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+	depthStencilDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
+	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-		// Create the depth/stencil buffer and view.
-		D3D12_RESOURCE_DESC depthStencilDesc;
-		depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-		depthStencilDesc.Alignment = 0;
-		depthStencilDesc.Width = width;
-		depthStencilDesc.Height = height;
-		depthStencilDesc.DepthOrArraySize = 1;
-		depthStencilDesc.MipLevels = 1;
-		depthStencilDesc.Format = mDepthStencilFormat;
-		depthStencilDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
-		depthStencilDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
-		depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-		depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+	D3D12_CLEAR_VALUE optClear;
+	optClear.Format = mDepthStencilFormat;
+	optClear.DepthStencil.Depth = 1.0f;
+	optClear.DepthStencil.Stencil = 0;
+	CD3DX12_HEAP_PROPERTIES HeapDefault(D3D12_HEAP_TYPE_DEFAULT);
+	ThrowIfFailed(md3dDevice->CreateCommittedResource(
+		&HeapDefault,
+		D3D12_HEAP_FLAG_NONE,
+		&depthStencilDesc,
+		D3D12_RESOURCE_STATE_COMMON,
+		&optClear,
+		IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf())));
 
-		D3D12_CLEAR_VALUE optClear;
-		optClear.Format = mDepthStencilFormat;
-		optClear.DepthStencil.Depth = 1.0f;
-		optClear.DepthStencil.Stencil = 0;
-		CD3DX12_HEAP_PROPERTIES HeapDefault(D3D12_HEAP_TYPE_DEFAULT);
-		ThrowIfFailed(md3dDevice->CreateCommittedResource(
-			&HeapDefault,
-			D3D12_HEAP_FLAG_NONE,
-			&depthStencilDesc,
-			D3D12_RESOURCE_STATE_COMMON,
-			&optClear,
-			IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf())));
+	// Create descriptor to mip level 0 of entire resource using the format of the resource.
+	md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), nullptr, DepthStencilView());
 
-		// Create descriptor to mip level 0 of entire resource using the format of the resource.
-		md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), nullptr, DepthStencilView());
+	// Transition the resource from its initial state to be used as a depth buffer.
+	mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(),
+		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 
-		// Transition the resource from its initial state to be used as a depth buffer.
-		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(),
-			D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+	// Execute the resize commands.
+	ThrowIfFailed(mCmdList->Close());
+	ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
+	mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-		// Execute the resize commands.
-		ThrowIfFailed(mCmdList->Close());
-		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
-		mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+	// Wait until resize is complete.
+	FlushCommandQueue();
 
-		// Wait until resize is complete.
-		FlushCommandQueue();
+	// Update the viewport transform to cover the client area.
+	mScreenViewport.TopLeftX = 0;
+	mScreenViewport.TopLeftY = 0;
+	mScreenViewport.Width = static_cast<float>(width);
+	mScreenViewport.Height = static_cast<float>(height);
+	mScreenViewport.MinDepth = 0.0f;
+	mScreenViewport.MaxDepth = 1.0f;
 
-		// Update the viewport transform to cover the client area.
-		mScreenViewport.TopLeftX = 0;
-		mScreenViewport.TopLeftY = 0;
-		mScreenViewport.Width = static_cast<float>(width);
-		mScreenViewport.Height = static_cast<float>(height);
-		mScreenViewport.MinDepth = 0.0f;
-		mScreenViewport.MaxDepth = 1.0f;
+	mScissorRect = { 0, 0, (long)width, (long)height };
 
-		mScissorRect = { 0, 0, (long)width, (long)height };
+	float aspectRatio = static_cast<float>(mWidth) / mHeight;
+	LOG_INFO("reset camera, new fov: {0}", aspectRatio);
 
-		float aspectRatio = static_cast<float>(mWidth) / mHeight;
-		LOG_INFO("reset camera, new fov: {0}", aspectRatio);
+	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, float(mWidth) / float(mHeight), 1.0f, 1000.0f);
 
-		XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, float(mWidth)/float(mHeight), 1.0f, 1000.0f);
+	if (bEnableShadowPass)
+	{
+		ShadowMap::OnResize(width, height);
+	}
+
+}
+
+	void DX12Renderer::SetEnableShadowPass(bool enable)
+	{
+		bEnableShadowPass = enable;
 	}
 
 
@@ -277,40 +294,11 @@ namespace ChickenEngine
 
 #pragma region InitPipeline
 	/*****************************************************************/
-	/********************** Pre Input Assembly ***********************/
-	/*****************************************************************/
-	void DX12Renderer::PreInputAssembly()
-	{
-		DescriptorHeapManager::InitDescriptorHeapManager(SwapChainBufferCount);
-	}
-
-	void DX12Renderer::SetPassCBByteSize(UINT size)
-	{
-		mPassCBByteSize = size;
-	}
-
-	void DX12Renderer::SetObjectCBByteSize(UINT size)
-	{
-		mObjectCBByteSize = size;
-	}
-
-	void DX12Renderer::SetMaterialCBByteSize(UINT size)
-	{
-		mMaterialCBByteSize = size;
-	}
-
-
-	/*****************************************************************/
 	/*********************** Input Assembly **************************/
 	/*****************************************************************/
 	UINT DX12Renderer::LoadTexture2D(std::string fileName)
 	{
-		wchar_t tmp[256] = L"\0";
-		setlocale(LC_ALL, "chs");
-		MultiByteToWideChar(CP_ACP, 0, fileName.c_str(), fileName.length(), tmp, fileName.length());
-		std::wstring wFilePath;
-		wFilePath.assign(tmp);
-		//std::wstring wFilePath(fileName.begin(), fileName.end());
+		std::wstring wFilePath(fileName.begin(), fileName.end());
 		UINT id = TextureManager::LoadTexture(wFilePath, ETextureDimension::TEXTURE2D);
 		
 		return id;
@@ -324,27 +312,22 @@ namespace ChickenEngine
 		return id;
 	}
 
-	UINT DX12Renderer::AddObjectCB()
-	{
-		UINT id = mObjectCBCount++;
-		return id;
-	}
-
-	UINT DX12Renderer::AddMaterialCB()
-	{
-		UINT id = mMaterialCBCount++;
-		return id;
-	}
-
-	UINT DX12Renderer::CreateRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
+	UINT DX12Renderer::CreateRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, UINT cbOffset)
 	{
 		auto ri = RenderItemManager::CreateRenderItem(RI_OPAQUE);
 		ri->Init(vertexCount, vertexSize, vertexData, indices);
 		ri->numFramesDirty = mNumFrameResources;
+		ri->cbOffset = cbOffset;
+		mObjectCBCount = max(mObjectCBCount, cbOffset + 1);
 		return ri->renderItemID;
 	}
 
-
+	UINT DX12Renderer::CreateDebugRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
+	{
+		debugItem = std::make_shared<RenderItem>();
+		debugItem->Init(vertexCount, vertexSize, vertexData, indices);
+		return 999;
+	}
 
 	/*****************************************************************/
 	/*********************** Init Pipeline ***************************/
@@ -368,20 +351,21 @@ namespace ChickenEngine
 		PSOManager::Init(mBackBufferFormat, mDepthStencilFormat, m4xMsaaState, m4xMsaaQuality);
 		PSOManager::BuildPSOs();
 
-		
 		ExecuteCommands();
 		FlushCommandQueue();
+
+		ShadowMap::Init(mWidth, mHeight);
+		ShadowMap::BuildDescriptors();
 	
 	}
 
-	void DX12Renderer::CreateFrameResources(int numFrames)
+	void DX12Renderer::CreateFrameResources()
 	{
-		mNumFrameResources = numFrames;
 		for (int i = 0; i < mNumFrameResources; ++i)
 		{
-
+			// one pass cb for default, one for shadow
 			mFrameResources.push_back(std::make_shared<FrameResource>(
-				1, mObjectCBCount, mMaterialCBCount, mPassCBByteSize, mObjectCBByteSize, mMaterialCBByteSize));
+				1, mObjectCBCount, mPassCBByteSize, mObjectCBByteSize));
 		}
 	}
 
@@ -393,7 +377,6 @@ namespace ChickenEngine
 		SwapFrameResource();
 		UpdatePassCB();
 		UpdateObjectCB();
-		UpdateMaterialCB();
 	}
 
 	void DX12Renderer::SwapFrameResource()
@@ -431,23 +414,6 @@ namespace ChickenEngine
 				mObjectCBFramesDirty[i]--;
 			}
 		}
-		
-	}
-
-	void DX12Renderer::UpdateMaterialCB()
-	{
-		if (mCurrFrameResource == nullptr)
-			return;
-
-		auto currMaterialCB = mCurrFrameResource->MaterialCB.get();
-		for (int i = 0; i <mMaterialCBCount; i++)
-		{
-			if (mMaterialCBFramesDirty[i])
-			{
-				currMaterialCB->CopyData(i, mMaterialCBData[i].data());
-				mMaterialCBFramesDirty[i]--;
-			}
-		}
 	}
 
 	void DX12Renderer::SetPassSceneData(BYTE* data)
@@ -461,24 +427,34 @@ namespace ChickenEngine
 		mObjectCBFramesDirty[objCBIndex] = mNumFrameResources;
 	}
 
-	void DX12Renderer::SetMaterialCB(UINT matCBIndex, BYTE* data)// float roughness, float metallic, XMFLOAT4 color)
+	void DX12Renderer::SetVisibility(UINT renderItemID, bool visible)
 	{
-		mMaterialCBData[matCBIndex] = std::vector(data, data + mMaterialCBByteSize);
-		mMaterialCBFramesDirty[matCBIndex] = mNumFrameResources;
+		RenderItemManager::GetRenderItem(renderItemID)->visible = visible;
 	}
 
-	//void DX12Renderer::SetRenderItemTexture(UINT renderItemID, UINT textureID)
-	//{
-	//	std::shared_ptr<RenderItem> ri = RenderItemManager::GetRenderItem(renderItemID);
-	//	if (ri != nullptr)
-	//	{
-	//		ri->texOffset = textureID + DescriptorHeapManager::TextureSrvOffset();;
-	//		LOG_TRACE("texid set : {0}", ri->texOffset);
-	//	}
-	//}
+	void DX12Renderer::SetDiffuseTexture(UINT renderItemID, UINT offset)
+	{
+		if (offset >= 0)
+			RenderItemManager::GetRenderItem(renderItemID)->diffuseOffset = offset;
+	}
 
+	void DX12Renderer::SetSpecularTexture(UINT renderItemID, UINT offset)
+	{
+		if (offset >= 0)
+			RenderItemManager::GetRenderItem(renderItemID)->specularOffset = offset;
+	}
 
+	void DX12Renderer::SetNormalTexture(UINT renderItemID, UINT offset)
+	{
+		if (offset >= 0)
+			RenderItemManager::GetRenderItem(renderItemID)->normalOffset = offset;
+	}
 
+	void DX12Renderer::SetHeightTexture(UINT renderItemID, UINT offset)
+	{
+		if (offset >= 0)
+			RenderItemManager::GetRenderItem(renderItemID)->heightOffset = offset;
+	}
 #pragma endregion Pipeline Update
 
 #pragma region Pipeline Draw
@@ -490,47 +466,17 @@ namespace ChickenEngine
 		mCmdList->SetGraphicsRootConstantBufferView(0, objCBAddress);
 	}
 
-	void DX12Renderer::BindMaterialCB(UINT id)
-	{
-		auto materialCBByteSize = UploadBufferUtil::CalcConstantBufferByteSize(mMaterialCBByteSize);
-		auto matCB = mCurrFrameResource->MaterialCB->Resource();
-		D3D12_GPU_VIRTUAL_ADDRESS matCBAddress = matCB->GetGPUVirtualAddress() + id * materialCBByteSize;
-		mCmdList->SetGraphicsRootConstantBufferView(1, matCBAddress);
-	}
-
 	void DX12Renderer::BindAllMapToNull()
 	{
-		mCmdList->SetGraphicsRootDescriptorTable(3, DescriptorHeapManager::NullCubeSrv());
+		mCmdList->SetGraphicsRootDescriptorTable(2, DescriptorHeapManager::NullCubeSrv());
+		mCmdList->SetGraphicsRootDescriptorTable(3, DescriptorHeapManager::NullTexSrv());
 		mCmdList->SetGraphicsRootDescriptorTable(4, DescriptorHeapManager::NullTexSrv());
 		mCmdList->SetGraphicsRootDescriptorTable(5, DescriptorHeapManager::NullTexSrv());
 		mCmdList->SetGraphicsRootDescriptorTable(6, DescriptorHeapManager::NullTexSrv());
 		mCmdList->SetGraphicsRootDescriptorTable(7, DescriptorHeapManager::NullTexSrv());
-		mCmdList->SetGraphicsRootDescriptorTable(8, DescriptorHeapManager::NullTexSrv());
 	}
 
-	/* 这里也可以考虑用单个函数+enum，不过个人不想让renderer这里和engine那共用enum */
-	/* 之后的开发中如果能从engine侧去定义root signature,就可以删掉这些函数了 */
-	void DX12Renderer::BindDiffuseMap(UINT id)
-	{
-		BindMap(id, 5);
-	}
-
-	void DX12Renderer::BindSpecularMap(UINT id)
-	{
-		BindMap(id, 6);
-	}
-
-	void DX12Renderer::BindNormalMap(UINT id)
-	{
-		BindMap(id, 7);
-	}
-
-	void DX12Renderer::BindHeightMap(UINT id)
-	{
-		BindMap(id, 8);
-	}
-
-	void DX12Renderer::BindMap(UINT id, UINT slot)
+	void DX12Renderer::BindMap(UINT slot, UINT id)
 	{
 		if (id >= 0)
 		{
@@ -540,7 +486,7 @@ namespace ChickenEngine
 		}
 	}
 
-	void DX12Renderer::PrepareDraw()
+	void DX12Renderer::Render()
 	{
 		assert(mCmdList);
 
@@ -549,51 +495,96 @@ namespace ChickenEngine
 		// Reuse the memory associated with command recording.
 		// We can only reset when the associated command lists have finished execution on the GPU.
 		ThrowIfFailed(cmdListAlloc->Reset());
-
+		
 		// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
 		// Reusing the command list reuses memory.
 		ThrowIfFailed(mCmdList->Reset(cmdListAlloc.Get(), PSOManager::GetPSO("default").Get()));
 
-		// Set the viewport and scissor rect.  This needs to be reset whenever the command list is reset.
-		mCmdList->RSSetViewports(1, &mScreenViewport);
-		mCmdList->RSSetScissorRects(1, &mScissorRect);
-
-		// Indicate a state transition on the resource usage.
-		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-
-		// Clear the back buffer and depth buffer.
-		mCmdList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::LightSteelBlue, 0, nullptr);
-		mCmdList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-
-		// Specify the buffers we are going to render to.
-		mCmdList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
-
 		ID3D12DescriptorHeap* descriptorHeaps[] = { DescriptorHeapManager::SrvHeap().Get() };
 		mCmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-
 		mCmdList->SetGraphicsRootSignature(RootSignatureManager::GetRootSignature("default").Get());
+		BindAllMapToNull();
+		
+		if (bEnableShadowPass)
+		{
+			ShadowMap::BeginShadowMap(mPassCBByteSize, mCurrFrameResource->PassCB->Resource());
+			RenderAllItems();
+			ShadowMap::EndShadowMap();
+		}
 
-		auto passCB = mCurrFrameResource->PassCB->Resource();
-		mCmdList->SetGraphicsRootConstantBufferView(2, passCB->GetGPUVirtualAddress());
+		RenderDefault();
 	}
 
-	void DX12Renderer::DrawRenderItem(UINT renderItemID)
+	void DX12Renderer::RenderDefault()
 	{
-		std::shared_ptr<RenderItem>& ri = RenderItemManager::GetRenderItem(renderItemID);
+		mCmdList->RSSetViewports(1, &mScreenViewport);
+		mCmdList->RSSetScissorRects(1, &mScissorRect);
+		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+		mCmdList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::LightSteelBlue, 0, nullptr);
+		mCmdList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+		mCmdList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+		
+		if (bEnableShadowPass)
+		{
+			PSOManager::UsePSO("defaultSM");
+			BindMap(ETextureSlot::SLOT_SHADOW, DescriptorHeapManager::ShadowSrvOffset());
+		}
+		else
+		{
+			PSOManager::UsePSO("default");
+		}
+
+		auto passCB = mCurrFrameResource->PassCB->Resource();
+		mCmdList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
+
+		RenderAllItems();
+
+		// debug
+		PSOManager::UsePSO("shadowDebug");
+		RenderRenderItem(debugItem);
+		// Indicate a state transition on the resource usage.
+		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+	}
+
+	void DX12Renderer::RenderAllItems()
+	{
+		std::vector<std::shared_ptr<RenderItem>>& renderItems = RenderItemManager::GetAllRenderItems();
+		for (auto& ri : renderItems)
+		{
+			if (ri->visible == false)
+			{
+				continue;
+			}
+			//LOG_INFO("ri id : {0},   ri diffuse: {1},   ri cb: {2}", ri->renderItemID, ri->diffuseOffset, ri->cbOffset);
+			BindObjectCB(ri->cbOffset);
+			BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseOffset);
+			BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularOffset);
+			BindMap(ETextureSlot::SLOT_NORMAL, ri->normalOffset);
+			BindMap(ETextureSlot::SLOT_HEIGHT, ri->heightOffset);
+			mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
+			mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
+			mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
+			mCmdList->DrawIndexedInstanced(ri->indexCount, 1, 0, 0, 0);
+		}
+	}
+
+	void DX12Renderer::RenderRenderItem(std::shared_ptr<RenderItem> ri)
+	{
+		BindObjectCB(ri->cbOffset);
+		BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseOffset);
+		BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularOffset);
+		BindMap(ETextureSlot::SLOT_NORMAL, ri->normalOffset);
+		BindMap(ETextureSlot::SLOT_HEIGHT, ri->heightOffset);
 		mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
 		mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
 		mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
 		mCmdList->DrawIndexedInstanced(ri->indexCount, 1, 0, 0, 0);
 	}
 
-
-	void DX12Renderer::EndDraw()
+	void DX12Renderer::EndRender()
 	{
-		// Indicate a state transition on the resource usage.
-		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
-
 		ExecuteCommands();
 		// swap the back and front buffers
 		ThrowIfFailed(mSwapChain->Present(0, 0));

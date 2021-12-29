@@ -5,13 +5,11 @@
 
 namespace ChickenEngine
 {
-
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()
 	{
 		s_Instance = this;
-		Init();
 	};
 
 	Application::~Application()
@@ -19,44 +17,41 @@ namespace ChickenEngine
 		ImguiManager::GetInstance().ImguiDestroy();
 		mWindow->Shutdown();
 	}
+
 #pragma region Basic_Procedure
 	void Application::Init()
 	{
-		// --------Init System--------
+		// --------Init Systems--------
 		// Init logger
 		Log::GetCoreLogger()->set_level(spdlog::level::trace);
 		Log::GetClientLogger()->set_level(spdlog::level::trace);
-
+		// Init keys
 		mKeyDown.fill(false);
 		mMouseDown.fill(false);
-
 		// Init Window 
 		mWindow = std::make_shared<Window>();
 		mWindow->SetEventCallBack(BIND_FN(Application::OnEvent));
 		mWindow->Init("Chicken Engine", 1280, 720);
-
+		// Init dx12
 		DX12Renderer& renderer = DX12Renderer::GetInstance();
-		if (!renderer.InitDX12(mWindow->MainWnd(), mWindow->GetWidth(), mWindow->GetHeight()))
+		if (!renderer.InitDX12(mWindow->MainWnd(), mWindow->GetWidth(), mWindow->GetHeight(), 3))
 		{
 			LOG_ERROR("Initialize D3D fail");
 			exit(1);
 		}
-		
-
-		// --------Init Pipeline--------
-		renderer.PreInputAssembly();
-		renderer.SetPassCBByteSize(sizeof(PassConstants));
-		renderer.SetObjectCBByteSize(sizeof(ObjectConstants));
-		renderer.SetMaterialCBByteSize(sizeof(MaterialConstants));
+		// --------Init pipeline--------
 		renderer.StartDirectCommands();
-		LoadTextures();
-		LoadScene();
-		renderer.CreateFrameResources(numFrameResources);
-		renderer.InitPipeline();
-		
+		gl->LoadScene();
+		Mesh debugPlane = ChickenEngine::MeshManager::GenerateDebugPlane();
+		SceneManager::CreateRenderObject(debugPlane, std::string("debugPlane"), { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }, { 0.0,0.0,0.0,0.0 }, 0.15, 0.04);
 
+
+		SceneManager::LoadAllRenderObjects();
+		renderer.CreateFrameResources();
+		renderer.InitPipeline();
 		renderer.OnResize(mWindow->GetWidth(), mWindow->GetHeight());
-			// Init Imgui
+
+		// Init Imgui
 		ImguiManager::GetInstance().ImguiInit();
 	}
 
@@ -88,93 +83,26 @@ namespace ChickenEngine
 	void Application::Update()
 	{
 		// Update
-		mWindow->Update();
+		gl->Update();
+
+		SceneManager::UpdateRenderObjects();
 		UpdateCamera();
-		SetSceneData();
-		UpdateRenderObjects();
+		SceneManager::UpdateSceneData(mWindow->GetWidth(), mWindow->GetHeight());
+		
 		DX12Renderer::GetInstance().UpdateFrame();
 	}
 
 	void Application::Render()
 	{
 		DX12Renderer& renderer = DX12Renderer::GetInstance();
-
-
-		renderer.PrepareDraw();
-		renderer.BindAllMapToNull();
-		std::deque<std::shared_ptr<RenderObject>>& renderObjects =  SceneManager::GetAllRenderObjects();
-		for (auto& ro : renderObjects)
-		{
-			renderer.BindObjectCB(ro->objectCBOffset);
-			renderer.BindMaterialCB(ro->materialCBOffset);
-			for (auto& mesh : ro->mMeshes)
-			{
-				if(mesh.diffuseMap.id >=0)
-					renderer.BindDiffuseMap(mesh.diffuseMap.id);
-				renderer.DrawRenderItem(mesh.renderItemID);
-			}
-		}
-
+		renderer.Render();
+		// call actual render 
 		ImguiManager::GetInstance().ImguiRender(); // later be substituted
 
-		renderer.EndDraw();
+		renderer.EndRender();
 	}
 
 #pragma endregion Basic_Procedure
-
-#pragma region PipeLine_Init
-	void Application::InitCamera()
-	{
-		SceneManager::GetCamera().SetPosition({ 0.0,0.0,-3.0 });
-		SceneManager::GetCamera().UpdateViewMatrix();
-	}
-
-
-	void Application::LoadTextures()
-	{
-		std::string filePath = FileHelper::GetTexturePath("timg.jpg");
-		ResourceManager::LoadTexture(filePath, "tutou");
-	}
-
-	void Application::LoadScene()
-	{
-		InitCamera();
-
-		LOG_TRACE("Enter Load Scene");
-		DX12Renderer& renderer = DX12Renderer::GetInstance();
-
-		//Add simple object BOX!
-		std::shared_ptr<RenderObject> ro = SceneManager::CreateRenderObject(std::string("cube"), { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }, { 1.0,1.0,1.0, 1.0 }, 0.15, 0.04);
-		Mesh cube = MeshManager::GenerateBox();
-		cube.AddDiffuseTexture(ResourceManager::GetTexture("tutou"));
-		ro->mMeshes.push_back(cube);
-		LoadRenderObject(ro);
-		SetRenderObjectTransform(*ro);
-		SetRenderObjectMaterial(*ro);
-
-
-		// Load model
-		Model m;
-		m.LoadModel(FileHelper::GetModelPath("qiuqiuren/qiuqiuren.pmx"));
-		std::shared_ptr<RenderObject> ro1 = SceneManager::CreateRenderObject(std::string("qiuqiuren"), { 0.0,0.0,0.0 }, { 0.0,180.0,0.0 }, { 0.1,0.1,0.1 }, { 1.0,1.0,1.0, 1.0 }, 0.15, 0.04);
-		ro1->mMeshes.insert(ro1->mMeshes.end(), m.mMeshes.begin(), m.mMeshes.end());
-		LoadRenderObject(ro1);
-		SetRenderObjectTransform(*ro1);
-		SetRenderObjectMaterial(*ro1);
-	}
-
-	void Application::LoadRenderObject(std::shared_ptr<RenderObject> ro)
-	{
-		ro->objectCBOffset = DX12Renderer::GetInstance().AddObjectCB();
-		ro->materialCBOffset = DX12Renderer::GetInstance().AddMaterialCB();
-		for (auto& m : ro->mMeshes)
-		{
-			BYTE* data = reinterpret_cast<BYTE*>(m.vertices.data());
-			m.renderItemID =  DX12Renderer::GetInstance().CreateRenderItem( m.vertices.size(), sizeof(Vertex), data, m.GetIndices16());
-		}
-		
-	}
-#pragma endregion PipeLine_Init
 
 #pragma region Update
 	void Application::UpdateCamera()
@@ -194,65 +122,8 @@ namespace ChickenEngine
 		camera.UpdateViewMatrix();
 	}
 
-	void Application::UpdateRenderObjects()
-	{
-		std::deque<std::shared_ptr<RenderObject>>& renderObjs = SceneManager::GetAllRenderObjects();
-		for (auto& ro : renderObjs)
-		{
-			if (ro->dirty)
-			{
-				SetRenderObjectMaterial(*ro);
-				SetRenderObjectTransform(*ro);
-				ro->dirty = false;
-			}
-		}
-	}
 #pragma endregion Update
 
-#pragma region Renderer_Communication
-	void Application::SetSceneData()
-	{
-		SceneManager::UpdateDirLightDirection();
-		std::vector<BYTE> data = SceneManager::GetSceneData(mWindow->GetWidth(), mWindow->GetHeight());
-		DX12Renderer::GetInstance().SetPassSceneData(data.data());
-	}
-
-	void Application::SetRenderObjectTransform(RenderObject& ro)
-	{
-		XMMATRIX world;
-		ObjectConstants oc;
-		XMFLOAT3 rotationPI = ro.rotation;
-		rotationPI.x *= (DirectX::XM_PI / 180.0f);
-		rotationPI.y *= (DirectX::XM_PI / 180.0f);
-		rotationPI.z *= (DirectX::XM_PI / 180.0f);
-		world = XMMatrixTranslationFromVector(XMLoadFloat3(&ro.position)) *
-			(XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotationPI)) * XMMatrixScalingFromVector(XMLoadFloat3(&ro.scale)));
-		XMStoreFloat4x4(&oc.World, XMMatrixTranspose(world));
-		BYTE data[sizeof(ObjectConstants)];
-		memcpy(&data, &oc, sizeof(ObjectConstants));
-		
-		DX12Renderer::GetInstance().SetObjectCB(ro.objectCBOffset, data);
-	}
-
-	void Application::SetRenderObjectMaterial(RenderObject& ro)
-	{
-		MaterialConstants m;
-		m.Roughness = ro.roughness;
-		m.Metallic = ro.metallic;
-		m.Color = ro.color;
-
-		BYTE data[sizeof(MaterialConstants)];
-		memcpy(&data, &m, sizeof(MaterialConstants));
-
-		DX12Renderer::GetInstance().SetMaterialCB(ro.materialCBOffset, data);
-	}
-
-	//void Application::SetRenderObjectTexture(RenderObject& ro)
-	//{
-	//	DX12Renderer::GetInstance().SetRenderItemTexture(ro.renderItemID, ro.texID);
-	//}
-
-#pragma endregion Renderer_Communication
 
 #pragma region Util
 	void Application::CalculateFrameStats()
@@ -327,7 +198,6 @@ namespace ChickenEngine
 		previousMouseY = e.GetY();
 		return true;
 	}
-
 
 	bool Application::OnMousePressedEvent(MouseButtonPressedEvent& e)
 	{

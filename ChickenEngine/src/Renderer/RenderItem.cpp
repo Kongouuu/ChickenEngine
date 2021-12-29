@@ -27,41 +27,13 @@ namespace ChickenEngine
 
         LOG_ERROR("Name: {0}, vertexCount: {1}, vertexSize: {2}, vbbytesize: {3}, ibbytsize: {4}",
             name.c_str(), vertexCount, vertexSize, vbByteSize, ibByteSize);
-       
-        texOffset = DescriptorHeapManager::NullCubeSrvOffset();
     }
 
     int RenderItemManager::renderItemCount = 0;
 
-    /* Render Item */
-    EVertexLayout RenderItem::GetLayoutType()
-    {
-        //switch (riType)
-        //{
-        //case RI_OPAQUE:
-        //    return POS_NORM_COL_TEX;
-        //case RI_TRANSPARENT:
-        //    return POS_NORM_COL_TEX;
-        //default:
-        //}
-        return POS_NORM_TEX;
-    }
-
-
-    //void RenderItemManager::InitRenderItemManager(Microsoft::WRL::ComPtr<ID3D12Device> d3dDevice)
-    //{
-    //    instance().md3dDevice = d3dDevice;
-    //}
 
     std::shared_ptr<RenderItem> RenderItemManager::GetRenderItem( UINT id)
     {
-        //LOG_INFO("RenderItemManager - Get render item. id: {0}", id);
-        //if (instance().mIdToItem.find(id) == instance().mIdToItem.end())
-        //{
-        //    assert(false);
-        //}
-        //std::pair< ERenderItemType, UINT> riIndex = instance().mIdToItem[id];
-        //return instance().mRenderItems[riIndex.first][riIndex.second];
         return instance().mRenderItems[id];
     }
 
@@ -81,11 +53,6 @@ namespace ChickenEngine
        // rim.mRenderItemOfType[(int)riType].emplace_back(ri);
         renderItemCount++;
         return ri;
-    }
-
-    void RenderItemManager::UpdateAllRenderItemCB()
-    {
-
     }
 
     //std::string RenderItemManager::ValidifyName(std::string name)

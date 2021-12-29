@@ -9,6 +9,6 @@ namespace ChickenEngine
 	class CHICKEN_API InputLayout
 	{
 	public:
-		static std::vector<D3D12_INPUT_ELEMENT_DESC> GetInputLayout(EVertexLayout layoutType);
+		static std::vector<D3D12_INPUT_ELEMENT_DESC> GetInputLayout();
 	};
 }

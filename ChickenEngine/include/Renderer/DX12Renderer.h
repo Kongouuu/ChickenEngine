@@ -1,9 +1,9 @@
 #pragma once
 #include "pch.h"
 
-#include "Engine/Events/Event.h"
 #include "Helper/DX12CommonHeader.h"
 #include "Helper/FileHelper.h"
+#include "Interface/IResource.h"
 #include "RootSignature.h"
 #include "Texture.h"
 #include "PSO.h"
@@ -12,13 +12,13 @@
 #include "Buffer.h"
 #include "RenderItem.h"
 #include "FrameResource.h"
+#include "ShadowMap.h"
 
 namespace ChickenEngine
 {
 
 	class CHICKEN_API DX12Renderer
 	{
-		using EventCallbackFn = std::function<void(Event&)>;
 
 	public:
 		DX12Renderer();
@@ -40,52 +40,43 @@ namespace ChickenEngine
 		void CreateSwapChain();
 		void FlushCommandQueue();
 		
-
-		// Pre Init Pipeline ( Called by Engine)
-		void PreInputAssembly();
-		void SetPassCBByteSize(UINT size);
-		void SetMaterialCBByteSize(UINT size);
-		void SetObjectCBByteSize(UINT size);
-		
 		// Input Assembly ( Called by Engine)
 		UINT LoadTexture2D(std::string fileName);
 		UINT LoadTexture3D(std::string fileName);
-		UINT CreateRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
-		UINT AddObjectCB();
-		UINT AddMaterialCB();
+		UINT CreateRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, UINT cbOffset);
+		UINT CreateDebugRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
 
 		// Init pipeline
-		void CreateFrameResources(int numFrames);
+		void CreateFrameResources();
 		void InitPipeline();
-		
 		
 		// Update {every loop}
 		void UpdateFrame();
 		void SwapFrameResource();
 		void UpdatePassCB();
 		void UpdateObjectCB();
-		void UpdateMaterialCB();
 
 		// Called update
 		void SetPassSceneData(BYTE* data);
 		void SetObjectCB(UINT objCBIndex, BYTE* data);
-		void SetMaterialCB(UINT matCBIndex, BYTE* data);
-		void SetRenderItemTexture(UINT renderItemID, UINT textureID);
+		void SetVisibility(UINT renderItemID, bool visibility);
+		void SetDiffuseTexture(UINT renderItemID, UINT offset);
+		void SetSpecularTexture(UINT renderItemID, UINT offset);
+		void SetNormalTexture(UINT renderItemID, UINT offset);
+		void SetHeightTexture(UINT renderItemID, UINT offset);
 		void OnResize(int width, int height);
 
+		void SetEnableShadowPass(bool enable);
+
 		// Render
-		void PrepareDraw();
-		void Draw();
 		void BindObjectCB(UINT id);
-		void BindMaterialCB(UINT id);
 		void BindAllMapToNull();
-		void BindDiffuseMap(UINT id);
-		void BindSpecularMap(UINT id);
-		void BindNormalMap(UINT id);
-		void BindHeightMap(UINT id);
-		void BindMap(UINT id, UINT slot);
-		void DrawRenderItem(UINT renderItemID);
-		void EndDraw();
+		void BindMap(UINT slot, UINT id);
+		void Render();
+		void RenderDefault();
+		void RenderAllItems();
+		void RenderRenderItem(std::shared_ptr<RenderItem> ri);
+		void EndRender();
 
 		// Other
 		void StartDirectCommands();
@@ -145,18 +136,18 @@ namespace ChickenEngine
 
 		UINT mPassCBByteSize;
 		UINT mObjectCBByteSize;
-		UINT mMaterialCBByteSize;
 		std::vector<BYTE> mPassCBData;
-		UINT mObjectCBCount = 0;
-		UINT mMaterialCBCount = 0;
 
+		UINT mObjectCBCount = 0;
 		std::unordered_map<UINT, std::vector<BYTE>> mObjectCBData;
 		std::unordered_map<UINT, UINT> mObjectCBFramesDirty;
-
-		std::unordered_map<UINT, std::vector<BYTE>> mMaterialCBData;
-		std::unordered_map<UINT, UINT> mMaterialCBFramesDirty;
-
+		
+		std::vector<bool> mRenderQueue;
 		UINT mTextureCount;
+
+		// Special passes
+		bool bEnableShadowPass = true;
+		std::shared_ptr<RenderItem> debugItem;
 	};
 }
 

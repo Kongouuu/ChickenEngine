@@ -3,7 +3,7 @@
 
 namespace ChickenEngine
 {
-	std::vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::GetInputLayout(EVertexLayout layoutType)
+	std::vector<D3D12_INPUT_ELEMENT_DESC> InputLayout::GetInputLayout()
 	{
 			return {
 				{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },

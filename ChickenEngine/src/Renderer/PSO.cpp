@@ -15,14 +15,35 @@ namespace ChickenEngine
 	void PSOManager::BuildPSOs()
 	{
 		LOG_INFO("PSOManager - BuildPSO");
-		D3D12_GRAPHICS_PIPELINE_STATE_DESC opaquePsoDesc = DefaultPsoDesc();
+		std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = InputLayout::GetInputLayout();
 
-		std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = InputLayout::GetInputLayout(POS_NORM_TEX);
-		opaquePsoDesc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
-		opaquePsoDesc.pRootSignature = RootSignatureManager::GetRootSignature("default").Get();
-		opaquePsoDesc.VS = VSByteCode("default");
-		opaquePsoDesc.PS = PSByteCode("default");
-		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&instance().mPSOs["default"])));
+		// default
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC defaultPsoDesc = DefaultPsoDesc();	
+		defaultPsoDesc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
+		defaultPsoDesc.pRootSignature = RootSignatureManager::GetRootSignature("default").Get();
+		defaultPsoDesc.VS = VSByteCode("default");
+		defaultPsoDesc.PS = PSByteCode("default");
+		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&defaultPsoDesc, IID_PPV_ARGS(&instance().mPSOs["default"])));
+		defaultPsoDesc.PS = PSByteCode("defaultSM");
+		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&defaultPsoDesc, IID_PPV_ARGS(&instance().mPSOs["defaultSM"])));
+
+		// shadow map generation
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC smapPsoDesc = defaultPsoDesc;
+		smapPsoDesc.RasterizerState.DepthBias = 100000;
+		smapPsoDesc.RasterizerState.DepthBiasClamp = 0.0f;
+		smapPsoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
+		smapPsoDesc.VS = VSByteCode("shadow");
+		smapPsoDesc.PS = PSByteCode("shadow");
+		// Shadow map pass does not have a render target.
+		smapPsoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
+		smapPsoDesc.NumRenderTargets = 0;
+		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&smapPsoDesc, IID_PPV_ARGS(&instance().mPSOs["shadow"])));
+		
+		// shadow debug
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC debugPsoDesc = defaultPsoDesc;
+		debugPsoDesc.VS = VSByteCode("shadowDebug");
+		debugPsoDesc.PS = PSByteCode("shadowDebug");
+		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&debugPsoDesc, IID_PPV_ARGS(&instance().mPSOs["shadowDebug"])));
 	}
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState>& PSOManager::GetPSO(std::string name)

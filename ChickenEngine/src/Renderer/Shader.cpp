@@ -40,12 +40,28 @@ namespace ChickenEngine
 
 	void ShaderManager::LoadVS()
 	{
-		mVertexShaders["default"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("default.hlsl")), nullptr, "VS", "vs_5_1");
+		// normal
+		mVertexShaders["default"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Default.hlsl")), nullptr, "VS", "vs_5_1");
+		// shadow
+		mVertexShaders["shadow"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Shadow.hlsl")), nullptr, "VS", "vs_5_1");
+		// shadow debug
+		mVertexShaders["shadowDebug"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("ShadowDebug.hlsl")), nullptr, "VS", "vs_5_1");
 	}
 
 	void ShaderManager::LoadPS()
 	{
-		mPixelShaders["default"] =  CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("default.hlsl")), nullptr, "PS", "ps_5_1");
+		const D3D_SHADER_MACRO smDefines[] =
+		{
+			"SHADOW_MAP_ENABLED", "1",
+			NULL, NULL
+		};
+		// normal
+		mPixelShaders["default"] =  CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Default.hlsl")), nullptr, "PS", "ps_5_1");
+		mPixelShaders["defaultSM"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Default.hlsl")), smDefines, "PS", "ps_5_1");
+		// shadow
+		mPixelShaders["shadow"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Shadow.hlsl")), nullptr, "PS", "ps_5_1");
+		// shadow debug
+		mPixelShaders["shadowDebug"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("ShadowDebug.hlsl")), nullptr, "PS", "ps_5_1");
 	}
 
 	Microsoft::WRL::ComPtr<ID3DBlob> ShaderManager::CompileShader(const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)

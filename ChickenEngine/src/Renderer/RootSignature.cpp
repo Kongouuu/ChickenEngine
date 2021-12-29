@@ -20,15 +20,13 @@ namespace ChickenEngine
 		LOG_INFO("RootSignature - Load root signatures");
 		//  ---------------- 简易root signature ----------------
 		// Root parameter can be a table, root descriptor or root constants.
-		CD3DX12_ROOT_PARAMETER slotRootParameter[9];
+		CD3DX12_ROOT_PARAMETER slotRootParameter[8];
 
 
 		// b0 为每个物体的变换矩阵
 		slotRootParameter[0].InitAsConstantBufferView(0);
-		// b1 为每个物体的材质
-		slotRootParameter[1].InitAsConstantBufferView(1);
 		// b2 为每一次pass的其他信息(例如摄像机，灯光)
-		slotRootParameter[2].InitAsConstantBufferView(2);
+		slotRootParameter[1].InitAsConstantBufferView(1);
 
 		CD3DX12_DESCRIPTOR_RANGE skyTex;
 		skyTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
@@ -48,17 +46,17 @@ namespace ChickenEngine
 		CD3DX12_DESCRIPTOR_RANGE heightTex;
 		heightTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5, 0);
 
-		slotRootParameter[3].InitAsDescriptorTable(1, &skyTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[4].InitAsDescriptorTable(1, &shadowTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[5].InitAsDescriptorTable(1, &diffuseTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[6].InitAsDescriptorTable(1, &specularTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[7].InitAsDescriptorTable(1, &normalTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[8].InitAsDescriptorTable(1, &heightTex, D3D12_SHADER_VISIBILITY_PIXEL);
+		slotRootParameter[2].InitAsDescriptorTable(1, &skyTex, D3D12_SHADER_VISIBILITY_PIXEL);
+		slotRootParameter[3].InitAsDescriptorTable(1, &shadowTex, D3D12_SHADER_VISIBILITY_PIXEL);
+		slotRootParameter[4].InitAsDescriptorTable(1, &diffuseTex, D3D12_SHADER_VISIBILITY_PIXEL);
+		slotRootParameter[5].InitAsDescriptorTable(1, &specularTex, D3D12_SHADER_VISIBILITY_PIXEL);
+		slotRootParameter[6].InitAsDescriptorTable(1, &normalTex, D3D12_SHADER_VISIBILITY_PIXEL);
+		slotRootParameter[7].InitAsDescriptorTable(1, &heightTex, D3D12_SHADER_VISIBILITY_PIXEL);
 
 		auto staticSamplers = GetStaticSamplers();
 
 		// A root signature is an array of root parameters.
-		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(9, slotRootParameter,
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(8, slotRootParameter,
 			(UINT)staticSamplers.size(), staticSamplers.data(),
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
@@ -79,9 +77,6 @@ namespace ChickenEngine
 			serializedRootSig->GetBufferPointer(),
 			serializedRootSig->GetBufferSize(),
 			IID_PPV_ARGS(mRootSignatures["default"].GetAddressOf())));
-
-
-
 		// other
 	}
 
