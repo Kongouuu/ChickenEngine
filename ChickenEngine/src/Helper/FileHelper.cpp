@@ -52,7 +52,6 @@ namespace ChickenEngine
 		std::string projectDir = STRINGIFY(PROJECT_DIR);
 		projectDir.erase(0, 1); // erase the first quote
 		projectDir.erase(projectDir.size() - 2); // erase the last quote and the dot
-		LOG_TRACE("proj path : {0}", projectDir.c_str());
 		return projectDir;
 	}
 }

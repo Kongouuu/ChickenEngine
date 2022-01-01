@@ -15,6 +15,7 @@ namespace ChickenEngine
 		XMFLOAT4 color;
 		float roughness = 0.0;
 		float metallic = 0.0;
+		bool visible = true;
 		bool dirty = false;
 		std::vector<Mesh> mMeshes;
 

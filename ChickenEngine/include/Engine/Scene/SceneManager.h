@@ -13,29 +13,32 @@ namespace ChickenEngine
 	{
 	public:
 		inline static Camera& GetCamera() { return instance().mCamera; }
-		inline static PassConstants& GetPassCB() { return instance().mPassCB; }
 		inline static std::deque< std::shared_ptr<RenderObject>>& GetAllRenderObjects(){ return instance().mRenderObjects; }
 		static std::shared_ptr<RenderObject> GetRenderObject(UINT id);
 		static std::shared_ptr<RenderObject> CreateRenderObject(std::string n);
 		static std::shared_ptr<RenderObject> CreateRenderObject(std::string n, XMFLOAT3 p, XMFLOAT3 r, XMFLOAT3 s, XMFLOAT4 c, float ro, float me);
 		static std::shared_ptr<RenderObject> CreateRenderObject(Mesh m, std::string n, XMFLOAT3 p, XMFLOAT3 r, XMFLOAT3 s, XMFLOAT4 c, float ro, float me);
 		static std::shared_ptr<RenderObject> CreateRenderObject(Model m, std::string n, XMFLOAT3 p, XMFLOAT3 r, XMFLOAT3 s, XMFLOAT4 c, float ro, float me);
-		static std::vector<BYTE> GetSceneData(int width, int height);
+		static void LoadAllRenderObjects(); // load to DX12
 
-		static void UpdateDirLightDirection();
-		static void LoadAllRenderObjects();
 		static void UpdateRenderObjects();
-		static void UpdateLightCamera();
 		static void UpdateSceneData(int width, int height);
-
-		static void SetRenderObjectCB(RenderObject& ro);
+		static void ToggleRenderObjectVisibility(UINT id);
 
 		inline static XMFLOAT3& GetDirLightRotation(){return instance().mDirLight.Rotation;	}
 		inline static XMFLOAT3 GetDirLightDirection() { return instance().mDirLight.data.Direction; }
 		inline static XMFLOAT3& GetDirLightStrength() { return instance().mDirLight.data.Strength; }
+		inline static XMFLOAT3& GetDirLightPosition() { return instance().mDirLight.Position; }
+
+	private:
+		static std::vector<BYTE> GetSceneData(int width, int height);
+		static void SetRenderObjectCB(RenderObject& ro); // called by UpdateRenderObjects/LoadAllRenderObjects
+		static void UpdateDirLightDirection(); // called by UpdateSceneData
+		static void UpdateLightCamera(); // called by UpdateSceneData
+
 	private:
 		Camera mCamera;
-		Camera mLightCamera;
+		Camera mLightCamera = Camera(true);
 		DirectionLight mDirLight;
 		PassConstants mPassCB;
 		std::deque<std::shared_ptr<RenderObject>> mRenderObjects;

@@ -23,8 +23,6 @@ namespace ChickenEngine
 		UINT mHeapIndex;
 		D3D12_VIEWPORT mViewport;
 		D3D12_RECT mScissorRect;
-
-		UINT passCBOffset = 1;
 		UINT mWidth = 0;
 		UINT mHeight = 0;
 		DXGI_FORMAT mFormat = DXGI_FORMAT_R24G8_TYPELESS;

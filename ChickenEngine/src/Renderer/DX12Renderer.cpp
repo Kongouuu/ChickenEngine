@@ -324,9 +324,11 @@ void DX12Renderer::OnResize(int width, int height)
 
 	UINT DX12Renderer::CreateDebugRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
 	{
-		debugItem = std::make_shared<RenderItem>();
+		auto ri = RenderItemManager::CreateRenderItem(RI_OPAQUE);
+		debugItem = ri;
 		debugItem->Init(vertexCount, vertexSize, vertexData, indices);
-		return 999;
+		debugItem->debug = true;
+		return debugItem->renderItemID;
 	}
 
 	/*****************************************************************/
@@ -481,7 +483,7 @@ void DX12Renderer::OnResize(int width, int height)
 		if (id >= 0)
 		{
 			CD3DX12_GPU_DESCRIPTOR_HANDLE tex(DescriptorHeapManager::SrvHeap()->GetGPUDescriptorHandleForHeapStart());
-			tex.Offset(id + DescriptorHeapManager::TextureSrvOffset(), DescriptorHeapManager::CbvSrvUavDescriptorSize());
+			tex.Offset(id , DescriptorHeapManager::CbvSrvUavDescriptorSize());
 			mCmdList->SetGraphicsRootDescriptorTable(slot, tex);
 		}
 	}
@@ -539,7 +541,7 @@ void DX12Renderer::OnResize(int width, int height)
 		mCmdList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
 
 		RenderAllItems();
-
+		BindMap(ETextureSlot::SLOT_SHADOW, DescriptorHeapManager::ShadowSrvOffset());
 		// debug
 		PSOManager::UsePSO("shadowDebug");
 		RenderRenderItem(debugItem);
@@ -553,7 +555,7 @@ void DX12Renderer::OnResize(int width, int height)
 		std::vector<std::shared_ptr<RenderItem>>& renderItems = RenderItemManager::GetAllRenderItems();
 		for (auto& ri : renderItems)
 		{
-			if (ri->visible == false)
+			if (ri->visible == false || ri->debug)
 			{
 				continue;
 			}
@@ -572,15 +574,20 @@ void DX12Renderer::OnResize(int width, int height)
 
 	void DX12Renderer::RenderRenderItem(std::shared_ptr<RenderItem> ri)
 	{
-		BindObjectCB(ri->cbOffset);
-		BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseOffset);
-		BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularOffset);
-		BindMap(ETextureSlot::SLOT_NORMAL, ri->normalOffset);
-		BindMap(ETextureSlot::SLOT_HEIGHT, ri->heightOffset);
-		mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
-		mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
-		mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
-		mCmdList->DrawIndexedInstanced(ri->indexCount, 1, 0, 0, 0);
+		if (ri->visible)
+		{
+			BindObjectCB(ri->cbOffset);
+			BindMap(ETextureSlot::SLOT_SHADOW, DescriptorHeapManager::ShadowSrvOffset());
+
+			BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseOffset);
+			BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularOffset);
+			BindMap(ETextureSlot::SLOT_NORMAL, ri->normalOffset);
+			BindMap(ETextureSlot::SLOT_HEIGHT, ri->heightOffset);
+			mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
+			mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
+			mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
+			mCmdList->DrawIndexedInstanced(ri->indexCount, 1, 0, 0, 0);
+		}
 	}
 
 	void DX12Renderer::EndRender()

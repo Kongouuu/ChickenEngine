@@ -1,6 +1,7 @@
 cbuffer cbPerObject : register(b0)
 {
 	float4x4 gWorld;
+	float4x4 gInvWorld;
 	float4 mColor;
 	float mRoughness;
 	float mMetallic;
@@ -36,6 +37,8 @@ cbuffer cbPass : register(b1)
 Texture3D    gSkyMap : register(t0);
 Texture2D    gShadowMap : register(t1);
 Texture2D    gDiffuseMap : register(t2);
+
+
 SamplerState gSamPointWrap : register(s0);
 SamplerState gSamPointClamp : register(s1);
 SamplerState gSamLinearWarp : register(s2);

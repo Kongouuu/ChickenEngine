@@ -63,6 +63,7 @@ namespace ChickenEngine
 
 	void ShadowMap::BeginShadowMap(UINT passCBByteSize, Microsoft::WRL::ComPtr<ID3D12Resource> passCB)
 	{
+		PSOManager::UsePSO("shadow");
 		auto& cmdList = CommandList::cmdList();
 		auto& sm = instance();
 		cmdList->RSSetViewports(1, &sm.mViewport);
@@ -73,10 +74,7 @@ namespace ChickenEngine
 			D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 		cmdList->OMSetRenderTargets(0, nullptr, false, &DescriptorHeapManager::ShadowDsv());
 
-		PSOManager::UsePSO("shadow");
-
-		auto CBByteSize = UploadBufferUtil::CalcConstantBufferByteSize(passCBByteSize);
-		D3D12_GPU_VIRTUAL_ADDRESS passCBAddress = passCB->GetGPUVirtualAddress() + sm.passCBOffset * CBByteSize;
+		D3D12_GPU_VIRTUAL_ADDRESS passCBAddress = passCB->GetGPUVirtualAddress();
 		cmdList->SetGraphicsRootConstantBufferView(0, passCBAddress);
 	}
 

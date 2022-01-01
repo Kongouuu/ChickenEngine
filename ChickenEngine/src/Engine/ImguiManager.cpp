@@ -102,6 +102,8 @@ namespace ChickenEngine
 	{
 		ImguiBegin();
 
+		static bool show = true;
+		ImGui::ShowDemoWindow(&show);
 		ShowScenePanel();
 		ShowLightPanel();
 
@@ -148,48 +150,57 @@ namespace ChickenEngine
 			{
 				ImGui::Text("Render Object id: %u",ro->renderObjectID);
 
-				// Position
-				float posx = ro->position.x;
-				float posy = ro->position.y;
-				float posz = ro->position.z;
-				ImGui::Text("Local Position:");
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos x: ", &ro->position.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos y: ", &ro->position.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos z: ", &ro->position.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-				if (posx != ro->position.x || posy != ro->position.y || posz != ro->position.z)
-					ro->dirty = true;
+				if (ro->mMeshes[0].debug == false)
+				{
+					// Position
+					float posx = ro->position.x;
+					float posy = ro->position.y;
+					float posz = ro->position.z;
+					ImGui::Text("Local Position:");
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos x: ", &ro->position.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos y: ", &ro->position.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos z: ", &ro->position.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+					if (posx != ro->position.x || posy != ro->position.y || posz != ro->position.z)
+						ro->dirty = true;
 
-				// Rotation
-				float rotx = ro->rotation.x;
-				float roty = ro->rotation.y;
-				float rotz = ro->rotation.z;
-				ImGui::Text("Rotation:");
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot x: ", &ro->rotation.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot y: ", &ro->rotation.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot z: ", &ro->rotation.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-				if (rotx != ro->rotation.x || roty != ro->rotation.y || rotz != ro->rotation.z)
-					ro->dirty = true;
+					// Rotation
+					float rotx = ro->rotation.x;
+					float roty = ro->rotation.y;
+					float rotz = ro->rotation.z;
+					ImGui::Text("Rotation:");
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot x: ", &ro->rotation.x, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f");
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot y: ", &ro->rotation.y, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f");
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot z: ", &ro->rotation.z, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f");
+					if (rotx != ro->rotation.x || roty != ro->rotation.y || rotz != ro->rotation.z)
+						ro->dirty = true;
 
-				// Scale
-				float scax = ro->scale.x;
-				float scay = ro->scale.y;
-				float scaz = ro->scale.z;
-				ImGui::Text("Scale:");
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca x: ", &ro->scale.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca y: ", &ro->scale.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca z: ", &ro->scale.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-				if (scax != ro->scale.x || scay != ro->scale.y || scaz != ro->scale.z)
-					ro->dirty = true;
+					// Scale
+					float scax = ro->scale.x;
+					float scay = ro->scale.y;
+					float scaz = ro->scale.z;
+					ImGui::Text("Scale:");
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca x: ", &ro->scale.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca y: ", &ro->scale.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca z: ", &ro->scale.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+					if (scax != ro->scale.x || scay != ro->scale.y || scaz != ro->scale.z)
+						ro->dirty = true;
 
-				ImGui::Text("Material:");
-				// Roughness
-				float roughness = ro->roughness;
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "roughness: ", &ro->roughness, 0.003f, 0.0f, 1.0f, "%.3f");
-				// Metallic
-				float metallic = ro->metallic;
-				IMGUI_LEFT_LABEL(ImGui::DragFloat, "metallic:  ", &ro->metallic, 0.003f, 0.0f, 1.0f, "%.3f");
-				if (roughness != ro->roughness || metallic != ro->metallic)
-					ro->dirty = true;
+					ImGui::Text("Material:");
+					// Roughness
+					float roughness = ro->roughness;
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "roughness: ", &ro->roughness, 0.003f, 0.0f, 1.0f, "%.3f");
+					// Metallic
+					float metallic = ro->metallic;
+					IMGUI_LEFT_LABEL(ImGui::DragFloat, "metallic:  ", &ro->metallic, 0.003f, 0.0f, 1.0f, "%.3f");
+					if (roughness != ro->roughness || metallic != ro->metallic)
+						ro->dirty = true;
+				}
+
+				ImGui::Text("Visibility:");
+				bool visible = ro->visible;
+				IMGUI_LEFT_LABEL(ImGui::Checkbox, "visible:", &ro->visible);
+				if (visible != ro->visible)
+					SceneManager::ToggleRenderObjectVisibility(ro->renderObjectID);
 	
 				ImGui::TreePop();
 				ImGui::Separator();
@@ -215,6 +226,7 @@ namespace ChickenEngine
 			DirectX::XMFLOAT3 dir = SceneManager::GetDirLightDirection();
 			DirectX::XMFLOAT3& str = SceneManager::GetDirLightStrength();
 			DirectX::XMFLOAT3& rot = SceneManager::GetDirLightRotation();
+			DirectX::XMFLOAT3& pos = SceneManager::GetDirLightPosition();
 
 			ImGui::Text("Direction: ");
 			ImGui::Text("%.2f  %.2f  %.2f", dir.x, dir.y, dir.z);
@@ -227,6 +239,11 @@ namespace ChickenEngine
 			IMGUI_LEFT_LABEL(ImGui::DragFloat, "x: ", &rot.x, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
 			IMGUI_LEFT_LABEL(ImGui::DragFloat, "y: ", &rot.y, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
 			IMGUI_LEFT_LABEL(ImGui::DragFloat, "z: ", &rot.z, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+
+			ImGui::Text("Position: ");
+			IMGUI_LEFT_LABEL2(ImGui::DragFloat, "x: ", "1", &pos.x, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+			IMGUI_LEFT_LABEL2(ImGui::DragFloat, "y: ", "2", &pos.y, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+			IMGUI_LEFT_LABEL2(ImGui::DragFloat, "z: ", "3", &pos.z, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
 
 			ImGui::TreePop();
 			ImGui::Separator();

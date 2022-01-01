@@ -88,7 +88,6 @@ namespace ChickenEngine
 		}
 	}
 
-
 	std::vector<BYTE> SceneManager::GetSceneData(int width, int height)
 	{
 		Camera& camera = instance().mCamera;
@@ -114,11 +113,11 @@ namespace ChickenEngine
 
 		// light data
 		pc.DirLight = instance().mDirLight.data;
-		instance().mLightCamera.LookAt(camera.GetPosition3f(), pc.DirLight.Direction, XMFLOAT3(0.0, 1.0, 0.0));
-		instance().mLightCamera.UpdateViewMatrix();
+
+
 		XMMATRIX lView = instance().mLightCamera.GetView();
 		XMMATRIX lProj = instance().mLightCamera.GetProj();
-		XMMATRIX shadowTransform = XMMatrixMultiply(lView, lProj);
+		XMMATRIX shadowTransform = lView * lProj;
 		XMStoreFloat4x4(&pc.ShadowTransform, XMMatrixTranspose(shadowTransform));
 		BYTE data[sizeof(pc)];
 		memcpy(&data, &pc, sizeof(pc));
@@ -129,11 +128,12 @@ namespace ChickenEngine
 	void SceneManager::UpdateLightCamera()
 	{
 		auto& sm = instance();
-		float farZ = sm.mCamera.GetFarZ();
-		XMFLOAT3 dir= sm.GetDirLightDirection();
-		XMVECTOR camPos = sm.mCamera.GetPosition();
-		XMVECTOR lightCamPos = XMVectorAdd(camPos, XMLoadFloat3(&XMFLOAT3(-dir.x * farZ, -dir.y * farZ, -dir.z * farZ)));
+		XMFLOAT3 dir = sm.GetDirLightDirection();
+		XMFLOAT3 pos = sm.mDirLight.Position;
 
+		XMFLOAT3 target = XMFLOAT3(dir.x + pos.x, dir.y + pos.y, dir.z + pos.z);
+		sm.mLightCamera.LookAt(pos, target, XMFLOAT3(0.0, 1.0, 0.0));
+		sm.mLightCamera.UpdateViewMatrix();
 	}
 
 	void SceneManager::UpdateSceneData(int width, int height)
@@ -144,27 +144,39 @@ namespace ChickenEngine
 		DX12Renderer::GetInstance().SetPassSceneData(data.data());
 	}
 
+	void SceneManager::ToggleRenderObjectVisibility(UINT id)
+	{
+		std::shared_ptr<RenderObject> ro = GetRenderObject(id);
+		for (auto& m : ro->mMeshes)
+		{
+			DX12Renderer::GetInstance().SetVisibility(m.renderItemID, ro->visible);
+		}
+	}
+
 	void SceneManager::SetRenderObjectCB(RenderObject& ro)
 	{
-		/* 因为模型单位不一样会变成普通方块的十倍大，所以先把所有基础的Mesh大小也拉高十倍 */
-		/* 然后再这里统一把所有mesh缩小10倍 */
-		/* 因为scale变成十分之一，因此position也会同样缩水，这里要乘以10达到平衡 */
 		XMMATRIX world;
 		ObjectConstants oc;
 
 		// translation
-		XMFLOAT3 position = XMFLOAT3(ro.position.x * 10.f, ro.position.y * 10.f, ro.position.z * 10.f);
+		XMFLOAT3 position = XMFLOAT3(ro.position.x, ro.position.y, ro.position.z);
 		// rotation
 		XMFLOAT3 rotationPI = ro.rotation;
 		rotationPI.x *= (DirectX::XM_PI / 180.0f);
 		rotationPI.y *= (DirectX::XM_PI / 180.0f);
 		rotationPI.z *= (DirectX::XM_PI / 180.0f);
 		// scale
-		XMFLOAT3 scale = XMFLOAT3(ro.scale.x / 10.f, ro.scale.y / 10.f, ro.scale.z / 10.f);
+		XMFLOAT3 scale = XMFLOAT3(ro.scale.x, ro.scale.y, ro.scale.z);
 
-		world = XMMatrixTranslationFromVector(XMLoadFloat3(&position)) *
-			(XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotationPI)) * XMMatrixScalingFromVector(XMLoadFloat3(&scale)));
+		
+		world = XMMatrixScalingFromVector(XMLoadFloat3(&scale))  *
+			(XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotationPI)) * XMMatrixTranslationFromVector(XMLoadFloat3(&position)));
 		XMStoreFloat4x4(&oc.World, XMMatrixTranspose(world));
+		
+		XMMATRIX invRotation = XMMatrixTranspose(XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotationPI)));
+		XMMATRIX invScale = XMMatrixScaling(1.0f / ro.scale.x, 1.0f / ro.scale.y, 1.0f / ro.scale.z);
+		XMStoreFloat4x4(&oc.InvWorld, XMMatrixTranspose(invScale * invRotation));
+
 		oc.Roughness = ro.roughness;
 		oc.Metallic = ro.metallic;
 		oc.Color = ro.color;

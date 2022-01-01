@@ -28,14 +28,15 @@ namespace ChickenEngine
 	{
 		DirectX::XMFLOAT3 Strength = { 1.0f,1.0f,1.0f };
 		float cbPerObjectPad1 = 0.0f;
-		DirectX::XMFLOAT3 Direction = { 0.0f,-1.0f,0.0f };
+		DirectX::XMFLOAT3 Direction = { 0.0f,-0.99f,0.0f };
 		float cbPerObjectPad2 = 0.0f;
 	};
 
 	struct DirectionLight
 	{
 		DirectionLightData data;
-		DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,0.0f };
+		DirectX::XMFLOAT3 Position = { 0.0f, 0.0f, 0.0f };
+		DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,10.0f };
 	};
 
 	struct PassConstants
@@ -61,6 +62,7 @@ namespace ChickenEngine
 	struct ObjectConstants
 	{
 		DirectX::XMFLOAT4X4 World = MathHelper::Identity4x4();
+		DirectX::XMFLOAT4X4 InvWorld = MathHelper::Identity4x4();
 		DirectX::XMFLOAT4 Color = { 0.0,0.0,0.0,0.0 };
 		float Roughness = 0.0;
 		float Metallic = 0.0;

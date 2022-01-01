@@ -44,7 +44,7 @@ namespace ChickenEngine
             tm.LoadTextureFromWIC(file, tex->Resource, tex->UploadHeap);
         }
 
-        tex->id = textureCount;
+        tex->id = textureCount + DescriptorHeapManager::TextureSrvOffset();
         textureCount++;
         instance().mTextures.push_back(tex);
 

@@ -23,7 +23,6 @@ VertexOut VS(VertexIn vin)
 	return vout;
 }
 
-float4 PS(VertexOut pin) : SV_Target
+void PS(VertexOut pin)
 {
-	return float4(1.0,1.0,1.0,1.0);
 }

@@ -9,7 +9,8 @@
 #include <Engine/Events/KeyEvent.h>
 #include <Engine/Events/ApplicationEvent.h>
 
-#define IMGUI_LEFT_LABEL(func, label, ...) (ImGui::TextUnformatted(label), ImGui::SameLine(), func("##" label, __VA_ARGS__))
+#define IMGUI_LEFT_LABEL(func, label, ...) (ImGui::Text(label), ImGui::SameLine(), func("##" label, __VA_ARGS__))
+#define IMGUI_LEFT_LABEL2(func, label, labelHide, ...) (ImGui::Text(label), ImGui::SameLine(), func("##" labelHide, __VA_ARGS__))
 
 namespace ChickenEngine
 {

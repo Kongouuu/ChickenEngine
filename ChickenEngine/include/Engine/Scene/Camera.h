@@ -13,6 +13,7 @@ namespace ChickenEngine
 	{
 	public:
 		Camera();
+		Camera(bool ortho);
 		~Camera();
 		// Get/Set world camera position.
 		DirectX::XMVECTOR GetPosition()const;

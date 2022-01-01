@@ -35,6 +35,7 @@ namespace ChickenEngine
 		int numFramesDirty = 0;
 
 		bool visible = true;
+		bool debug = false;
 		D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 		void Init(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);

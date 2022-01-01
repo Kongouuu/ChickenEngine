@@ -123,7 +123,7 @@ namespace ChickenEngine
 		LOG_INFO("DescriptorHeapManager - Build texture srv heap");
 		DescriptorHeapManager& dhm = instance();
 		CD3DX12_CPU_DESCRIPTOR_HANDLE hDescriptor(dhm.mSrvHeap->GetCPUDescriptorHandleForHeapStart());
-		hDescriptor.Offset(offset + TextureSrvOffset(), dhm.mCbvSrvUavDescriptorSize);
+		hDescriptor.Offset(offset, dhm.mCbvSrvUavDescriptorSize);
 		LOG_TRACE("Tex id: {0},    Tex offset: {1}", offset, offset + TextureSrvOffset());
 		//offset
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};

@@ -24,10 +24,16 @@ VertexOut VS(VertexIn vin)
 	VertexOut vout;
 	float4 PosW = float4(vin.PosL, 1.0f);
 	PosW = mul(PosW, gWorld);
-	vout.PosH = mul(PosW,gViewProj);
+	vout.PosH = mul(PosW, gViewProj);
 	vout.PosW = PosW;
 	vout.ShadowPosH = mul(PosW, gShadowTransform);
-	vout.Norm = mul(float4(vin.Norm,1.0), gWorld).xyz;
+	float4x4 T = float4x4(
+		0.5f, 0.0f, 0.0f, 0.0f,
+		0.0f, -0.5f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.0f, 1.0f);
+	vout.ShadowPosH = mul(vout.ShadowPosH, T);
+	vout.Norm = mul(transpose((float3x3)gInvWorld) , vin.Norm);
 	vout.uv = vin.uv;
 	return vout;
 }
@@ -69,7 +75,7 @@ float4 PS(VertexOut pin) : SV_Target
 #endif
 
 	float3 color = shadowFactor * (kD * diffuse +  kS * specular) * gDirLight.strength * NdotL;;
-	float3 ambient = albedo.xyz * 0.02;
+	float3 ambient = albedo.xyz * 0.12;
 	color += ambient;
 	color = pow(color, (1.0 / 2.2));
 	return float4(color,1.0);

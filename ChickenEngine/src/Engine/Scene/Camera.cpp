@@ -15,6 +15,14 @@ namespace ChickenEngine
 	{
 	}
 
+	Camera::Camera(bool ortho)
+	{
+		if (ortho)
+			SetLensOrtho(500, 500, 1.0f, 1000.0f);
+		else
+			SetLens(0.25f * MathHelper::Pi, 1.0f, 1.0f, 1000.0f);
+	}
+
 	XMVECTOR Camera::GetPosition()const
 	{
 		return XMLoadFloat3(&mPosition);
@@ -134,9 +142,24 @@ namespace ChickenEngine
 		XMStoreFloat4x4(&mProj, P);
 	}
 
+	void Camera::SetLensOrtho(float viewWidth, float viewHeight, float zn, float zf)
+	{
+		mAspect = viewWidth / viewHeight;
+		mNearWindowHeight = viewHeight;
+		mFarWindowHeight = viewHeight;
+		mNearZ = zn;
+		mFarZ = zf;
+
+		XMMATRIX P = XMMatrixOrthographicLH(viewWidth, viewHeight, zn, zf);
+		XMStoreFloat4x4(&mProj, P);
+	}
+
+
 	void Camera::LookAt(FXMVECTOR pos, FXMVECTOR target, FXMVECTOR worldUp)
 	{
 		XMVECTOR L = XMVector3Normalize(XMVectorSubtract(target, pos));
+		XMFLOAT3 l2;
+		XMStoreFloat3(&l2, L);
 		XMVECTOR R = XMVector3Normalize(XMVector3Cross(worldUp, L));
 		XMVECTOR U = XMVector3Cross(L, R);
 
