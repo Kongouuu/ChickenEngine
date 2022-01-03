@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Renderer/FrameResource.h"
+#include "Renderer/DX12Renderer/FrameResource.h"
 
 namespace ChickenEngine
 {

@@ -1,9 +1,6 @@
 #pragma once
 #include "Helper/DX12CommonHeader.h"
-#include "Helper/Singleton.h"
-#include "Device.h"
 #include "DescriptorHeap.h"
-#include "CommandList.h"
 #include "PSO.h"
 #include "UploadBuffer.h"
 

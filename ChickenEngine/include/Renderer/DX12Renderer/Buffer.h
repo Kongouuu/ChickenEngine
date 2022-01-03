@@ -1,23 +1,9 @@
 #pragma once
 #include "Helper/DX12CommonHeader.h"
-#include "Engine/Core.h"
 #include "UploadBuffer.h"
+
 namespace ChickenEngine
 {
-	enum EBufferType
-	{
-		VERTEX_BUFFER = 0,
-		INDEX_BUFFER,
-	};
-	/*enum EVertexLayout
-	{
-		POS_NORM_COL = 0,
-		POS_NORM_TEX,
-		POS_NORM_TAN_TEX,
-		NONE
-	};*/
-
-
 	struct VertexBuffer
 	{
 		//Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;

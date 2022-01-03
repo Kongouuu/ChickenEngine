@@ -87,14 +87,22 @@ namespace ChickenEngine
 		{ 
 			return mSwapChainBuffer[mCurrBackBuffer].Get(); 
 		}
+
 		inline D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const 
 		{ 
 			return CD3DX12_CPU_DESCRIPTOR_HANDLE(DescriptorHeapManager::RtvHeap()->GetCPUDescriptorHandleForHeapStart(), mCurrBackBuffer, DescriptorHeapManager::RtvDescriptorSize()); 
 		}
+
+		inline D3D12_GPU_DESCRIPTOR_HANDLE CurrentBackBufferGPUHandle()const
+		{
+			return CD3DX12_GPU_DESCRIPTOR_HANDLE(DescriptorHeapManager::RtvHeap()->GetGPUDescriptorHandleForHeapStart(), mCurrBackBuffer, DescriptorHeapManager::RtvDescriptorSize());
+		}
+
 		inline D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView()const 
 		{ 
 			return DescriptorHeapManager::DsvHeap()->GetCPUDescriptorHandleForHeapStart(); 
 		}
+
 	private:
 		HWND      mhMainWnd = nullptr; // main window handle
 		int		  mWidth;

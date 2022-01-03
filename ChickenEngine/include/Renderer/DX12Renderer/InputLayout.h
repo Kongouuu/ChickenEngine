@@ -2,7 +2,6 @@
 
 #include "pch.h"
 #include "Helper/DX12CommonHeader.h"
-#include "Engine/Core.h"
 
 namespace ChickenEngine
 {

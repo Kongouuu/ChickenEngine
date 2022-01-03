@@ -1,6 +1,6 @@
 #include "pch.h"
-#include "Renderer/RenderItem.h"
-#include "Engine/Log.h"
+#include "Renderer/DX12Renderer/RenderItem.h"
+
 namespace ChickenEngine
 {
     void RenderItem::Init(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)

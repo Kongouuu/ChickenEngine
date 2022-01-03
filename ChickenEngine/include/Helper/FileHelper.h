@@ -1,8 +1,14 @@
 #pragma once
 #include "pch.h"
 #include "Engine/Core.h"
-#include "DX12Defines.h"
 #include "Engine/Log.h"
+
+#define CONCAT2(X, Y) X##Y
+#define CONCAT(X, Y) CONCAT2(X, Y)
+#define STRINGIFY2(X) #X
+#define STRINGIFY(X) STRINGIFY2(X)
+#define WIDEN(X) CONCAT(L, STRINGIFY(X))
+
 
 namespace ChickenEngine
 {

@@ -7,7 +7,7 @@ public:
 	{
 		LOG_TRACE("Enter Load Scene");
 		// Set Camera start pos
-		ChickenEngine::SceneManager::GetCamera().SetPosition({ 0.0,0.0,-3.0 });
+		ChickenEngine::SceneManager::GetCamera().SetPosition({ 0.0,10.0,-30.0 });
 		ChickenEngine::SceneManager::GetCamera().UpdateViewMatrix();
 
 		// Load Texture

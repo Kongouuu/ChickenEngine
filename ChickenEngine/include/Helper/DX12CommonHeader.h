@@ -11,11 +11,11 @@
 #include "d3dx12.h"
 #include "Singleton.h"
 #include "MathHelper.h"
-#include "DX12Defines.h"
+#include "FileHelper.h"
 #include "Engine/Core.h"
 #include "Engine/Log.h"
-#include "Renderer/CommandList.h"
-#include "Renderer/Device.h"
+#include "Renderer/DX12Renderer/CommandList.h"
+#include "Renderer/DX12Renderer/Device.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")
@@ -24,5 +24,18 @@
 namespace ChickenEngine
 {
 	using namespace DirectX;
-}
 
+	enum ETextureDimension
+	{
+		TEXTURE2D = 0,
+		TEXTURE3D
+	};
+
+	inline void ThrowIfFailed(HRESULT hr)
+	{
+		if (FAILED(hr))
+		{
+			throw std::exception();
+		}
+	}
+}

@@ -1,5 +1,4 @@
-#include <pch.h>
-// dear imgui, v1.86 WIP
+// dear imgui, v1.87 WIP
 // (tables and columns code)
 
 /*
@@ -184,18 +183,18 @@ Index of this file:
 //-----------------------------------------------------------------------------
 // [SECTION] Header mess
 //-----------------------------------------------------------------------------
-
+#include <pch.h>
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#include "imgui/imgui.h"
+#include "ThirdParty/imgui/imgui.h"
 #ifndef IMGUI_DISABLE
 
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
-#include "imgui/imgui_internal.h"
+#include "ThirdParty/imgui/imgui_internal.h"
 
 // System includes
 #if defined(_MSC_VER) && _MSC_VER <= 1500 // MSVC 2008 or earlier

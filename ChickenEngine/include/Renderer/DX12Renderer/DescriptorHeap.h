@@ -4,6 +4,11 @@
 
 namespace ChickenEngine
 {
+	class DescriptorHeap
+	{
+	private:
+	};
+
 	class CHICKEN_API DescriptorHeapManager : public Singleton<DescriptorHeapManager>
 	{
 	public:
@@ -11,7 +16,7 @@ namespace ChickenEngine
 		static void BuildRtvSrvDsvHeapDesc(int numTex);
 		static void BuildCommonSrvHeap();
 		static void BuildShadowMapHeap(Microsoft::WRL::ComPtr<ID3D12Resource> shadowMap);
-		static void BuildTextureSrvHeap(ETextureDimension texType, UINT offset, Microsoft::WRL::ComPtr<ID3D12Resource> resource);\
+		static void BuildTextureSrvHeap(ETextureDimension texType, UINT offset, Microsoft::WRL::ComPtr<ID3D12Resource> resource);
 
 	public:
 		inline static Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> SrvHeap(){ return instance().mSrvHeap; }
@@ -27,6 +32,7 @@ namespace ChickenEngine
 		inline static UINT NullTexSrvOffset() { return instance().mNullTexSrvOffset; }
 		inline static UINT NullCubeSrvOffset() { return instance().mNullCubeSrvOffset; }
 		inline static UINT ShadowSrvOffset() { return instance().mShadowSrvOffset; }
+		inline static UINT CommonSrvOffset() { return instance().mCommonSrvOffset; }
 		inline static UINT TextureSrvOffset() { return instance().mTextureSrvOffset; }
 
 		inline static UINT RtvDescriptorSize() { return instance().mRtvDescriptorSize; }
@@ -51,6 +57,7 @@ namespace ChickenEngine
 		UINT mNullTexSrvOffset;
 		UINT mNullCubeSrvOffset;
 		UINT mShadowSrvOffset;
+		UINT mCommonSrvOffset;
 		UINT mTextureSrvOffset;
 
 	};

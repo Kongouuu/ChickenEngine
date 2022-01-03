@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Mesh.h"
-#include "Renderer/DX12Renderer.h"
+#include "Renderer/DX12Renderer/DX12Renderer.h"
 #include "Engine/ResourceManager.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>

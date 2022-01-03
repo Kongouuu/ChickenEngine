@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Engine/ImguiManager.h"
 #include "Engine/Application.h"
-#include "Renderer/DX12Renderer.h"
+#include "Renderer/DX12Renderer/DX12Renderer.h"
 
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -24,13 +24,15 @@ namespace ChickenEngine
 		this->bEnabled = true; 
 
 		LOG_INFO("Check version");
-		IMGUI_CHECKVERSION();
+		ImGui::DebugCheckVersionAndDataLayout(IMGUI_VERSION, sizeof(ImGuiIO), sizeof(ImGuiStyle), sizeof(ImVec2), sizeof(ImVec4), sizeof(ImDrawVert), sizeof(ImDrawIdx));
 		LOG_INFO("Create context");
 		ImGui::CreateContext();
 		LOG_INFO("Get io");
 		ImGuiIO& io = ImGui::GetIO(); 
 		(void)io;
-		
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
 		io.KeyMap[ImGuiKey_Tab] = VK_TAB;
 		io.KeyMap[ImGuiKey_LeftArrow] = VK_LEFT;
 		io.KeyMap[ImGuiKey_RightArrow] = VK_RIGHT;
@@ -57,9 +59,15 @@ namespace ChickenEngine
 		
 		io.Fonts->Build();
 
-		LOG_INFO("Before Imgui Init");
+
 		// Setup Dear ImGui style
 		ImGui::StyleColorsDark();
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
 
 		Application& App = Application::Get();
 		const DX12Renderer& DXContext = DX12Renderer::GetInstance();
@@ -104,9 +112,11 @@ namespace ChickenEngine
 
 		static bool show = true;
 		ImGui::ShowDemoWindow(&show);
-		ShowScenePanel();
-		ShowLightPanel();
-
+		//ShowScenePanel();
+		//ShowLightPanel();
+		ImGui::Begin("ViewPort Panel");
+		ImGui::Image((ImTextureID)(DX12Renderer::GetInstance().CurrentBackBufferGPUHandle().ptr), ImVec2{ 64,64}, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ImGui::End();
 		ImguiEnd();
 	}
 
@@ -119,6 +129,14 @@ namespace ChickenEngine
 		ImGui::Render();
 		DXContext.CommandList()->SetDescriptorHeaps(1, DXContext.SrvHeap().GetAddressOf());
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), DXContext.CommandList().Get());
+
+		// Update and Render additional Platform Windows
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault(NULL, (void*)DXContext.CommandList().Get());
+		}
+
 	}
 
 

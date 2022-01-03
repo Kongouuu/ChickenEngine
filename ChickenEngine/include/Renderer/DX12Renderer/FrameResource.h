@@ -1,10 +1,8 @@
 #pragma once
 
 #include <DirectXMath.h>
-#include "Helper/MathHelper.h"
 #include "Helper/DX12CommonHeader.h"
 #include "UploadBuffer.h"
-#include "Device.h"
 
 namespace ChickenEngine
 {

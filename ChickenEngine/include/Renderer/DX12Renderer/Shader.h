@@ -1,8 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "Engine/Core.h"
 #include "Helper/DX12CommonHeader.h"
-#include "Helper/FileHelper.h"
 
 namespace ChickenEngine
 {

@@ -5,7 +5,6 @@
 #include "Engine/Log.h"
 #include "Helper/Singleton.h"
 #include "Helper/MathHelper.h"
-#include "Helper/DX12Defines.h"
 #include "pch.h"
 
 namespace ChickenEngine

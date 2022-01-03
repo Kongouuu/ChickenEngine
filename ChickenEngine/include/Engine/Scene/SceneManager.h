@@ -1,11 +1,12 @@
 #pragma once
 #include "pch.h"
-#include "Engine/Core.h"
-#include "Camera.h"
 #include "Interface/IResource.h"
+#include "Engine/Core.h"
+#include "Helper/Singleton.h"
+#include "Renderer/DX12Renderer/DX12Renderer.h"
+#include "Camera.h"
 #include "RenderObject.h"
 #include "Model.h"
-#include "Helper/Singleton.h"
 
 namespace ChickenEngine
 {
