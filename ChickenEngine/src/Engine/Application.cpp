@@ -14,7 +14,7 @@ namespace ChickenEngine
 
 	Application::~Application()
 	{
-		ImguiManager::GetInstance().ImguiDestroy();
+		ImguiManager::instance().ImguiDestroy();
 		mWindow->Shutdown();
 	}
 
@@ -39,20 +39,22 @@ namespace ChickenEngine
 			LOG_ERROR("Initialize D3D fail");
 			exit(1);
 		}
+
 		// --------Init pipeline--------
 		renderer.StartDirectCommands();
-		gl->LoadScene();
+		gameLayer->LoadScene();
 		Mesh debugPlane = ChickenEngine::MeshManager::GenerateDebugPlane();
 		SceneManager::CreateRenderObject(debugPlane, std::string("debugPlane"), { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }, { 0.0,0.0,0.0,0.0 }, 0.15, 0.04);
-
 
 		SceneManager::LoadAllRenderObjects();
 		renderer.CreateFrameResources();
 		renderer.InitPipeline();
-		renderer.OnResize(mWindow->GetWidth(), mWindow->GetHeight());
 
+		renderer.OnWindowResize(mWindow->GetWidth(), mWindow->GetHeight());
+		renderer.OnViewportResize(mWindow->GetWidth(), mWindow->GetHeight());
 		// Init Imgui
-		ImguiManager::GetInstance().ImguiInit();
+		ImguiManager::instance().ImguiInit();
+
 	}
 
 	void Application::Run()
@@ -83,13 +85,19 @@ namespace ChickenEngine
 	void Application::Update()
 	{
 		// Update
-		gl->Update();
-
+		gameLayer->Update();
+		//
 		SceneManager::UpdateRenderObjects();
 		UpdateCamera();
-		SceneManager::UpdateSceneData(mWindow->GetWidth(), mWindow->GetHeight());
+		SceneManager::UpdateSceneData(ImguiManager::ViewportWidth(), ImguiManager::ViewportHeight());
 		
 		DX12Renderer::GetInstance().UpdateFrame();
+		// resize events
+		if (ImguiManager::ViewportSizeDirty())
+		{
+			SceneManager::GetCamera().SetAspect(ImguiManager::ViewportWidth() / ImguiManager::ViewportHeight());
+			DX12Renderer::GetInstance().OnViewportResize(ImguiManager::ViewportWidth(), ImguiManager::ViewportHeight());
+		}
 	}
 
 	void Application::Render()
@@ -97,7 +105,7 @@ namespace ChickenEngine
 		DX12Renderer& renderer = DX12Renderer::GetInstance();
 		renderer.Render();
 		// call actual render 
-		ImguiManager::GetInstance().ImguiRender(); // later be substituted
+		ImguiManager::instance().ImguiRender(); // later be substituted
 
 		renderer.EndRender();
 	}
@@ -110,13 +118,13 @@ namespace ChickenEngine
 		Camera& camera = SceneManager::GetCamera();
 		// Position
 		if (mKeyDown[(int)'w'] || mKeyDown[(int)'W'])
-			camera.Walk(10.0f * mTimer.DeltaTime());
+			camera.Walk(30.0f * mTimer.DeltaTime());
 		if (mKeyDown[(int)'s'] || mKeyDown[(int)'S'])
-			camera.Walk(-10.0f * mTimer.DeltaTime());
+			camera.Walk(-30.0f * mTimer.DeltaTime());
 		if (mKeyDown[(int)'d'] || mKeyDown[(int)'D'])
-			camera.Strafe(10.0f * mTimer.DeltaTime());
+			camera.Strafe(30.0f * mTimer.DeltaTime());
 		if (mKeyDown[(int)'a'] || mKeyDown[(int)'A'])
-			camera.Strafe(-10.0f * mTimer.DeltaTime());
+			camera.Strafe(-30.0f * mTimer.DeltaTime());
 
 		// View direction
 		camera.UpdateViewMatrix();
@@ -152,7 +160,7 @@ namespace ChickenEngine
 #pragma region EventHandle
 	void Application::OnEvent(Event& e)
 	{
-		ImguiManager::GetInstance().OnEvent(e);
+		ImguiManager::instance().OnEvent(e);
 		if (e.Handled)
 			return;
 		EventDispatcher dispatcher(e);
@@ -176,8 +184,7 @@ namespace ChickenEngine
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
 		LOG_INFO("Window resize application");
-		SceneManager::GetCamera().SetAspect(static_cast<float>(e.GetWidth()) / e.GetHeight());
-		DX12Renderer::GetInstance().OnResize(e.GetWidth(), e.GetHeight());
+		DX12Renderer::GetInstance().OnWindowResize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 
@@ -189,9 +196,12 @@ namespace ChickenEngine
 			// Make each pixel correspond to a quarter of a degree.
 			float dx = XMConvertToRadians(0.25f * static_cast<float>(e.GetX() - previousMouseX));
 			float dy = XMConvertToRadians(0.25f * static_cast<float>(e.GetY() - previousMouseY));
-
-			SceneManager::GetCamera().Pitch(dy);
+			dx = std::clamp(dx, -0.05f, 0.05f);
+			dy = std::clamp(dy, -0.05f, 0.05f);
 			SceneManager::GetCamera().RotateY(dx);
+			SceneManager::GetCamera().Pitch(dy);
+			
+			LOG_INFO("dx {0} , dy {1}", dx, dy);
 		}
 
 		previousMouseX = e.GetX();

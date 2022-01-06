@@ -47,7 +47,7 @@ namespace ChickenEngine
 
 
 
-        UINT i[36];
+        uint32_t i[36];
 
         i[0] = 0; i[1] = 1; i[2] = 2;
         i[3] = 2; i[4] = 1; i[5] = 3;
@@ -91,7 +91,7 @@ namespace ChickenEngine
 
 
 
-        UINT i[12];
+        uint32_t i[12];
 
         i[0] = 0; i[1] = 1; i[2] = 2;
         i[3] = 2; i[4] = 1; i[5] = 3;
@@ -115,7 +115,7 @@ namespace ChickenEngine
         planeMesh.vertices[2] = Vertex({ 0.5, -1.0, 0.0 }, { 0.0,1.0,0.0 }, { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 0.0,1.0 });
         planeMesh.vertices[3] = Vertex({ 1.0, -1.0, -5.0 }, { 0.0,1.0,0.0 }, { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,1.0 });
 
-        UINT i[6];
+        uint32_t i[6];
 
         i[0] = 0; i[1] = 1; i[2] = 2;
         i[3] = 2; i[4] = 1; i[5] = 3;

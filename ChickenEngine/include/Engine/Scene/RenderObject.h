@@ -7,7 +7,7 @@ namespace ChickenEngine
 	using namespace DirectX;
 	struct CHICKEN_API RenderObject
 	{
-		UINT renderObjectID = 0;
+		uint32_t renderObjectID = 0;
 		std::string name = "";
 		XMFLOAT3 position;
 		XMFLOAT3 rotation ;

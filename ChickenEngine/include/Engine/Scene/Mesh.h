@@ -9,26 +9,17 @@
 
 namespace ChickenEngine
 {
-	enum ETextureType
-	{
-		DIFFUSE = 0,
-		SPECULAR,
-		NORMAL,
-		HEIGHT,
-		NULL_TYPE
-	};
-
 	struct Texture {
-		UINT id = -1;
+		int id = -1;
 		ETextureType type = ETextureType::NULL_TYPE;
 		std::string path;
 		Texture() {}
-		Texture(UINT id, ETextureType type, std::string path) : id(id), type(type), path(path) {}
+		Texture(uint32_t id, ETextureType type, std::string path) : id(id), type(type), path(path) {}
 	};
 
 	struct CHICKEN_API Mesh
 	{
-		UINT renderItemID;
+		uint32_t renderItemID;
 		bool debug = false;
 		std::vector<Vertex> vertices;
 		std::vector<UINT> indices;

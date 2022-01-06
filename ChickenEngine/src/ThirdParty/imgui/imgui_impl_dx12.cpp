@@ -62,7 +62,7 @@ struct ImGui_ImplDX12_Data
     D3D12_CPU_DESCRIPTOR_HANDLE hFontSrvCpuDescHandle;
     D3D12_GPU_DESCRIPTOR_HANDLE hFontSrvGpuDescHandle;
     ID3D12DescriptorHeap*       pd3dSrvDescHeap;
-    UINT                        numFramesInFlight;
+    uint32_t                        numFramesInFlight;
 
     ImGui_ImplDX12_Data()       { memset(this, 0, sizeof(*this)); }
 };
@@ -104,14 +104,14 @@ struct ImGui_ImplDX12_ViewportData
     ID3D12Fence*                    Fence;
     UINT64                          FenceSignaledValue;
     HANDLE                          FenceEvent;
-    UINT                            NumFramesInFlight;
+    uint32_t                            NumFramesInFlight;
     ImGui_ImplDX12_FrameContext*    FrameCtx;
 
     // Render buffers
-    UINT                            FrameIndex;
+    uint32_t                            FrameIndex;
     ImGui_ImplDX12_RenderBuffers*   FrameRenderBuffers;
 
-    ImGui_ImplDX12_ViewportData(UINT num_frames_in_flight)
+    ImGui_ImplDX12_ViewportData(uint32_t num_frames_in_flight)
     {
         CommandQueue = NULL;
         CommandList = NULL;
@@ -125,7 +125,7 @@ struct ImGui_ImplDX12_ViewportData
         FrameIndex = UINT_MAX;
         FrameRenderBuffers = new ImGui_ImplDX12_RenderBuffers[NumFramesInFlight];
 
-        for (UINT i = 0; i < NumFramesInFlight; ++i)
+        for (uint32_t i = 0; i < NumFramesInFlight; ++i)
         {
             FrameCtx[i].CommandAllocator = NULL;
             FrameCtx[i].RenderTarget = NULL;
@@ -145,7 +145,7 @@ struct ImGui_ImplDX12_ViewportData
         IM_ASSERT(Fence == NULL);
         IM_ASSERT(FenceEvent == NULL);
 
-        for (UINT i = 0; i < NumFramesInFlight; ++i)
+        for (uint32_t i = 0; i < NumFramesInFlight; ++i)
         {
             IM_ASSERT(FrameCtx[i].CommandAllocator == NULL && FrameCtx[i].RenderTarget == NULL);
             IM_ASSERT(FrameRenderBuffers[i].IndexBuffer == NULL && FrameRenderBuffers[i].VertexBuffer == NULL);
@@ -392,8 +392,8 @@ static void ImGui_ImplDX12_CreateFontsTexture()
         bd->pd3dDevice->CreateCommittedResource(&props, D3D12_HEAP_FLAG_NONE, &desc,
             D3D12_RESOURCE_STATE_COPY_DEST, NULL, IID_PPV_ARGS(&pTexture));
 
-        UINT uploadPitch = (width * 4 + D3D12_TEXTURE_DATA_PITCH_ALIGNMENT - 1u) & ~(D3D12_TEXTURE_DATA_PITCH_ALIGNMENT - 1u);
-        UINT uploadSize = height * uploadPitch;
+        uint32_t uploadPitch = (width * 4 + D3D12_TEXTURE_DATA_PITCH_ALIGNMENT - 1u) & ~(D3D12_TEXTURE_DATA_PITCH_ALIGNMENT - 1u);
+        uint32_t uploadSize = height * uploadPitch;
         desc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
         desc.Alignment = 0;
         desc.Width = uploadSize;
@@ -808,7 +808,7 @@ void ImGui_ImplDX12_Shutdown()
     if (ImGui_ImplDX12_ViewportData* vd = (ImGui_ImplDX12_ViewportData*)main_viewport->RendererUserData)
     {
         // We could just call ImGui_ImplDX12_DestroyWindow(main_viewport) as a convenience but that would be misleading since we only use data->Resources[]
-        for (UINT i = 0; i < bd->numFramesInFlight; i++)
+        for (uint32_t i = 0; i < bd->numFramesInFlight; i++)
             ImGui_ImplDX12_DestroyRenderBuffers(&vd->FrameRenderBuffers[i]);
         IM_DELETE(vd);
         main_viewport->RendererUserData = NULL;
@@ -861,7 +861,7 @@ static void ImGui_ImplDX12_CreateWindow(ImGuiViewport* viewport)
     IM_ASSERT(res == S_OK);
 
     // Create command allocator.
-    for (UINT i = 0; i < bd->numFramesInFlight; ++i)
+    for (uint32_t i = 0; i < bd->numFramesInFlight; ++i)
     {
         res = bd->pd3dDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&vd->FrameCtx[i].CommandAllocator));
         IM_ASSERT(res == S_OK);
@@ -924,14 +924,14 @@ static void ImGui_ImplDX12_CreateWindow(ImGuiViewport* viewport)
 
         SIZE_T rtv_descriptor_size = bd->pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
         D3D12_CPU_DESCRIPTOR_HANDLE rtv_handle = vd->RtvDescHeap->GetCPUDescriptorHandleForHeapStart();
-        for (UINT i = 0; i < bd->numFramesInFlight; i++)
+        for (uint32_t i = 0; i < bd->numFramesInFlight; i++)
         {
             vd->FrameCtx[i].RenderTargetCpuDescriptors = rtv_handle;
             rtv_handle.ptr += rtv_descriptor_size;
         }
 
         ID3D12Resource* back_buffer;
-        for (UINT i = 0; i < bd->numFramesInFlight; i++)
+        for (uint32_t i = 0; i < bd->numFramesInFlight; i++)
         {
             IM_ASSERT(vd->FrameCtx[i].RenderTarget == NULL);
             vd->SwapChain->GetBuffer(i, IID_PPV_ARGS(&back_buffer));
@@ -940,7 +940,7 @@ static void ImGui_ImplDX12_CreateWindow(ImGuiViewport* viewport)
         }
     }
 
-    for (UINT i = 0; i < bd->numFramesInFlight; i++)
+    for (uint32_t i = 0; i < bd->numFramesInFlight; i++)
         ImGui_ImplDX12_DestroyRenderBuffers(&vd->FrameRenderBuffers[i]);
 }
 
@@ -974,7 +974,7 @@ static void ImGui_ImplDX12_DestroyWindow(ImGuiViewport* viewport)
         ::CloseHandle(vd->FenceEvent);
         vd->FenceEvent = NULL;
 
-        for (UINT i = 0; i < bd->numFramesInFlight; i++)
+        for (uint32_t i = 0; i < bd->numFramesInFlight; i++)
         {
             SafeRelease(vd->FrameCtx[i].RenderTarget);
             SafeRelease(vd->FrameCtx[i].CommandAllocator);
@@ -992,14 +992,14 @@ static void ImGui_ImplDX12_SetWindowSize(ImGuiViewport* viewport, ImVec2 size)
 
     ImGui_WaitForPendingOperations(vd);
 
-    for (UINT i = 0; i < bd->numFramesInFlight; i++)
+    for (uint32_t i = 0; i < bd->numFramesInFlight; i++)
         SafeRelease(vd->FrameCtx[i].RenderTarget);
 
     if (vd->SwapChain)
     {
         ID3D12Resource* back_buffer = NULL;
         vd->SwapChain->ResizeBuffers(0, (UINT)size.x, (UINT)size.y, DXGI_FORMAT_UNKNOWN, 0);
-        for (UINT i = 0; i < bd->numFramesInFlight; i++)
+        for (uint32_t i = 0; i < bd->numFramesInFlight; i++)
         {
             vd->SwapChain->GetBuffer(i, IID_PPV_ARGS(&back_buffer));
             bd->pd3dDevice->CreateRenderTargetView(back_buffer, NULL, vd->FrameCtx[i].RenderTargetCpuDescriptors);
@@ -1014,7 +1014,7 @@ static void ImGui_ImplDX12_RenderWindow(ImGuiViewport* viewport, void*)
     ImGui_ImplDX12_ViewportData* vd = (ImGui_ImplDX12_ViewportData*)viewport->RendererUserData;
 
     ImGui_ImplDX12_FrameContext* frame_context = &vd->FrameCtx[vd->FrameIndex % bd->numFramesInFlight];
-    UINT back_buffer_idx = vd->SwapChain->GetCurrentBackBufferIndex();
+    uint32_t back_buffer_idx = vd->SwapChain->GetCurrentBackBufferIndex();
 
     const ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
     D3D12_RESOURCE_BARRIER barrier = {};

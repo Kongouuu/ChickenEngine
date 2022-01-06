@@ -12,6 +12,7 @@
 #include "Singleton.h"
 #include "MathHelper.h"
 #include "FileHelper.h"
+#include "DX12Util.h"
 #include "Engine/Core.h"
 #include "Engine/Log.h"
 #include "Renderer/DX12Renderer/CommandList.h"
@@ -25,17 +26,13 @@ namespace ChickenEngine
 {
 	using namespace DirectX;
 
-	enum ETextureDimension
-	{
-		TEXTURE2D = 0,
-		TEXTURE3D
-	};
 
-	inline void ThrowIfFailed(HRESULT hr)
-	{
-		if (FAILED(hr))
-		{
-			throw std::exception();
-		}
-	}
+#ifndef ThrowIfFailed
+#define ThrowIfFailed(x)                                              \
+{                                                                     \
+    HRESULT hr__ = (x);                                               \
+    std::wstring wfn = AnsiToWString(__FILE__);                       \
+    if(FAILED(hr__)) { throw DxException(hr__, L#x, wfn, __LINE__); } \
+}
+#endif
 }

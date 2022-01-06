@@ -185,7 +185,7 @@ struct CD3DX12_BLEND_DESC : public D3D12_BLEND_DESC
             D3D12_LOGIC_OP_NOOP,
             D3D12_COLOR_WRITE_ENABLE_ALL,
         };
-        for (UINT i = 0; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
+        for (uint32_t i = 0; i < D3D12_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i)
             RenderTarget[ i ] = defaultRenderTargetBlendDesc;
     }
     ~CD3DX12_BLEND_DESC() {}
@@ -224,7 +224,7 @@ struct CD3DX12_RASTERIZER_DESC : public D3D12_RASTERIZER_DESC
         BOOL depthClipEnable,
         BOOL multisampleEnable,
         BOOL antialiasedLineEnable, 
-        UINT forcedSampleCount, 
+        uint32_t forcedSampleCount, 
         D3D12_CONSERVATIVE_RASTERIZATION_MODE conservativeRaster)
     {
         FillMode = fillMode;
@@ -272,8 +272,8 @@ struct CD3DX12_HEAP_PROPERTIES : public D3D12_HEAP_PROPERTIES
     CD3DX12_HEAP_PROPERTIES( 
         D3D12_CPU_PAGE_PROPERTY cpuPageProperty, 
         D3D12_MEMORY_POOL memoryPoolPreference,
-        UINT creationNodeMask = 1, 
-        UINT nodeMask = 1 )
+        uint32_t creationNodeMask = 1, 
+        uint32_t nodeMask = 1 )
     {
         Type = D3D12_HEAP_TYPE_CUSTOM;
         CPUPageProperty = cpuPageProperty;
@@ -283,8 +283,8 @@ struct CD3DX12_HEAP_PROPERTIES : public D3D12_HEAP_PROPERTIES
     }
     explicit CD3DX12_HEAP_PROPERTIES( 
         D3D12_HEAP_TYPE type, 
-        UINT creationNodeMask = 1, 
-        UINT nodeMask = 1 )
+        uint32_t creationNodeMask = 1, 
+        uint32_t nodeMask = 1 )
     {
         Type = type;
         CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -451,10 +451,10 @@ struct CD3DX12_TILED_RESOURCE_COORDINATE : public D3D12_TILED_RESOURCE_COORDINAT
         D3D12_TILED_RESOURCE_COORDINATE(o)
     {}
     CD3DX12_TILED_RESOURCE_COORDINATE( 
-        UINT x, 
-        UINT y, 
-        UINT z, 
-        UINT subresource ) 
+        uint32_t x, 
+        uint32_t y, 
+        uint32_t z, 
+        uint32_t subresource ) 
     {
         X = x;
         Y = y;
@@ -473,9 +473,9 @@ struct CD3DX12_TILE_REGION_SIZE : public D3D12_TILE_REGION_SIZE
         D3D12_TILE_REGION_SIZE(o)
     {}
     CD3DX12_TILE_REGION_SIZE( 
-        UINT numTiles, 
+        uint32_t numTiles, 
         BOOL useBox, 
-        UINT width, 
+        uint32_t width, 
         UINT16 height, 
         UINT16 depth ) 
     {
@@ -497,10 +497,10 @@ struct CD3DX12_SUBRESOURCE_TILING : public D3D12_SUBRESOURCE_TILING
         D3D12_SUBRESOURCE_TILING(o)
     {}
     CD3DX12_SUBRESOURCE_TILING( 
-        UINT widthInTiles, 
+        uint32_t widthInTiles, 
         UINT16 heightInTiles, 
         UINT16 depthInTiles, 
-        UINT startTileIndexInOverallResource ) 
+        uint32_t startTileIndexInOverallResource ) 
     {
         WidthInTiles = widthInTiles;
         HeightInTiles = heightInTiles;
@@ -519,9 +519,9 @@ struct CD3DX12_TILE_SHAPE : public D3D12_TILE_SHAPE
         D3D12_TILE_SHAPE(o)
     {}
     CD3DX12_TILE_SHAPE( 
-        UINT widthInTexels, 
-        UINT heightInTexels, 
-        UINT depthInTexels ) 
+        uint32_t widthInTexels, 
+        uint32_t heightInTexels, 
+        uint32_t depthInTexels ) 
     {
         WidthInTexels = widthInTexels;
         HeightInTexels = heightInTexels;
@@ -542,7 +542,7 @@ struct CD3DX12_RESOURCE_BARRIER : public D3D12_RESOURCE_BARRIER
         _In_ ID3D12Resource* pResource,
         D3D12_RESOURCE_STATES stateBefore,
         D3D12_RESOURCE_STATES stateAfter,
-        UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+        uint32_t subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
         D3D12_RESOURCE_BARRIER_FLAGS flags = D3D12_RESOURCE_BARRIER_FLAG_NONE)
     {
         CD3DX12_RESOURCE_BARRIER result;
@@ -592,8 +592,8 @@ struct CD3DX12_PACKED_MIP_INFO : public D3D12_PACKED_MIP_INFO
     CD3DX12_PACKED_MIP_INFO( 
         UINT8 numStandardMips, 
         UINT8 numPackedMips, 
-        UINT numTilesForPackedMips, 
-        UINT startTileIndexInOverallResource ) 
+        uint32_t numTilesForPackedMips, 
+        uint32_t startTileIndexInOverallResource ) 
     {
         NumStandardMips = numStandardMips;
         NumPackedMips = numPackedMips;
@@ -613,10 +613,10 @@ struct CD3DX12_SUBRESOURCE_FOOTPRINT : public D3D12_SUBRESOURCE_FOOTPRINT
     {}
     CD3DX12_SUBRESOURCE_FOOTPRINT( 
         DXGI_FORMAT format, 
-        UINT width, 
-        UINT height, 
-        UINT depth, 
-        UINT rowPitch ) 
+        uint32_t width, 
+        uint32_t height, 
+        uint32_t depth, 
+        uint32_t rowPitch ) 
     {
         Format = format;
         Width = width;
@@ -626,7 +626,7 @@ struct CD3DX12_SUBRESOURCE_FOOTPRINT : public D3D12_SUBRESOURCE_FOOTPRINT
     }
     explicit CD3DX12_SUBRESOURCE_FOOTPRINT( 
         const D3D12_RESOURCE_DESC& resDesc, 
-        UINT rowPitch ) 
+        uint32_t rowPitch ) 
     {
         Format = resDesc.Format;
         Width = UINT( resDesc.Width );
@@ -652,7 +652,7 @@ struct CD3DX12_TEXTURE_COPY_LOCATION : public D3D12_TEXTURE_COPY_LOCATION
         Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
         PlacedFootprint = Footprint;
     }
-    CD3DX12_TEXTURE_COPY_LOCATION(ID3D12Resource* pRes, UINT Sub)
+    CD3DX12_TEXTURE_COPY_LOCATION(ID3D12Resource* pRes, uint32_t Sub)
     {
         pResource = pRes;
         Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
@@ -669,10 +669,10 @@ struct CD3DX12_DESCRIPTOR_RANGE : public D3D12_DESCRIPTOR_RANGE
     {}
     CD3DX12_DESCRIPTOR_RANGE(
         D3D12_DESCRIPTOR_RANGE_TYPE rangeType,
-        UINT numDescriptors,
-        UINT baseShaderRegister,
-        UINT registerSpace = 0,
-        UINT offsetInDescriptorsFromTableStart =
+        uint32_t numDescriptors,
+        uint32_t baseShaderRegister,
+        uint32_t registerSpace = 0,
+        uint32_t offsetInDescriptorsFromTableStart =
         D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND)
     {
         Init(rangeType, numDescriptors, baseShaderRegister, registerSpace, offsetInDescriptorsFromTableStart);
@@ -680,10 +680,10 @@ struct CD3DX12_DESCRIPTOR_RANGE : public D3D12_DESCRIPTOR_RANGE
     
     inline void Init(
         D3D12_DESCRIPTOR_RANGE_TYPE rangeType,
-        UINT numDescriptors,
-        UINT baseShaderRegister,
-        UINT registerSpace = 0,
-        UINT offsetInDescriptorsFromTableStart =
+        uint32_t numDescriptors,
+        uint32_t baseShaderRegister,
+        uint32_t registerSpace = 0,
+        uint32_t offsetInDescriptorsFromTableStart =
         D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND)
     {
         Init(*this, rangeType, numDescriptors, baseShaderRegister, registerSpace, offsetInDescriptorsFromTableStart);
@@ -692,10 +692,10 @@ struct CD3DX12_DESCRIPTOR_RANGE : public D3D12_DESCRIPTOR_RANGE
     static inline void Init(
         _Out_ D3D12_DESCRIPTOR_RANGE &range,
         D3D12_DESCRIPTOR_RANGE_TYPE rangeType,
-        UINT numDescriptors,
-        UINT baseShaderRegister,
-        UINT registerSpace = 0,
-        UINT offsetInDescriptorsFromTableStart =
+        uint32_t numDescriptors,
+        uint32_t baseShaderRegister,
+        uint32_t registerSpace = 0,
+        uint32_t offsetInDescriptorsFromTableStart =
         D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND)
     {
         range.RangeType = rangeType;
@@ -714,14 +714,14 @@ struct CD3DX12_ROOT_DESCRIPTOR_TABLE : public D3D12_ROOT_DESCRIPTOR_TABLE
         D3D12_ROOT_DESCRIPTOR_TABLE(o)
     {}
     CD3DX12_ROOT_DESCRIPTOR_TABLE(
-        UINT numDescriptorRanges,
+        uint32_t numDescriptorRanges,
         _In_reads_opt_(numDescriptorRanges) const D3D12_DESCRIPTOR_RANGE* _pDescriptorRanges)
     {
         Init(numDescriptorRanges, _pDescriptorRanges);
     }
     
     inline void Init(
-        UINT numDescriptorRanges,
+        uint32_t numDescriptorRanges,
         _In_reads_(numDescriptorRanges) const D3D12_DESCRIPTOR_RANGE* _pDescriptorRanges)
     {
         Init(*this, numDescriptorRanges, _pDescriptorRanges);
@@ -729,7 +729,7 @@ struct CD3DX12_ROOT_DESCRIPTOR_TABLE : public D3D12_ROOT_DESCRIPTOR_TABLE
     
     static inline void Init(
         _Out_ D3D12_ROOT_DESCRIPTOR_TABLE &rootDescriptorTable,
-        UINT numDescriptorRanges,
+        uint32_t numDescriptorRanges,
         _In_reads_opt_(numDescriptorRanges) const D3D12_DESCRIPTOR_RANGE* _pDescriptorRanges)
     {
         rootDescriptorTable.NumDescriptorRanges = numDescriptorRanges;
@@ -745,26 +745,26 @@ struct CD3DX12_ROOT_CONSTANTS : public D3D12_ROOT_CONSTANTS
         D3D12_ROOT_CONSTANTS(o)
     {}
     CD3DX12_ROOT_CONSTANTS(
-        UINT num32BitValues,
-        UINT shaderRegister,
-        UINT registerSpace = 0)
+        uint32_t num32BitValues,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0)
     {
         Init(num32BitValues, shaderRegister, registerSpace);
     }
     
     inline void Init(
-        UINT num32BitValues,
-        UINT shaderRegister,
-        UINT registerSpace = 0)
+        uint32_t num32BitValues,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0)
     {
         Init(*this, num32BitValues, shaderRegister, registerSpace);
     }
     
     static inline void Init(
         _Out_ D3D12_ROOT_CONSTANTS &rootConstants,
-        UINT num32BitValues,
-        UINT shaderRegister,
-        UINT registerSpace = 0)
+        uint32_t num32BitValues,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0)
     {
         rootConstants.Num32BitValues = num32BitValues;
         rootConstants.ShaderRegister = shaderRegister;
@@ -780,20 +780,20 @@ struct CD3DX12_ROOT_DESCRIPTOR : public D3D12_ROOT_DESCRIPTOR
         D3D12_ROOT_DESCRIPTOR(o)
     {}
     CD3DX12_ROOT_DESCRIPTOR(
-        UINT shaderRegister,
-        UINT registerSpace = 0)
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0)
     {
         Init(shaderRegister, registerSpace);
     }
     
     inline void Init(
-        UINT shaderRegister,
-        UINT registerSpace = 0)
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0)
     {
         Init(*this, shaderRegister, registerSpace);
     }
     
-    static inline void Init(_Out_ D3D12_ROOT_DESCRIPTOR &table, UINT shaderRegister, UINT registerSpace = 0)
+    static inline void Init(_Out_ D3D12_ROOT_DESCRIPTOR &table, uint32_t shaderRegister, uint32_t registerSpace = 0)
     {
         table.ShaderRegister = shaderRegister;
         table.RegisterSpace = registerSpace;
@@ -810,7 +810,7 @@ struct CD3DX12_ROOT_PARAMETER : public D3D12_ROOT_PARAMETER
     
     static inline void InitAsDescriptorTable(
         _Out_ D3D12_ROOT_PARAMETER &rootParam,
-        UINT numDescriptorRanges,
+        uint32_t numDescriptorRanges,
         _In_reads_(numDescriptorRanges) const D3D12_DESCRIPTOR_RANGE* pDescriptorRanges,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL)
     {
@@ -821,9 +821,9 @@ struct CD3DX12_ROOT_PARAMETER : public D3D12_ROOT_PARAMETER
 
     static inline void InitAsConstants(
         _Out_ D3D12_ROOT_PARAMETER &rootParam,
-        UINT num32BitValues,
-        UINT shaderRegister,
-        UINT registerSpace = 0,
+        uint32_t num32BitValues,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL)
     {
         rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
@@ -833,8 +833,8 @@ struct CD3DX12_ROOT_PARAMETER : public D3D12_ROOT_PARAMETER
 
     static inline void InitAsConstantBufferView(
         _Out_ D3D12_ROOT_PARAMETER &rootParam,
-        UINT shaderRegister,
-        UINT registerSpace = 0,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL)
     {
         rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
@@ -844,8 +844,8 @@ struct CD3DX12_ROOT_PARAMETER : public D3D12_ROOT_PARAMETER
 
     static inline void InitAsShaderResourceView(
         _Out_ D3D12_ROOT_PARAMETER &rootParam,
-        UINT shaderRegister,
-        UINT registerSpace = 0,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL)
     {
         rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_SRV;
@@ -855,8 +855,8 @@ struct CD3DX12_ROOT_PARAMETER : public D3D12_ROOT_PARAMETER
 
     static inline void InitAsUnorderedAccessView(
         _Out_ D3D12_ROOT_PARAMETER &rootParam,
-        UINT shaderRegister,
-        UINT registerSpace = 0,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL)
     {
         rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_UAV;
@@ -865,7 +865,7 @@ struct CD3DX12_ROOT_PARAMETER : public D3D12_ROOT_PARAMETER
     }
     
     inline void InitAsDescriptorTable(
-        UINT numDescriptorRanges,
+        uint32_t numDescriptorRanges,
         _In_reads_(numDescriptorRanges) const D3D12_DESCRIPTOR_RANGE* pDescriptorRanges,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL)
     {
@@ -873,33 +873,33 @@ struct CD3DX12_ROOT_PARAMETER : public D3D12_ROOT_PARAMETER
     }
     
     inline void InitAsConstants(
-        UINT num32BitValues,
-        UINT shaderRegister,
-        UINT registerSpace = 0,
+        uint32_t num32BitValues,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL)
     {
         InitAsConstants(*this, num32BitValues, shaderRegister, registerSpace, visibility);
     }
 
     inline void InitAsConstantBufferView(
-        UINT shaderRegister,
-        UINT registerSpace = 0,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL)
     {
         InitAsConstantBufferView(*this, shaderRegister, registerSpace, visibility);
     }
 
     inline void InitAsShaderResourceView(
-        UINT shaderRegister,
-        UINT registerSpace = 0,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL)
     {
         InitAsShaderResourceView(*this, shaderRegister, registerSpace, visibility);
     }
 
     inline void InitAsUnorderedAccessView(
-        UINT shaderRegister,
-        UINT registerSpace = 0,
+        uint32_t shaderRegister,
+        uint32_t registerSpace = 0,
         D3D12_SHADER_VISIBILITY visibility = D3D12_SHADER_VISIBILITY_ALL)
     {
         InitAsUnorderedAccessView(*this, shaderRegister, registerSpace, visibility);
@@ -914,19 +914,19 @@ struct CD3DX12_STATIC_SAMPLER_DESC : public D3D12_STATIC_SAMPLER_DESC
         D3D12_STATIC_SAMPLER_DESC(o)
     {}
     CD3DX12_STATIC_SAMPLER_DESC(
-         UINT shaderRegister,
+         uint32_t shaderRegister,
          D3D12_FILTER filter = D3D12_FILTER_ANISOTROPIC,
          D3D12_TEXTURE_ADDRESS_MODE addressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
          D3D12_TEXTURE_ADDRESS_MODE addressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
          D3D12_TEXTURE_ADDRESS_MODE addressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
          FLOAT mipLODBias = 0,
-         UINT maxAnisotropy = 16,
+         uint32_t maxAnisotropy = 16,
          D3D12_COMPARISON_FUNC comparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL,
          D3D12_STATIC_BORDER_COLOR borderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE,
          FLOAT minLOD = 0.f,
          FLOAT maxLOD = D3D12_FLOAT32_MAX,
          D3D12_SHADER_VISIBILITY shaderVisibility = D3D12_SHADER_VISIBILITY_ALL, 
-         UINT registerSpace = 0)
+         uint32_t registerSpace = 0)
     {
         Init(
             shaderRegister,
@@ -946,19 +946,19 @@ struct CD3DX12_STATIC_SAMPLER_DESC : public D3D12_STATIC_SAMPLER_DESC
     
     static inline void Init(
         _Out_ D3D12_STATIC_SAMPLER_DESC &samplerDesc,
-         UINT shaderRegister,
+         uint32_t shaderRegister,
          D3D12_FILTER filter = D3D12_FILTER_ANISOTROPIC,
          D3D12_TEXTURE_ADDRESS_MODE addressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
          D3D12_TEXTURE_ADDRESS_MODE addressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
          D3D12_TEXTURE_ADDRESS_MODE addressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
          FLOAT mipLODBias = 0,
-         UINT maxAnisotropy = 16,
+         uint32_t maxAnisotropy = 16,
          D3D12_COMPARISON_FUNC comparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL,
          D3D12_STATIC_BORDER_COLOR borderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE,
          FLOAT minLOD = 0.f,
          FLOAT maxLOD = D3D12_FLOAT32_MAX,
          D3D12_SHADER_VISIBILITY shaderVisibility = D3D12_SHADER_VISIBILITY_ALL, 
-         UINT registerSpace = 0)
+         uint32_t registerSpace = 0)
     {
         samplerDesc.ShaderRegister = shaderRegister;
         samplerDesc.Filter = filter;
@@ -975,19 +975,19 @@ struct CD3DX12_STATIC_SAMPLER_DESC : public D3D12_STATIC_SAMPLER_DESC
         samplerDesc.RegisterSpace = registerSpace;
     }
     inline void Init(
-         UINT shaderRegister,
+         uint32_t shaderRegister,
          D3D12_FILTER filter = D3D12_FILTER_ANISOTROPIC,
          D3D12_TEXTURE_ADDRESS_MODE addressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
          D3D12_TEXTURE_ADDRESS_MODE addressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
          D3D12_TEXTURE_ADDRESS_MODE addressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
          FLOAT mipLODBias = 0,
-         UINT maxAnisotropy = 16,
+         uint32_t maxAnisotropy = 16,
          D3D12_COMPARISON_FUNC comparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL,
          D3D12_STATIC_BORDER_COLOR borderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE,
          FLOAT minLOD = 0.f,
          FLOAT maxLOD = D3D12_FLOAT32_MAX,
          D3D12_SHADER_VISIBILITY shaderVisibility = D3D12_SHADER_VISIBILITY_ALL, 
-         UINT registerSpace = 0)
+         uint32_t registerSpace = 0)
     {
         Init(
             *this,
@@ -1016,9 +1016,9 @@ struct CD3DX12_ROOT_SIGNATURE_DESC : public D3D12_ROOT_SIGNATURE_DESC
         D3D12_ROOT_SIGNATURE_DESC(o)
     {}
     CD3DX12_ROOT_SIGNATURE_DESC(
-        UINT numParameters,
+        uint32_t numParameters,
         _In_reads_opt_(numParameters) const D3D12_ROOT_PARAMETER* _pParameters,
-        UINT numStaticSamplers = 0,
+        uint32_t numStaticSamplers = 0,
         _In_reads_opt_(numStaticSamplers) const D3D12_STATIC_SAMPLER_DESC* _pStaticSamplers = NULL,
         D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_NONE)
     {
@@ -1030,9 +1030,9 @@ struct CD3DX12_ROOT_SIGNATURE_DESC : public D3D12_ROOT_SIGNATURE_DESC
     }
 
     inline void Init(
-        UINT numParameters,
+        uint32_t numParameters,
         _In_reads_opt_(numParameters) const D3D12_ROOT_PARAMETER* _pParameters,
-        UINT numStaticSamplers = 0,
+        uint32_t numStaticSamplers = 0,
         _In_reads_opt_(numStaticSamplers) const D3D12_STATIC_SAMPLER_DESC* _pStaticSamplers = NULL,
         D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_NONE)
     {
@@ -1041,9 +1041,9 @@ struct CD3DX12_ROOT_SIGNATURE_DESC : public D3D12_ROOT_SIGNATURE_DESC
 
     static inline void Init(
         _Out_ D3D12_ROOT_SIGNATURE_DESC &desc,
-        UINT numParameters,
+        uint32_t numParameters,
         _In_reads_opt_(numParameters) const D3D12_ROOT_PARAMETER* _pParameters,
-        UINT numStaticSamplers = 0,
+        uint32_t numStaticSamplers = 0,
         _In_reads_opt_(numStaticSamplers) const D3D12_STATIC_SAMPLER_DESC* _pStaticSamplers = NULL,
         D3D12_ROOT_SIGNATURE_FLAGS flags = D3D12_ROOT_SIGNATURE_FLAG_NONE)
     {
@@ -1067,11 +1067,11 @@ struct CD3DX12_CPU_DESCRIPTOR_HANDLE : public D3D12_CPU_DESCRIPTOR_HANDLE
     {
         InitOffsetted(other, offsetScaledByIncrementSize);
     }
-    CD3DX12_CPU_DESCRIPTOR_HANDLE(_In_ const D3D12_CPU_DESCRIPTOR_HANDLE &other, INT offsetInDescriptors, UINT descriptorIncrementSize)
+    CD3DX12_CPU_DESCRIPTOR_HANDLE(_In_ const D3D12_CPU_DESCRIPTOR_HANDLE &other, INT offsetInDescriptors, uint32_t descriptorIncrementSize)
     {
         InitOffsetted(other, offsetInDescriptors, descriptorIncrementSize);
     }
-    CD3DX12_CPU_DESCRIPTOR_HANDLE& Offset(INT offsetInDescriptors, UINT descriptorIncrementSize)
+    CD3DX12_CPU_DESCRIPTOR_HANDLE& Offset(INT offsetInDescriptors, uint32_t descriptorIncrementSize)
     { 
         ptr += offsetInDescriptors * descriptorIncrementSize;
         return *this;
@@ -1100,7 +1100,7 @@ struct CD3DX12_CPU_DESCRIPTOR_HANDLE : public D3D12_CPU_DESCRIPTOR_HANDLE
         InitOffsetted(*this, base, offsetScaledByIncrementSize);
     }
     
-    inline void InitOffsetted(_In_ const D3D12_CPU_DESCRIPTOR_HANDLE &base, INT offsetInDescriptors, UINT descriptorIncrementSize)
+    inline void InitOffsetted(_In_ const D3D12_CPU_DESCRIPTOR_HANDLE &base, INT offsetInDescriptors, uint32_t descriptorIncrementSize)
     {
         InitOffsetted(*this, base, offsetInDescriptors, descriptorIncrementSize);
     }
@@ -1110,7 +1110,7 @@ struct CD3DX12_CPU_DESCRIPTOR_HANDLE : public D3D12_CPU_DESCRIPTOR_HANDLE
         handle.ptr = base.ptr + offsetScaledByIncrementSize;
     }
     
-    static inline void InitOffsetted(_Out_ D3D12_CPU_DESCRIPTOR_HANDLE &handle, _In_ const D3D12_CPU_DESCRIPTOR_HANDLE &base, INT offsetInDescriptors, UINT descriptorIncrementSize)
+    static inline void InitOffsetted(_Out_ D3D12_CPU_DESCRIPTOR_HANDLE &handle, _In_ const D3D12_CPU_DESCRIPTOR_HANDLE &base, INT offsetInDescriptors, uint32_t descriptorIncrementSize)
     {
         handle.ptr = base.ptr + offsetInDescriptors * descriptorIncrementSize;
     }
@@ -1128,11 +1128,11 @@ struct CD3DX12_GPU_DESCRIPTOR_HANDLE : public D3D12_GPU_DESCRIPTOR_HANDLE
     {
         InitOffsetted(other, offsetScaledByIncrementSize);
     }
-    CD3DX12_GPU_DESCRIPTOR_HANDLE(_In_ const D3D12_GPU_DESCRIPTOR_HANDLE &other, INT offsetInDescriptors, UINT descriptorIncrementSize)
+    CD3DX12_GPU_DESCRIPTOR_HANDLE(_In_ const D3D12_GPU_DESCRIPTOR_HANDLE &other, INT offsetInDescriptors, uint32_t descriptorIncrementSize)
     {
         InitOffsetted(other, offsetInDescriptors, descriptorIncrementSize);
     }
-    CD3DX12_GPU_DESCRIPTOR_HANDLE& Offset(INT offsetInDescriptors, UINT descriptorIncrementSize)
+    CD3DX12_GPU_DESCRIPTOR_HANDLE& Offset(INT offsetInDescriptors, uint32_t descriptorIncrementSize)
     { 
         ptr += offsetInDescriptors * descriptorIncrementSize;
         return *this;
@@ -1161,7 +1161,7 @@ struct CD3DX12_GPU_DESCRIPTOR_HANDLE : public D3D12_GPU_DESCRIPTOR_HANDLE
         InitOffsetted(*this, base, offsetScaledByIncrementSize);
     }
     
-    inline void InitOffsetted(_In_ const D3D12_GPU_DESCRIPTOR_HANDLE &base, INT offsetInDescriptors, UINT descriptorIncrementSize)
+    inline void InitOffsetted(_In_ const D3D12_GPU_DESCRIPTOR_HANDLE &base, INT offsetInDescriptors, uint32_t descriptorIncrementSize)
     {
         InitOffsetted(*this, base, offsetInDescriptors, descriptorIncrementSize);
     }
@@ -1171,21 +1171,21 @@ struct CD3DX12_GPU_DESCRIPTOR_HANDLE : public D3D12_GPU_DESCRIPTOR_HANDLE
         handle.ptr = base.ptr + offsetScaledByIncrementSize;
     }
     
-    static inline void InitOffsetted(_Out_ D3D12_GPU_DESCRIPTOR_HANDLE &handle, _In_ const D3D12_GPU_DESCRIPTOR_HANDLE &base, INT offsetInDescriptors, UINT descriptorIncrementSize)
+    static inline void InitOffsetted(_Out_ D3D12_GPU_DESCRIPTOR_HANDLE &handle, _In_ const D3D12_GPU_DESCRIPTOR_HANDLE &base, INT offsetInDescriptors, uint32_t descriptorIncrementSize)
     {
         handle.ptr = base.ptr + offsetInDescriptors * descriptorIncrementSize;
     }
 };
 
 //------------------------------------------------------------------------------------------------
-inline UINT D3D12CalcSubresource( UINT MipSlice, UINT ArraySlice, UINT PlaneSlice, UINT MipLevels, UINT ArraySize )
+inline uint32_t D3D12CalcSubresource( uint32_t MipSlice, uint32_t ArraySlice, uint32_t PlaneSlice, uint32_t MipLevels, uint32_t ArraySize )
 { 
     return MipSlice + ArraySlice * MipLevels + PlaneSlice * MipLevels * ArraySize; 
 }
 
 //------------------------------------------------------------------------------------------------
 template <typename T, typename U, typename V>
-inline void D3D12DecomposeSubresource( UINT Subresource, UINT MipLevels, UINT ArraySize, _Out_ T& MipSlice, _Out_ U& ArraySlice, _Out_ V& PlaneSlice )
+inline void D3D12DecomposeSubresource( uint32_t Subresource, uint32_t MipLevels, uint32_t ArraySize, _Out_ T& MipSlice, _Out_ U& ArraySlice, _Out_ V& PlaneSlice )
 {
     MipSlice = static_cast<T>(Subresource % MipLevels);
     ArraySlice = static_cast<U>((Subresource / MipLevels) % ArraySize);
@@ -1218,12 +1218,12 @@ struct CD3DX12_RESOURCE_DESC : public D3D12_RESOURCE_DESC
         D3D12_RESOURCE_DIMENSION dimension,
         UINT64 alignment,
         UINT64 width,
-        UINT height,
+        uint32_t height,
         UINT16 depthOrArraySize,
         UINT16 mipLevels,
         DXGI_FORMAT format,
-        UINT sampleCount,
-        UINT sampleQuality,
+        uint32_t sampleCount,
+        uint32_t sampleQuality,
         D3D12_TEXTURE_LAYOUT layout,
         D3D12_RESOURCE_FLAGS flags )
     {
@@ -1269,11 +1269,11 @@ struct CD3DX12_RESOURCE_DESC : public D3D12_RESOURCE_DESC
     static inline CD3DX12_RESOURCE_DESC Tex2D( 
         DXGI_FORMAT format,
         UINT64 width,
-        UINT height,
+        uint32_t height,
         UINT16 arraySize = 1,
         UINT16 mipLevels = 0,
-        UINT sampleCount = 1,
-        UINT sampleQuality = 0,
+        uint32_t sampleCount = 1,
+        uint32_t sampleQuality = 0,
         D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
         D3D12_TEXTURE_LAYOUT layout = D3D12_TEXTURE_LAYOUT_UNKNOWN,
         UINT64 alignment = 0 )
@@ -1284,7 +1284,7 @@ struct CD3DX12_RESOURCE_DESC : public D3D12_RESOURCE_DESC
     static inline CD3DX12_RESOURCE_DESC Tex3D( 
         DXGI_FORMAT format,
         UINT64 width,
-        UINT height,
+        uint32_t height,
         UINT16 depth,
         UINT16 mipLevels = 0,
         D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_NONE,
@@ -1300,9 +1300,9 @@ struct CD3DX12_RESOURCE_DESC : public D3D12_RESOURCE_DESC
     { return (Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE3D ? DepthOrArraySize : 1); }
     inline UINT8 PlaneCount(_In_ ID3D12Device* pDevice) const
     { return D3D12GetFormatPlaneCount(pDevice, Format); }
-    inline UINT Subresources(_In_ ID3D12Device* pDevice) const
+    inline uint32_t Subresources(_In_ ID3D12Device* pDevice) const
     { return MipLevels * ArraySize() * PlaneCount(pDevice); }
-    inline UINT CalcSubresource(UINT MipSlice, UINT ArraySlice, UINT PlaneSlice)
+    inline uint32_t CalcSubresource(uint32_t MipSlice, uint32_t ArraySlice, uint32_t PlaneSlice)
     { return D3D12CalcSubresource(MipSlice, ArraySlice, PlaneSlice, MipLevels, ArraySize()); }
     operator const D3D12_RESOURCE_DESC&() const { return *this; }
 };
@@ -1329,14 +1329,14 @@ inline void MemcpySubresource(
     _In_ const D3D12_MEMCPY_DEST* pDest,
     _In_ const D3D12_SUBRESOURCE_DATA* pSrc,
     SIZE_T RowSizeInBytes,
-    UINT NumRows,
-    UINT NumSlices)
+    uint32_t NumRows,
+    uint32_t NumSlices)
 {
-    for (UINT z = 0; z < NumSlices; ++z)
+    for (uint32_t z = 0; z < NumSlices; ++z)
     {
         BYTE* pDestSlice = reinterpret_cast<BYTE*>(pDest->pData) + pDest->SlicePitch * z;
         const BYTE* pSrcSlice = reinterpret_cast<const BYTE*>(pSrc->pData) + pSrc->SlicePitch * z;
-        for (UINT y = 0; y < NumRows; ++y)
+        for (uint32_t y = 0; y < NumRows; ++y)
         {
             memcpy(pDestSlice + pDest->RowPitch * y,
                    pSrcSlice + pSrc->RowPitch * y,
@@ -1349,8 +1349,8 @@ inline void MemcpySubresource(
 // Returns required size of a buffer to be used for data upload
 inline UINT64 GetRequiredIntermediateSize(
     _In_ ID3D12Resource* pDestinationResource,
-    _In_range_(0,D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
-    _In_range_(0,D3D12_REQ_SUBRESOURCES-FirstSubresource) UINT NumSubresources)
+    _In_range_(0,D3D12_REQ_SUBRESOURCES) uint32_t FirstSubresource,
+    _In_range_(0,D3D12_REQ_SUBRESOURCES-FirstSubresource) uint32_t NumSubresources)
 {
     D3D12_RESOURCE_DESC Desc = pDestinationResource->GetDesc();
     UINT64 RequiredSize = 0;
@@ -1369,8 +1369,8 @@ inline UINT64 UpdateSubresources(
     _In_ ID3D12GraphicsCommandList* pCmdList,
     _In_ ID3D12Resource* pDestinationResource,
     _In_ ID3D12Resource* pIntermediate,
-    _In_range_(0,D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
-    _In_range_(0,D3D12_REQ_SUBRESOURCES-FirstSubresource) UINT NumSubresources,
+    _In_range_(0,D3D12_REQ_SUBRESOURCES) uint32_t FirstSubresource,
+    _In_range_(0,D3D12_REQ_SUBRESOURCES-FirstSubresource) uint32_t NumSubresources,
     UINT64 RequiredSize,
     _In_reads_(NumSubresources) const D3D12_PLACED_SUBRESOURCE_FOOTPRINT* pLayouts,
     _In_reads_(NumSubresources) const UINT* pNumRows,
@@ -1396,7 +1396,7 @@ inline UINT64 UpdateSubresources(
         return 0;
     }
     
-    for (UINT i = 0; i < NumSubresources; ++i)
+    for (uint32_t i = 0; i < NumSubresources; ++i)
     {
         if (pRowSizesInBytes[i] > (SIZE_T)-1) return 0;
         D3D12_MEMCPY_DEST DestData = { pData + pLayouts[i].Offset, pLayouts[i].Footprint.RowPitch, pLayouts[i].Footprint.RowPitch * pNumRows[i] };
@@ -1412,7 +1412,7 @@ inline UINT64 UpdateSubresources(
     }
     else
     {
-        for (UINT i = 0; i < NumSubresources; ++i)
+        for (uint32_t i = 0; i < NumSubresources; ++i)
         {
             CD3DX12_TEXTURE_COPY_LOCATION Dst(pDestinationResource, i + FirstSubresource);
             CD3DX12_TEXTURE_COPY_LOCATION Src(pIntermediate, pLayouts[i]);
@@ -1429,8 +1429,8 @@ inline UINT64 UpdateSubresources(
     _In_ ID3D12Resource* pDestinationResource,
     _In_ ID3D12Resource* pIntermediate,
     UINT64 IntermediateOffset,
-    _In_range_(0,D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
-    _In_range_(0,D3D12_REQ_SUBRESOURCES-FirstSubresource) UINT NumSubresources,
+    _In_range_(0,D3D12_REQ_SUBRESOURCES) uint32_t FirstSubresource,
+    _In_range_(0,D3D12_REQ_SUBRESOURCES-FirstSubresource) uint32_t NumSubresources,
     _In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA* pSrcData)
 {
     UINT64 RequiredSize = 0;
@@ -1461,19 +1461,19 @@ inline UINT64 UpdateSubresources(
 
 //------------------------------------------------------------------------------------------------
 // Stack-allocating UpdateSubresources implementation
-template <UINT MaxSubresources>
+template <uint32_t MaxSubresources>
 inline UINT64 UpdateSubresources( 
     _In_ ID3D12GraphicsCommandList* pCmdList,
     _In_ ID3D12Resource* pDestinationResource,
     _In_ ID3D12Resource* pIntermediate,
     UINT64 IntermediateOffset,
-    _In_range_(0, MaxSubresources) UINT FirstSubresource,
-    _In_range_(1, MaxSubresources - FirstSubresource) UINT NumSubresources,
+    _In_range_(0, MaxSubresources) uint32_t FirstSubresource,
+    _In_range_(1, MaxSubresources - FirstSubresource) uint32_t NumSubresources,
     _In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA* pSrcData)
 {
     UINT64 RequiredSize = 0;
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT Layouts[MaxSubresources];
-    UINT NumRows[MaxSubresources];
+    uint32_t NumRows[MaxSubresources];
     UINT64 RowSizesInBytes[MaxSubresources];
     
     D3D12_RESOURCE_DESC Desc = pDestinationResource->GetDesc();

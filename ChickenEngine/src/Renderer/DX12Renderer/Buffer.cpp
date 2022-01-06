@@ -5,7 +5,7 @@ namespace ChickenEngine
 {
 	Microsoft::WRL::ComPtr<ID3D12Resource> BufferManager::CreateDefaultBuffer(const void* initData, UINT64 byteSize, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer)
 	{
-        LOG_INFO("BufferManager - Create default buffer");
+        //LOG_INFO("BufferManager - Create default buffer");
         Microsoft::WRL::ComPtr<ID3D12Resource> defaultBuffer;
 
         Microsoft::WRL::ComPtr<ID3D12Device>& d3dDevice = Device::device();

@@ -4,7 +4,7 @@
 #include "Renderer/DX12Renderer/DX12Renderer.h"
 
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, uint32_t msg, WPARAM wParam, LPARAM lParam);
 namespace ChickenEngine
 {
 	int ImguiManager::IMcount = 0;
@@ -94,7 +94,7 @@ namespace ChickenEngine
 
 	}
 
-	bool ImguiManager::ImguiMsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	bool ImguiManager::ImguiMsgProc(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam)
 	{
 		return ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam);		
 	}
@@ -110,13 +110,13 @@ namespace ChickenEngine
 	{
 		ImguiBegin();
 
-		static bool show = true;
-		ImGui::ShowDemoWindow(&show);
-		//ShowScenePanel();
-		//ShowLightPanel();
-		ImGui::Begin("ViewPort Panel");
-		ImGui::Image((ImTextureID)(DX12Renderer::GetInstance().CurrentBackBufferGPUHandle().ptr), ImVec2{ 64,64}, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		ShowDockSpace();
+		ShowScenePanel();
+		ShowLightPanel();
+		ShowViewPortPanel();
+		ImGui::Begin("Content");
 		ImGui::End();
+
 		ImguiEnd();
 	}
 
@@ -136,9 +136,7 @@ namespace ChickenEngine
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault(NULL, (void*)DXContext.CommandList().Get());
 		}
-
 	}
-
 
 	void ImguiManager::OnEvent(Event& event)
 	{
@@ -149,13 +147,28 @@ namespace ChickenEngine
 		event.Handled |= event.IsInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
 	}
 
-	ImguiManager& ImguiManager::GetInstance()
+	void ImguiManager::ShowDockSpace()
 	{
-		static ImguiManager im;
-		return im;
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 	}
 
+	void ImguiManager::ShowViewPortPanel()
+	{
+		ImGui::Begin("ViewPort Panel");
+		ImGuiIO& io = ImGui::GetIO();
+		io.WantCaptureMouse = 1 ^ ImGui::IsWindowFocused();
+		io.WantCaptureKeyboard = 1 ^ ImGui::IsWindowFocused();
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+		if (abs(mViewportWidth - viewportPanelSize.x) >= 0.1 || abs(mViewportHeight - viewportPanelSize.y) >= 0.1)
+		{
+			mViewportWidth = viewportPanelSize.x;
+			mViewportHeight = viewportPanelSize.y;
+			mViewportSizeDirty = true;
+		}
 
+		ImGui::Image((ImTextureID)(DX12Renderer::GetInstance().CurrentViewportBufferGPUHandle().ptr), viewportPanelSize, ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
+		ImGui::End();
+	}
 
 	void ImguiManager::ShowScenePanel()
 	{

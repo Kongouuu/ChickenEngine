@@ -8,7 +8,7 @@
 namespace ChickenEngine
 {
 	LRESULT CALLBACK
-		MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+		MainWndProc(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam)
 	{
 		return Window::GetWindow()->MsgProc(hwnd, msg, wParam, lParam);
 	}
@@ -48,9 +48,9 @@ namespace ChickenEngine
 	}
 
 	// Events
-	LRESULT Window::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	LRESULT Window::MsgProc(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam)
 	{
-		if (ImguiManager::GetInstance().ImguiMsgProc(hwnd, msg, wParam, lParam))
+		if (ImguiManager::instance().ImguiMsgProc(hwnd, msg, wParam, lParam))
 		{
 			return true;
 		}

@@ -4,14 +4,35 @@
 
 namespace ChickenEngine
 {
-    UINT TextureManager::textureCount = 0;
+    uint32_t TextureManager::textureCount = 0;
 
-    std::shared_ptr<DX12Texture> TextureManager::GetTexture(UINT id)
+    void TextureManager::Init()
+    {
+        instance().LoadNullTextures();
+    }
+
+    void TextureManager::LoadNullTextures()
+    {
+        std::shared_ptr<DX12Texture> nullTex2d = std::make_shared<DX12Texture>();
+        nullTex2d->id = 0;
+        nullTex2d->Resource = nullptr;
+        nullTex2d->TextureDimension = ETextureDimension::TEXTURE2D;
+        mTextures.push_back(nullTex2d);
+
+        std::shared_ptr<DX12Texture> nullTex3d = std::make_shared<DX12Texture>();
+        nullTex3d->id = 1;
+        nullTex3d->Resource = nullptr;
+        nullTex3d->TextureDimension = ETextureDimension::TEXTURE3D;
+        mTextures.push_back(nullTex3d);
+        textureCount = 2;
+    }
+
+    std::shared_ptr<DX12Texture> TextureManager::GetTexture(uint32_t id)
     {
         return instance().mTextures[id];
     }
 
-    UINT TextureManager::LoadTexture(std::wstring file, ETextureDimension textureType)
+    uint32_t TextureManager::LoadTexture(std::wstring file, ETextureDimension textureDimension)
     {
         TextureManager& tm = instance();
         LOG_ERROR("enter file load");
@@ -25,11 +46,9 @@ namespace ChickenEngine
         }
 
         // no lock, and didnt check if loaded be4
-        LOG_ERROR("Before Error in Texture");
         std::shared_ptr<DX12Texture> tex = std::make_shared<DX12Texture>();
-        LOG_ERROR("After Error in Texture");
         tex->Filename = filePath.filename();
-        tex->TextureType = textureType;
+        tex->TextureDimension = textureDimension;
 
         if (filePath.extension() == ".dds")
         {
@@ -44,20 +63,13 @@ namespace ChickenEngine
             tm.LoadTextureFromWIC(file, tex->Resource, tex->UploadHeap);
         }
 
-        tex->id = textureCount + DescriptorHeapManager::TextureSrvOffset();
+        tex->id = textureCount;
         textureCount++;
+        tex->offset = DescriptorHeapManager::BindSrv(tex->Resource.Get(), tex->TextureDimension);
+        tex->handle = DescriptorHeapManager::GetSrvGpuHandle(tex->offset);
         instance().mTextures.push_back(tex);
 
         return tex->id;
-    }
-
-    void TextureManager::InitTextureHeaps()
-    {
-        for (auto& tex : instance().mTextures)
-        {
-            DescriptorHeapManager::BuildTextureSrvHeap(tex->TextureType, tex->id, tex->Resource);
-        }
-       
     }
 
     void TextureManager::LoadTextureFromWIC(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap)

@@ -19,26 +19,26 @@ namespace ChickenEngine
 
 	struct CHICKEN_API RenderItem
 	{
-		UINT renderItemID = 0;
+		uint32_t renderItemID = 0;
 		std::string name = "";
 		ERenderItemType riType = RI_OPAQUE;
 
-		UINT indexCount = 0;
+		uint32_t indexCount = 0;
 		VertexBuffer vb;
 		IndexBuffer ib;
-		UINT diffuseOffset = DescriptorHeapManager::NullCubeSrvOffset();
-		UINT specularOffset = DescriptorHeapManager::NullCubeSrvOffset();
-		UINT normalOffset = DescriptorHeapManager::NullCubeSrvOffset();
-		UINT heightOffset = DescriptorHeapManager::NullCubeSrvOffset();
+		D3D12_GPU_DESCRIPTOR_HANDLE diffuseHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE specularHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE normalHandle;
+		D3D12_GPU_DESCRIPTOR_HANDLE heightHandle;
 
-		UINT cbOffset;
+		uint32_t cbOffset;
 		int numFramesDirty = 0;
 
 		bool visible = true;
 		bool debug = false;
 		D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-		void Init(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
+		void Init(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
 		//void AddTexture(std::string name);
 
 
@@ -49,14 +49,14 @@ namespace ChickenEngine
 	class CHICKEN_API RenderItemManager : public Singleton<RenderItemManager>
 	{
 	public:
-		static std::shared_ptr<RenderItem> GetRenderItem(UINT id);
+		static std::shared_ptr<RenderItem> GetRenderItem(uint32_t id);
 		static std::shared_ptr<RenderItem> CreateRenderItem(ERenderItemType riType);
 
 		inline static std::vector<std::shared_ptr<RenderItem>>& GetAllRenderItems() { return instance().mRenderItems; }
 		inline static int RenderItemCount() { return renderItemCount; }
 
-		//static void InitRenderItem(const Mesh& mesh, UINT id);
-		//static void InitRenderItem(const Mesh& mesh, ERenderItemType riType, UINT index);
+		//static void InitRenderItem(const Mesh& mesh, uint32_t id);
+		//static void InitRenderItem(const Mesh& mesh, ERenderItemType riType, uint32_t index);
 		//static void InitRenderItem(const Mesh& mesh, std::shared_ptr<RenderItem> ri);
 	private:
 		// std::string ValidifyName(std::string name);

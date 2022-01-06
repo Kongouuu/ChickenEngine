@@ -6,8 +6,8 @@ namespace ChickenEngine
 {
 	using namespace DirectX;
 
-	UINT SceneManager::renderObjectCount = 0;
-	std::shared_ptr<RenderObject> SceneManager::GetRenderObject(UINT id)
+	uint32_t SceneManager::renderObjectCount = 0;
+	std::shared_ptr<RenderObject> SceneManager::GetRenderObject(uint32_t id)
 	{
 		std::deque<std::shared_ptr<RenderObject>>& mAllRO = GetAllRenderObjects();
 		for (auto& ro : mAllRO)
@@ -67,10 +67,10 @@ namespace ChickenEngine
 				}
 				
 				m.renderItemID = renderer.CreateRenderItem(m.vertices.size(), sizeof(Vertex), data, m.GetIndices16(), ro->renderObjectID);
-				renderer.SetDiffuseTexture(m.renderItemID, m.diffuseMap.id);
-				renderer.SetSpecularTexture(m.renderItemID, m.specularMap.id);
-				renderer.SetNormalTexture(m.renderItemID, m.normalMap.id);
-				renderer.SetHeightTexture(m.renderItemID, m.heightMap.id);
+				renderer.SetTexture(m.renderItemID, m.diffuseMap.id, ETextureType::DIFFUSE);
+				renderer.SetTexture(m.renderItemID, m.specularMap.id, ETextureType::SPECULAR);
+				renderer.SetTexture(m.renderItemID, m.normalMap.id, ETextureType::NORMAL);
+				renderer.SetTexture(m.renderItemID, m.heightMap.id, ETextureType::HEIGHT);
 			}
 			SetRenderObjectCB(*ro);
 		}
@@ -144,7 +144,7 @@ namespace ChickenEngine
 		DX12Renderer::GetInstance().SetPassSceneData(data.data());
 	}
 
-	void SceneManager::ToggleRenderObjectVisibility(UINT id)
+	void SceneManager::ToggleRenderObjectVisibility(uint32_t id)
 	{
 		std::shared_ptr<RenderObject> ro = GetRenderObject(id);
 		for (auto& m : ro->mMeshes)

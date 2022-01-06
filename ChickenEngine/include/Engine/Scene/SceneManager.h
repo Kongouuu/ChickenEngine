@@ -15,7 +15,7 @@ namespace ChickenEngine
 	public:
 		inline static Camera& GetCamera() { return instance().mCamera; }
 		inline static std::deque< std::shared_ptr<RenderObject>>& GetAllRenderObjects(){ return instance().mRenderObjects; }
-		static std::shared_ptr<RenderObject> GetRenderObject(UINT id);
+		static std::shared_ptr<RenderObject> GetRenderObject(uint32_t id);
 		static std::shared_ptr<RenderObject> CreateRenderObject(std::string n);
 		static std::shared_ptr<RenderObject> CreateRenderObject(std::string n, XMFLOAT3 p, XMFLOAT3 r, XMFLOAT3 s, XMFLOAT4 c, float ro, float me);
 		static std::shared_ptr<RenderObject> CreateRenderObject(Mesh m, std::string n, XMFLOAT3 p, XMFLOAT3 r, XMFLOAT3 s, XMFLOAT4 c, float ro, float me);
@@ -24,7 +24,7 @@ namespace ChickenEngine
 
 		static void UpdateRenderObjects();
 		static void UpdateSceneData(int width, int height);
-		static void ToggleRenderObjectVisibility(UINT id);
+		static void ToggleRenderObjectVisibility(uint32_t id);
 
 		inline static XMFLOAT3& GetDirLightRotation(){return instance().mDirLight.Rotation;	}
 		inline static XMFLOAT3 GetDirLightDirection() { return instance().mDirLight.data.Direction; }
@@ -44,7 +44,7 @@ namespace ChickenEngine
 		PassConstants mPassCB;
 		std::deque<std::shared_ptr<RenderObject>> mRenderObjects;
 
-		static UINT renderObjectCount;
+		static uint32_t renderObjectCount;
 	};
 }
 

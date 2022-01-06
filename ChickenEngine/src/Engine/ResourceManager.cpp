@@ -3,7 +3,7 @@
 
 namespace ChickenEngine
 {
-	UINT ResourceManager::LoadTexture(std::string path, std::string name)
+	uint32_t ResourceManager::LoadTexture(std::string path, std::string name)
 	{
 		Texture tex;
 		tex.id = DX12Renderer::GetInstance().LoadTexture2D(path);
@@ -14,7 +14,7 @@ namespace ChickenEngine
 		return tex.id;
 	}
 
-	UINT ResourceManager::LoadTexture(std::string path)
+	uint32_t ResourceManager::LoadTexture(std::string path)
 	{
 		Texture tex;
 		tex.id = DX12Renderer::GetInstance().LoadTexture2D(path);

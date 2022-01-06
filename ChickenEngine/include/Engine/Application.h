@@ -1,4 +1,4 @@
-//#pragma once
+#pragma once
 
 #include "Core.h"
 #include "pch.h"
@@ -31,7 +31,7 @@ namespace ChickenEngine
 		void OnEvent(Event& e);
 
 		// Attach specific game app
-		void AttachGameLayer(GameLayer* _gl) { gl = _gl; }
+		void AttachGameLayer(GameLayer* _gl) { gameLayer = _gl; }
 
 		// temp
 		void UpdateCamera();
@@ -42,9 +42,11 @@ namespace ChickenEngine
 		std::shared_ptr<Window> mWindow;
 		GameTimer mTimer;
 		Camera mCamera;
-		GameLayer* gl;
+		GameLayer* gameLayer;
 
-		UINT numFrameResources = 3;
+		uint32_t viewportWidth;
+		uint32_t viewportHeight;
+		uint32_t numFrameResources = 3;
 		std::array<bool, 255> mKeyDown;
 		std::array<bool, 5> mMouseDown;
 		float previousMouseX;

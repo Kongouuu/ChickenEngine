@@ -11,7 +11,7 @@ namespace ChickenEngine
 	class CHICKEN_API PSOManager : public Singleton<PSOManager>
 	{
 	public:
-		static void Init(DXGI_FORMAT backBufferFormat, DXGI_FORMAT depthStencilFormat, bool msaaState, UINT msaaQuality);
+		static void Init(DXGI_FORMAT backBufferFormat, DXGI_FORMAT depthStencilFormat, bool msaaState, uint32_t msaaQuality);
 		static void BuildPSOs();
 		static Microsoft::WRL::ComPtr<ID3D12PipelineState>& GetPSO(std::string name);
 
@@ -32,7 +32,7 @@ namespace ChickenEngine
 		DXGI_FORMAT mBackBufferFormat;
 		DXGI_FORMAT mDepthStencilFormat; 
 		bool m4xMsaaState;
-		UINT m4xMsaaQuality;
+		uint32_t m4xMsaaQuality;
 	};
 
 }

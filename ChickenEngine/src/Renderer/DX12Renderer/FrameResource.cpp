@@ -3,7 +3,7 @@
 
 namespace ChickenEngine
 {
-    FrameResource::FrameResource(UINT passCount, UINT objectCount, UINT passCBSize, UINT objCBSize)
+    FrameResource::FrameResource(uint32_t passCount, uint32_t objectCount, uint32_t passCBSize, uint32_t objCBSize)
     {
         ThrowIfFailed(Device::device()->CreateCommandAllocator(
             D3D12_COMMAND_LIST_TYPE_DIRECT,

@@ -160,9 +160,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\Renderer\DX12Renderer\DescriptorAllocatorPage.h" />
-    <ClInclude Include="include\Renderer\DX12Renderer\DescriptorAllocation.h" />
-    <ClInclude Include="include\Renderer\DX12Renderer\DescriptorAllocator.h" />
+    <ClInclude Include="include\Helper\DX12Util.h" />
+    <ClInclude Include="include\Renderer\DX12Renderer\DescriptorHeap.h" />
     <ClInclude Include="include\Engine\GameLayer.h" />
     <ClInclude Include="include\Helper\FileHelper.h" />
     <ClInclude Include="include\Interface\IResource.h" />
@@ -172,7 +171,6 @@
     <ClInclude Include="include\Helper\MouseButtonEnum.h" />
     <ClInclude Include="include\Helper\Singleton.h" />
     <ClInclude Include="include\Renderer\DX12Renderer\CommandList.h" />
-    <ClInclude Include="include\Renderer\DX12Renderer\DescriptorHeap.h" />
     <ClInclude Include="include\Renderer\DX12Renderer\Device.h" />
     <ClInclude Include="include\Helper\MathHelper.h" />
     <ClInclude Include="include\Renderer\DX12Renderer\Texture.h" />
@@ -305,11 +303,13 @@
     <ClInclude Include="include\ThirdParty\spdlog\version.h" />
     <ClInclude Include="include\Engine\Scene\SceneManager.h" />
     <ClInclude Include="include\Renderer\DX12Renderer\ShadowMap.h" />
+    <ClInclude Include="include\Renderer\DX12Renderer\FrameBuffer.h" />
+    <ClInclude Include="include\Renderer\DX12Renderer\SSAO.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Renderer\DX12Renderer\DescriptorAllocatorPage.cpp" />
-    <ClCompile Include="src\Renderer\DX12Renderer\DescriptorAllocation.cpp" />
-    <ClCompile Include="src\Renderer\DX12Renderer\DescriptorAllocator.cpp" />
+    <ClCompile Include="src\Renderer\DX12Renderer\FrameBuffer.cpp" />
+    <ClCompile Include="src\Helper\DX12Util.cpp" />
+    <ClCompile Include="src\Renderer\DX12Renderer\DescriptorHeap.cpp" />
     <ClCompile Include="src\Renderer\DX12Renderer\ShadowMap.cpp" />
     <ClCompile Include="src\Engine\Scene\Model.cpp" />
     <ClCompile Include="src\Helper\FileHelper.cpp" />
@@ -317,7 +317,6 @@
     <ClCompile Include="src\Renderer\DX12Renderer\FrameResource.cpp" />
     <ClCompile Include="src\Engine\Scene\Camera.cpp" />
     <ClCompile Include="src\Renderer\DX12Renderer\PSO.cpp" />
-    <ClCompile Include="src\Renderer\DX12Renderer\DescriptorHeap.cpp" />
     <ClCompile Include="src\Engine\Scene\Mesh.cpp" />
     <ClCompile Include="src\Helper\MathHelper.cpp" />
     <ClCompile Include="src\Renderer\DX12Renderer\RenderItem.cpp" />
@@ -347,6 +346,7 @@
     <ClCompile Include="src\ThirdParty\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\ThirdParty\imgui\imgui_widgets.cpp" />
     <ClCompile Include="src\ThirdParty\WICTextureLoader\WICTextureLoader12.cpp" />
+    <ClCompile Include="src\Renderer\DX12Renderer\SSAO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ChickenEngine.rc" />

@@ -3,7 +3,7 @@
 
 namespace ChickenEngine
 {
-	void PSOManager::Init(DXGI_FORMAT backBufferFormat, DXGI_FORMAT depthStencilFormat, bool msaaState, UINT msaaQuality)
+	void PSOManager::Init(DXGI_FORMAT backBufferFormat, DXGI_FORMAT depthStencilFormat, bool msaaState, uint32_t msaaQuality)
 	{
 		LOG_INFO("PSOManager - Init");
 		instance().mBackBufferFormat = backBufferFormat;

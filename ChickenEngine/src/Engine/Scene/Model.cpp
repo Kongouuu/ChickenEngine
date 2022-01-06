@@ -23,13 +23,13 @@ namespace ChickenEngine
 
 	void Model::ProcessNode(aiNode* node, const aiScene* scene)
 	{
-		for (UINT i = 0; i < node->mNumMeshes; i++)
+		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 			mMeshes.push_back(ProcessMesh(mesh, scene));
 		}
 
-		for (UINT i = 0; i < node->mNumChildren; i++)
+		for (uint32_t i = 0; i < node->mNumChildren; i++)
 		{
 			ProcessNode(node->mChildren[i], scene);
 		}

@@ -14,9 +14,6 @@
 #include "imgui/imgui_impl_win32.h"
 #include "imgui/imgui_impl_dx12.h"
 
-
-
-
 namespace ChickenEngine
 {
 	const int NUM_FRAMES_IN_FLIGHT = 2;
@@ -31,7 +28,7 @@ namespace ChickenEngine
 		void Init(std::string title, unsigned int width, unsigned int height);
 		void Shutdown();
 
-		virtual LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+		virtual LRESULT CALLBACK MsgProc(HWND hwnd, uint32_t msg, WPARAM wParam, LPARAM lParam);
 
 
 		inline void SetEventCallBack(const EventCallbackFn& callback) {mEventCallback = callback;}

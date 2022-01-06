@@ -43,7 +43,7 @@ class TestApp : public ChickenEngine::Application
 public:
 	TestApp()
 	{
-		gl = new TestGameLayer();
+		gameLayer = new TestGameLayer();
 	}
 
 	~TestApp()

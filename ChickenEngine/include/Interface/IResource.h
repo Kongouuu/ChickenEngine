@@ -23,7 +23,6 @@ namespace ChickenEngine
 		DirectX::XMFLOAT2 texC = { 0.0,0.0 };
 	};
 
-
 	struct DirectionLightData
 	{
 		DirectX::XMFLOAT3 Strength = { 1.0f,1.0f,1.0f };
@@ -35,7 +34,7 @@ namespace ChickenEngine
 	struct DirectionLight
 	{
 		DirectionLightData data;
-		DirectX::XMFLOAT3 Position = { 0.0f, 0.0f, 0.0f };
+		DirectX::XMFLOAT3 Position = { 0.0f, 50.0f, 0.0f };
 		DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,10.0f };
 	};
 
@@ -66,5 +65,20 @@ namespace ChickenEngine
 		DirectX::XMFLOAT4 Color = { 0.0,0.0,0.0,0.0 };
 		float Roughness = 0.0;
 		float Metallic = 0.0;
+	};
+
+	enum ETextureDimension
+	{
+		TEXTURE2D = 0,
+		TEXTURE3D
+	};
+
+	enum ETextureType
+	{
+		DIFFUSE = 0,
+		SPECULAR,
+		NORMAL,
+		HEIGHT,
+		NULL_TYPE
 	};
 }

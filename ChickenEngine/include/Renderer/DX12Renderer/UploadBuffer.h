@@ -7,7 +7,7 @@ namespace ChickenEngine
 	class CHICKEN_API UploadBuffer
 	{
 	public:
-		UploadBuffer(UINT elementCount, bool isConstantBuffer) :mIsConstantBuffer(isConstantBuffer)
+		UploadBuffer(uint32_t elementCount, bool isConstantBuffer) :mIsConstantBuffer(isConstantBuffer)
 		{
 			mElementByteSize = sizeof(T);
 			if (isConstantBuffer)
@@ -42,14 +42,14 @@ namespace ChickenEngine
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource> mUploadBuffer;
 		BYTE* mMappedData = nullptr;
-		UINT mElementByteSize = 0;
+		uint32_t mElementByteSize = 0;
 		bool mIsConstantBuffer = false;
 	};
 
 	class CHICKEN_API UploadBufferUtil
 	{
 	public:
-		inline static UINT CalcConstantBufferByteSize(UINT byteSize) { return (byteSize + 255) & ~255; }
+		inline static uint32_t CalcConstantBufferByteSize(uint32_t byteSize) { return (byteSize + 255) & ~255; }
 	};
 
 
@@ -60,7 +60,7 @@ namespace ChickenEngine
 	class CHICKEN_API UploadBufferV2
 	{
 	public:
-		UploadBufferV2(UINT elementCount, bool isConstantBuffer, UINT byteSize) :mIsConstantBuffer(isConstantBuffer)
+		UploadBufferV2(uint32_t elementCount, bool isConstantBuffer, uint32_t byteSize) :mIsConstantBuffer(isConstantBuffer)
 		{
 			mElementByteSize = byteSize;
 			mByteSize = byteSize;
@@ -92,14 +92,14 @@ namespace ChickenEngine
 
 		inline void CopyData(int elementIndex, const BYTE* data) { memcpy(&mMappedData[elementIndex * mElementByteSize], data, mByteSize); }
 
-		inline UINT CalcConstantBufferByteSize(UINT byteSize) { return (byteSize + 255) & ~255; }
+		inline uint32_t CalcConstantBufferByteSize(uint32_t byteSize) { return (byteSize + 255) & ~255; }
 
 
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource> mUploadBuffer;
 		BYTE* mMappedData = nullptr;
-		UINT mElementByteSize = 0;
-		UINT mByteSize = 0;
+		uint32_t mElementByteSize = 0;
+		uint32_t mByteSize = 0;
 		bool mIsConstantBuffer = false;
 	};
 }

@@ -5,6 +5,7 @@
 
 namespace ChickenEngine
 {
+	using namespace Microsoft;
 	void ShaderManager::Init()
 	{
 		LOG_INFO("Shader - Init");
@@ -66,7 +67,7 @@ namespace ChickenEngine
 
 	Microsoft::WRL::ComPtr<ID3DBlob> ShaderManager::CompileShader(const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)
 	{
-		UINT compileFlags = 0;
+		uint32_t compileFlags = 0;
 #if defined(DEBUG) || defined(_DEBUG)  
 		compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif

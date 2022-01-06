@@ -32,7 +32,7 @@ namespace ChickenEngine
 
 			// Recreate the swapchain and buffers with new multisample settings.
 			CreateSwapChain();
-			OnResize(mWidth, mHeight);
+			OnWindowResize(mWidth, mHeight);
 		}
 	}
 #pragma endregion Settings
@@ -44,7 +44,6 @@ namespace ChickenEngine
 		mWidth = width;
 		mHeight = height;
 		mNumFrameResources = numFrameRersources;
-
 		if (hwnd == NULL)
 		{
 			LOG_ERROR("nonexisting hwnd");
@@ -95,14 +94,25 @@ namespace ChickenEngine
 		CreateCommandObjects();
 		CreateSwapChain();
 
-		// Init subsystems
-		DescriptorHeapManager::InitDescriptorHeapManager(SwapChainBufferCount);
-
 		// Init constants
 		mPassCBByteSize = sizeof(PassConstants);
 		mObjectCBByteSize = sizeof(ObjectConstants);
 
+		for (int i = 0; i < SwapChainBufferCount; i++)
+		{
+			mViewPortBuffer = std::make_shared<FrameBuffer>();
+		}
+		
+		InitSubsystems();
 		return true;
+	}
+
+	void DX12Renderer::InitSubsystems()
+	{
+		// Init subsystems
+		DescriptorHeapManager::InitDescriptorHeapManager(SwapChainBufferCount);
+		DescriptorHeapManager::BuildRtvSrvDsvHeapDesc();
+		TextureManager::Init();
 	}
 
 	void DX12Renderer::CreateCommandObjects()
@@ -178,141 +188,170 @@ namespace ChickenEngine
 		}
 	}
 
-void DX12Renderer::OnResize(int width, int height)
-{
-	mWidth = width;
-	mHeight = height;
-
-	if (md3dDevice == nullptr)
+	void DX12Renderer::OnWindowResize(int width, int height)
 	{
-		return;
-	}
-	LOG_INFO("OnResize");
-	assert(md3dDevice);
-	assert(mSwapChain);
-	assert(mDirectCmdListAlloc);
+		LOG_INFO("Resize width {0} height {1}", width, height);
+		mWidth = width;
+		mHeight = height;
 
-	// Flush before changing any resources.
-	FlushCommandQueue();
+		if (md3dDevice == nullptr)
+		{
+			return;
+		}
+		assert(md3dDevice);
+		assert(mSwapChain);
+		assert(mDirectCmdListAlloc);
 
-	ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+		// Flush before changing any resources.
+		FlushCommandQueue();
 
-	// Release the previous resources we will be recreating.
-	for (int i = 0; i < SwapChainBufferCount; ++i)
-		mSwapChainBuffer[i].Reset();
-	mDepthStencilBuffer.Reset();
+		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
-	// Resize the swap chain.
-	LOG_INFO("Resize width {0} height {1}", width, height);
-	mSwapChain->ResizeBuffers(
-		SwapChainBufferCount,
-		width, height,
-		mBackBufferFormat,
-		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
+		// Release the previous resources we will be recreating.
+		for (int i = 0; i < SwapChainBufferCount; ++i)
+			mSwapChainBuffer[i].Reset();
+		mDepthStencilBuffer.Reset();
 
-	mCurrBackBuffer = 0;
+		// Resize the swap chain.
+		mSwapChain->ResizeBuffers(
+			SwapChainBufferCount,
+			width, height,
+			mBackBufferFormat,
+			DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH);
 
-	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(DescriptorHeapManager::RtvHeap()->GetCPUDescriptorHandleForHeapStart());
-	for (UINT i = 0; i < SwapChainBufferCount; i++)
-	{
-		mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i]));
-		md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
-		rtvHeapHandle.Offset(1, DescriptorHeapManager::RtvDescriptorSize());
-	}
+		mCurrBackBuffer = 0;
 
-	// Create the depth/stencil buffer and view.
-	D3D12_RESOURCE_DESC depthStencilDesc;
-	depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	depthStencilDesc.Alignment = 0;
-	depthStencilDesc.Width = width;
-	depthStencilDesc.Height = height;
-	depthStencilDesc.DepthOrArraySize = 1;
-	depthStencilDesc.MipLevels = 1;
-	depthStencilDesc.Format = mDepthStencilFormat;
-	depthStencilDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
-	depthStencilDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
-	depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-	depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+		for (uint32_t i = 0; i < SwapChainBufferCount; i++)
+		{
+			mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i]));
+			uint32_t offset = DescriptorHeapManager::BindRtv(mSwapChainBuffer[i].Get(), true, i);
+			mBackBufferHandleCPU[i] = DescriptorHeapManager::GetRtvCpuHandle(offset);
+			mBackBufferHandleGPU[i] = DescriptorHeapManager::GetSrvGpuHandle(offset);
+		}
 
-	D3D12_CLEAR_VALUE optClear;
-	optClear.Format = mDepthStencilFormat;
-	optClear.DepthStencil.Depth = 1.0f;
-	optClear.DepthStencil.Stencil = 0;
-	CD3DX12_HEAP_PROPERTIES HeapDefault(D3D12_HEAP_TYPE_DEFAULT);
-	ThrowIfFailed(md3dDevice->CreateCommittedResource(
-		&HeapDefault,
-		D3D12_HEAP_FLAG_NONE,
-		&depthStencilDesc,
-		D3D12_RESOURCE_STATE_COMMON,
-		&optClear,
-		IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf())));
+		//InitViewportBuffer();
 
-	// Create descriptor to mip level 0 of entire resource using the format of the resource.
-	md3dDevice->CreateDepthStencilView(mDepthStencilBuffer.Get(), nullptr, DepthStencilView());
 
-	// Transition the resource from its initial state to be used as a depth buffer.
-	mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(),
-		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
+		// Create the depth/stencil buffer and view.
+		D3D12_RESOURCE_DESC depthStencilDesc;
+		depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+		depthStencilDesc.Alignment = 0;
+		depthStencilDesc.Width = width;
+		depthStencilDesc.Height = height;
+		depthStencilDesc.DepthOrArraySize = 1;
+		depthStencilDesc.MipLevels = 1;
+		depthStencilDesc.Format = mDepthStencilFormat;
+		depthStencilDesc.SampleDesc.Count = m4xMsaaState ? 4 : 1;
+		depthStencilDesc.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
+		depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+		depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-	// Execute the resize commands.
-	ThrowIfFailed(mCmdList->Close());
-	ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
-	mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+		D3D12_CLEAR_VALUE optClear;
+		optClear.Format = mDepthStencilFormat;
+		optClear.DepthStencil.Depth = 1.0f;
+		optClear.DepthStencil.Stencil = 0;
+		ThrowIfFailed(Device::device()->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			D3D12_HEAP_FLAG_NONE,
+			&depthStencilDesc,
+			D3D12_RESOURCE_STATE_COMMON,
+			&optClear,
+			IID_PPV_ARGS(mDepthStencilBuffer.GetAddressOf())));
 
-	// Wait until resize is complete.
-	FlushCommandQueue();
+		LOG_ERROR("After commit dep stencil resource");
+		// Create descriptor to mip level 0 of entire resource using the format of the resource.
+		DescriptorHeapManager::BindDsv(mDepthStencilBuffer.Get(), true);
+		mDepthStencilHandleCPU = DescriptorHeapManager::GetDsvCpuHandle(0);
 
-	// Update the viewport transform to cover the client area.
-	mScreenViewport.TopLeftX = 0;
-	mScreenViewport.TopLeftY = 0;
-	mScreenViewport.Width = static_cast<float>(width);
-	mScreenViewport.Height = static_cast<float>(height);
-	mScreenViewport.MinDepth = 0.0f;
-	mScreenViewport.MaxDepth = 1.0f;
+		// Transition the resource from its initial state to be used as a depth buffer.
+		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mDepthStencilBuffer.Get(),
+			D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 
-	mScissorRect = { 0, 0, (long)width, (long)height };
+		// Execute the resize commands.
+		ThrowIfFailed(mCmdList->Close());
+		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
+		mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
 
-	float aspectRatio = static_cast<float>(mWidth) / mHeight;
-	LOG_INFO("reset camera, new fov: {0}", aspectRatio);
+		// Wait until resize is complete.
+		FlushCommandQueue();
 
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * MathHelper::Pi, float(mWidth) / float(mHeight), 1.0f, 1000.0f);
-
-	if (bEnableShadowPass)
-	{
-		ShadowMap::OnResize(width, height);
+		// Update the viewport transform to cover the client area.
+		mScreenViewport.TopLeftX = 0;
+		mScreenViewport.TopLeftY = 0;
+		mScreenViewport.Width = static_cast<float>(width);
+		mScreenViewport.Height = static_cast<float>(height);
+		mScreenViewport.MinDepth = 0.0f;
+		mScreenViewport.MaxDepth = 1.0f;
+		mScissorRect = { 0, 0, (long)width, (long)height };
 	}
 
-}
+	void DX12Renderer::OnViewportResize(int width, int height)
+	{
+		if (md3dDevice == nullptr)
+		{
+			return;
+		}
+		assert(md3dDevice);
+		assert(mSwapChain);
+		assert(mDirectCmdListAlloc);
+		// Flush before changing any resources.
+		FlushCommandQueue();
+		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+
+		mViewPortBuffer->BuildResource(width, height, mBackBufferFormat);
+		if (bEnableShadowPass)
+		{
+			ShadowMap::OnResize(width, height);
+		}
+
+
+		// Execute the resize commands.
+		ThrowIfFailed(mCmdList->Close());
+		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
+		mCmdQueue->ExecuteCommandLists(_countof(cmdsLists), cmdsLists);
+
+		// Wait until resize is complete.
+		FlushCommandQueue();
+	}
 
 	void DX12Renderer::SetEnableShadowPass(bool enable)
 	{
 		bEnableShadowPass = enable;
 	}
 
+	void DX12Renderer::CreateFrameResources()
+	{
+		for (int i = 0; i < mNumFrameResources; ++i)
+		{
+			// one pass cb for default, one for shadow
+			mFrameResources.push_back(std::make_shared<FrameResource>(
+				1, mObjectCBCount, mPassCBByteSize, mObjectCBByteSize));
+		}
+	}
 
 #pragma endregion InitDX12
 
-#pragma region InitPipeline
+#pragma region InputAssembly
 	/*****************************************************************/
 	/*********************** Input Assembly **************************/
 	/*****************************************************************/
-	UINT DX12Renderer::LoadTexture2D(std::string fileName)
+	uint32_t DX12Renderer::LoadTexture2D(std::string fileName)
 	{
 		std::wstring wFilePath(fileName.begin(), fileName.end());
-		UINT id = TextureManager::LoadTexture(wFilePath, ETextureDimension::TEXTURE2D);
-		
-		return id;
-	}
-
-	UINT DX12Renderer::LoadTexture3D(std::string fileName)
-	{
-		std::wstring wFilePath(fileName.begin(), fileName.end());
-		UINT id = TextureManager::LoadTexture(wFilePath, ETextureDimension::TEXTURE3D);
+		uint32_t id = TextureManager::LoadTexture(wFilePath, ETextureDimension::TEXTURE2D);
 
 		return id;
 	}
 
-	UINT DX12Renderer::CreateRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, UINT cbOffset)
+	uint32_t DX12Renderer::LoadTexture3D(std::string fileName)
+	{
+		std::wstring wFilePath(fileName.begin(), fileName.end());
+		uint32_t id = TextureManager::LoadTexture(wFilePath, ETextureDimension::TEXTURE3D);
+
+		return id;
+	}
+
+	uint32_t DX12Renderer::CreateRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, uint32_t cbOffset)
 	{
 		auto ri = RenderItemManager::CreateRenderItem(RI_OPAQUE);
 		ri->Init(vertexCount, vertexSize, vertexData, indices);
@@ -322,7 +361,7 @@ void DX12Renderer::OnResize(int width, int height)
 		return ri->renderItemID;
 	}
 
-	UINT DX12Renderer::CreateDebugRenderItem(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
+	uint32_t DX12Renderer::CreateDebugRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
 	{
 		auto ri = RenderItemManager::CreateRenderItem(RI_OPAQUE);
 		debugItem = ri;
@@ -330,6 +369,10 @@ void DX12Renderer::OnResize(int width, int height)
 		debugItem->debug = true;
 		return debugItem->renderItemID;
 	}
+#pragma endregion InputAssembly
+
+#pragma region InitPipeline
+	
 
 	/*****************************************************************/
 	/*********************** Init Pipeline ***************************/
@@ -341,11 +384,6 @@ void DX12Renderer::OnResize(int width, int height)
 		// Build Root Sinagture
 		RootSignatureManager::Init();
 
-		// Build descriptor heaps
-		DescriptorHeapManager::BuildRtvSrvDsvHeapDesc(TextureManager::TextureCount());
-		DescriptorHeapManager::BuildCommonSrvHeap();
-		TextureManager::InitTextureHeaps();
-
 		// Init shader
 		ShaderManager::Init();
 
@@ -356,18 +394,9 @@ void DX12Renderer::OnResize(int width, int height)
 		ExecuteCommands();
 		FlushCommandQueue();
 
-		ShadowMap::Init(mWidth, mHeight);
-		ShadowMap::BuildDescriptors();
-	
-	}
-
-	void DX12Renderer::CreateFrameResources()
-	{
-		for (int i = 0; i < mNumFrameResources; ++i)
+		if (bEnableShadowPass)
 		{
-			// one pass cb for default, one for shadow
-			mFrameResources.push_back(std::make_shared<FrameResource>(
-				1, mObjectCBCount, mPassCBByteSize, mObjectCBByteSize));
+			ShadowMap::Init(mWidth, mHeight);
 		}
 	}
 
@@ -423,44 +452,46 @@ void DX12Renderer::OnResize(int width, int height)
 		mPassCBData = std::vector<BYTE>(data, data + mPassCBByteSize);
 	}
 
-	void DX12Renderer::SetObjectCB(UINT objCBIndex, BYTE* data)//XMFLOAT3 position, XMFLOAT3 rotation, XMFLOAT3 scale)
+	void DX12Renderer::SetObjectCB(uint32_t objCBIndex, BYTE* data)//XMFLOAT3 position, XMFLOAT3 rotation, XMFLOAT3 scale)
 	{
 		mObjectCBData[objCBIndex] = std::vector(data, data + mObjectCBByteSize);
 		mObjectCBFramesDirty[objCBIndex] = mNumFrameResources;
 	}
 
-	void DX12Renderer::SetVisibility(UINT renderItemID, bool visible)
+	void DX12Renderer::SetVisibility(uint32_t renderItemID, bool visible)
 	{
 		RenderItemManager::GetRenderItem(renderItemID)->visible = visible;
 	}
 
-	void DX12Renderer::SetDiffuseTexture(UINT renderItemID, UINT offset)
+	void DX12Renderer::SetTexture(uint32_t renderItemID, int texID, ETextureType type)
 	{
-		if (offset >= 0)
-			RenderItemManager::GetRenderItem(renderItemID)->diffuseOffset = offset;
-	}
-
-	void DX12Renderer::SetSpecularTexture(UINT renderItemID, UINT offset)
-	{
-		if (offset >= 0)
-			RenderItemManager::GetRenderItem(renderItemID)->specularOffset = offset;
-	}
-
-	void DX12Renderer::SetNormalTexture(UINT renderItemID, UINT offset)
-	{
-		if (offset >= 0)
-			RenderItemManager::GetRenderItem(renderItemID)->normalOffset = offset;
-	}
-
-	void DX12Renderer::SetHeightTexture(UINT renderItemID, UINT offset)
-	{
-		if (offset >= 0)
-			RenderItemManager::GetRenderItem(renderItemID)->heightOffset = offset;
+		if (texID >= 0)
+		{
+			std::shared_ptr<RenderItem>& ri = RenderItemManager::GetRenderItem(renderItemID);
+			std::shared_ptr<DX12Texture> tex = TextureManager::GetTexture(texID);
+			switch(type)
+			{
+			case ETextureType::DIFFUSE:
+				ri->diffuseHandle = TextureManager::GetTexture(texID)->handle;
+				break;
+			case ETextureType::SPECULAR:
+				ri->specularHandle = TextureManager::GetTexture(texID)->handle;
+				break;
+			case ETextureType::NORMAL:
+				ri->normalHandle = TextureManager::GetTexture(texID)->handle;
+				break;
+			case ETextureType::HEIGHT:
+				ri->heightHandle = TextureManager::GetTexture(texID)->handle;
+				break;
+			default:
+				break;
+			}
+		}
 	}
 #pragma endregion Pipeline Update
 
 #pragma region Pipeline Draw
-	void DX12Renderer::BindObjectCB(UINT id)
+	void DX12Renderer::BindObjectCB(uint32_t id)
 	{
 		auto objectCBByteSize = UploadBufferUtil::CalcConstantBufferByteSize(mObjectCBByteSize);
 		auto objectCB = mCurrFrameResource->ObjectCB->Resource();
@@ -470,22 +501,17 @@ void DX12Renderer::OnResize(int width, int height)
 
 	void DX12Renderer::BindAllMapToNull()
 	{
-		mCmdList->SetGraphicsRootDescriptorTable(2, DescriptorHeapManager::NullCubeSrv());
-		mCmdList->SetGraphicsRootDescriptorTable(3, DescriptorHeapManager::NullTexSrv());
-		mCmdList->SetGraphicsRootDescriptorTable(4, DescriptorHeapManager::NullTexSrv());
-		mCmdList->SetGraphicsRootDescriptorTable(5, DescriptorHeapManager::NullTexSrv());
-		mCmdList->SetGraphicsRootDescriptorTable(6, DescriptorHeapManager::NullTexSrv());
-		mCmdList->SetGraphicsRootDescriptorTable(7, DescriptorHeapManager::NullTexSrv());
+		mCmdList->SetGraphicsRootDescriptorTable(2, TextureManager::NullTex3DHandle());
+		mCmdList->SetGraphicsRootDescriptorTable(3, TextureManager::NullTex2DHandle());
+		mCmdList->SetGraphicsRootDescriptorTable(4, TextureManager::NullTex2DHandle());
+		mCmdList->SetGraphicsRootDescriptorTable(5, TextureManager::NullTex2DHandle());
+		mCmdList->SetGraphicsRootDescriptorTable(6, TextureManager::NullTex2DHandle());
+		mCmdList->SetGraphicsRootDescriptorTable(7, TextureManager::NullTex2DHandle());
 	}
 
-	void DX12Renderer::BindMap(UINT slot, UINT id)
+	void DX12Renderer::BindMap(uint32_t slot, D3D12_GPU_DESCRIPTOR_HANDLE handle)
 	{
-		if (id >= 0)
-		{
-			CD3DX12_GPU_DESCRIPTOR_HANDLE tex(DescriptorHeapManager::SrvHeap()->GetGPUDescriptorHandleForHeapStart());
-			tex.Offset(id , DescriptorHeapManager::CbvSrvUavDescriptorSize());
-			mCmdList->SetGraphicsRootDescriptorTable(slot, tex);
-		}
+		mCmdList->SetGraphicsRootDescriptorTable(slot, handle);
 	}
 
 	void DX12Renderer::Render()
@@ -502,7 +528,7 @@ void DX12Renderer::OnResize(int width, int height)
 		// Reusing the command list reuses memory.
 		ThrowIfFailed(mCmdList->Reset(cmdListAlloc.Get(), PSOManager::GetPSO("default").Get()));
 
-		ID3D12DescriptorHeap* descriptorHeaps[] = { DescriptorHeapManager::SrvHeap().Get() };
+		ID3D12DescriptorHeap* descriptorHeaps[] = { DescriptorHeapManager::GetSrvHeap().Get() };
 		mCmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 		mCmdList->SetGraphicsRootSignature(RootSignatureManager::GetRootSignature("default").Get());
 		BindAllMapToNull();
@@ -519,18 +545,12 @@ void DX12Renderer::OnResize(int width, int height)
 
 	void DX12Renderer::RenderDefault()
 	{
-		mCmdList->RSSetViewports(1, &mScreenViewport);
-		mCmdList->RSSetScissorRects(1, &mScissorRect);
-		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-		mCmdList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::LightSteelBlue, 0, nullptr);
-		mCmdList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-		mCmdList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+		mViewPortBuffer->StartRender(DepthStencilView());
 		
 		if (bEnableShadowPass)
 		{
 			PSOManager::UsePSO("defaultSM");
-			BindMap(ETextureSlot::SLOT_SHADOW, DescriptorHeapManager::ShadowSrvOffset());
+			BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
 		}
 		else
 		{
@@ -541,13 +561,16 @@ void DX12Renderer::OnResize(int width, int height)
 		mCmdList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
 
 		RenderAllItems();
-		BindMap(ETextureSlot::SLOT_SHADOW, DescriptorHeapManager::ShadowSrvOffset());
 		// debug
 		PSOManager::UsePSO("shadowDebug");
 		RenderRenderItem(debugItem);
 		// Indicate a state transition on the resource usage.
+		mViewPortBuffer->EndRender();
+
 		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-			D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+		mCmdList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::LightSteelBlue, 0, nullptr);
+		mCmdList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 	}
 
 	void DX12Renderer::RenderAllItems()
@@ -561,10 +584,10 @@ void DX12Renderer::OnResize(int width, int height)
 			}
 			//LOG_INFO("ri id : {0},   ri diffuse: {1},   ri cb: {2}", ri->renderItemID, ri->diffuseOffset, ri->cbOffset);
 			BindObjectCB(ri->cbOffset);
-			BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseOffset);
-			BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularOffset);
-			BindMap(ETextureSlot::SLOT_NORMAL, ri->normalOffset);
-			BindMap(ETextureSlot::SLOT_HEIGHT, ri->heightOffset);
+			BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseHandle);
+			BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularHandle);
+			BindMap(ETextureSlot::SLOT_NORMAL, ri->normalHandle);
+			BindMap(ETextureSlot::SLOT_HEIGHT, ri->heightHandle);
 			mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
 			mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
 			mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
@@ -577,12 +600,11 @@ void DX12Renderer::OnResize(int width, int height)
 		if (ri->visible)
 		{
 			BindObjectCB(ri->cbOffset);
-			BindMap(ETextureSlot::SLOT_SHADOW, DescriptorHeapManager::ShadowSrvOffset());
-
-			BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseOffset);
-			BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularOffset);
-			BindMap(ETextureSlot::SLOT_NORMAL, ri->normalOffset);
-			BindMap(ETextureSlot::SLOT_HEIGHT, ri->heightOffset);
+			BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
+			BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseHandle);
+			BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularHandle);
+			BindMap(ETextureSlot::SLOT_NORMAL, ri->normalHandle);
+			BindMap(ETextureSlot::SLOT_HEIGHT, ri->heightHandle);
 			mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
 			mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
 			mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);
@@ -596,7 +618,6 @@ void DX12Renderer::OnResize(int width, int height)
 		// swap the back and front buffers
 		ThrowIfFailed(mSwapChain->Present(0, 0));
 		mCurrBackBuffer = (mCurrBackBuffer + 1) % SwapChainBufferCount;
-
 		mCurrFrameResource->Fence = ++mCurrentFence;
 
 		mCmdQueue->Signal(mFence.Get(), mCurrentFence);

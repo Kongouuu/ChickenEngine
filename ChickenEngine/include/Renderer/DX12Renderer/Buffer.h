@@ -11,8 +11,8 @@ namespace ChickenEngine
 		Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
 
 		// Data about the buffers.
-		UINT VertexByteStride = 0;
-		UINT VertexBufferByteSize = 0;
+		uint32_t VertexByteStride = 0;
+		uint32_t VertexBufferByteSize = 0;
 
 		D3D12_VERTEX_BUFFER_VIEW VertexBufferView()const
 		{
@@ -32,7 +32,7 @@ namespace ChickenEngine
 		Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
 
 		DXGI_FORMAT IndexFormat = DXGI_FORMAT_R16_UINT;
-		UINT IndexBufferByteSize = 0;
+		uint32_t IndexBufferByteSize = 0;
 
 
 		D3D12_INDEX_BUFFER_VIEW IndexBufferView()const

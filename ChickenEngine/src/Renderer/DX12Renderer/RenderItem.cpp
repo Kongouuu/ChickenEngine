@@ -3,12 +3,12 @@
 
 namespace ChickenEngine
 {
-    void RenderItem::Init(UINT vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
+    void RenderItem::Init(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
     {
-        LOG_INFO("RenderItem - Init render item. name: {0}", name.c_str());
+        LOG_INFO("RenderItem - Init render item");
 
-        const UINT vbByteSize = (UINT)vertexCount * vertexSize;
-        const UINT ibByteSize = (UINT)indices.size() * sizeof(uint16_t);
+        const uint32_t vbByteSize = (UINT)vertexCount * vertexSize;
+        const uint32_t ibByteSize = (UINT)indices.size() * sizeof(uint16_t);
 
         //ThrowIfFailed(D3DCreateBlob(vbByteSize, &vb.VertexBufferCPU));
         //CopyMemory(vb.VertexBufferCPU->GetBufferPointer(), vertexData, vbByteSize);
@@ -25,14 +25,14 @@ namespace ChickenEngine
         ib.IndexFormat = DXGI_FORMAT_R16_UINT;
         ib.IndexBufferByteSize = ibByteSize;
 
-        LOG_ERROR("Name: {0}, vertexCount: {1}, vertexSize: {2}, vbbytesize: {3}, ibbytsize: {4}",
-            name.c_str(), vertexCount, vertexSize, vbByteSize, ibByteSize);
+        //LOG_ERROR("ID: {0}, vertexCount: {1}, vertexSize: {2}, vbbytesize: {3}, ibbytsize: {4}",
+           // renderItemID, vertexCount, vertexSize, vbByteSize, ibByteSize);
     }
 
     int RenderItemManager::renderItemCount = 0;
 
 
-    std::shared_ptr<RenderItem> RenderItemManager::GetRenderItem( UINT id)
+    std::shared_ptr<RenderItem> RenderItemManager::GetRenderItem( uint32_t id)
     {
         return instance().mRenderItems[id];
     }
@@ -48,7 +48,11 @@ namespace ChickenEngine
         // Get current render item count;
         ri->renderItemID = renderItemCount;
         ri->riType = riType;
-
+        D3D12_GPU_DESCRIPTOR_HANDLE nullHandle = TextureManager::NullTex2DHandle();
+        ri->diffuseHandle = nullHandle;
+        ri->specularHandle = nullHandle;
+        ri->normalHandle = nullHandle;
+        ri->heightHandle = nullHandle;
         rim.mRenderItems.emplace_back(ri);
        // rim.mRenderItemOfType[(int)riType].emplace_back(ri);
         renderItemCount++;

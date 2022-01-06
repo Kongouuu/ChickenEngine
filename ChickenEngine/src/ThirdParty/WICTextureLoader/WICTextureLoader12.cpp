@@ -33,7 +33,6 @@
 #include "Helper/d3dx12.h"
 
 using namespace DirectX;
-using Microsoft::WRL::ComPtr;
 
 namespace
 {
@@ -163,7 +162,7 @@ namespace
     }
 
     //---------------------------------------------------------------------------------
-    template<UINT TNameLength>
+    template<uint32_t TNameLength>
     inline void SetDebugObjectName(_In_ ID3D12DeviceChild* resource, _In_z_ const wchar_t(&name)[TNameLength])
     {
         #if !defined(NO_D3D12_DEBUG_NAME) && ( defined(_DEBUG) || defined(PROFILE) )
@@ -239,7 +238,7 @@ namespace
         if (!pWIC)
             return 0;
 
-        ComPtr<IWICComponentInfo> cinfo;
+        Microsoft::WRL::ComPtr<IWICComponentInfo> cinfo;
         if (FAILED(pWIC->CreateComponentInfo(targetGuid, cinfo.GetAddressOf())))
             return 0;
 
@@ -250,11 +249,11 @@ namespace
         if (type != WICPixelFormat)
             return 0;
 
-        ComPtr<IWICPixelFormatInfo> pfinfo;
+        Microsoft::WRL::ComPtr<IWICPixelFormatInfo> pfinfo;
         if (FAILED(cinfo.As(&pfinfo)))
             return 0;
 
-        UINT bpp;
+        uint32_t bpp;
         if (FAILED(pfinfo->GetBitsPerPixel(&bpp)))
             return 0;
 
@@ -271,7 +270,7 @@ namespace
         std::unique_ptr<uint8_t[]>& decodedData,
         D3D12_SUBRESOURCE_DATA& subresource)
     {
-        UINT width, height;
+        uint32_t width, height;
         HRESULT hr = frame->GetSize(&width, &height);
         if (FAILED(hr))
             return hr;
@@ -286,7 +285,7 @@ namespace
             maxsize = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
         }
 
-        UINT twidth, theight;
+        uint32_t twidth, theight;
         if (width > maxsize || height > maxsize)
         {
             float ar = static_cast<float>(height) / static_cast<float>(width);
@@ -353,7 +352,7 @@ namespace
         }
         else if (!(loadFlags & WIC_LOADER_IGNORE_SRGB))
         {
-            ComPtr<IWICMetadataQueryReader> metareader;
+            Microsoft::WRL::ComPtr<IWICMetadataQueryReader> metareader;
             if (SUCCEEDED(frame->GetMetadataQueryReader(metareader.GetAddressOf())))
             {
                 GUID containerFormat;
@@ -417,7 +416,7 @@ namespace
             if (!pWIC)
                 return E_NOINTERFACE;
 
-            ComPtr<IWICBitmapScaler> scaler;
+            Microsoft::WRL::ComPtr<IWICBitmapScaler> scaler;
             hr = pWIC->CreateBitmapScaler(scaler.GetAddressOf());
             if (FAILED(hr))
                 return hr;
@@ -440,7 +439,7 @@ namespace
             }
             else
             {
-                ComPtr<IWICFormatConverter> FC;
+                Microsoft::WRL::ComPtr<IWICFormatConverter> FC;
                 hr = pWIC->CreateFormatConverter(FC.GetAddressOf());
                 if (FAILED(hr))
                     return hr;
@@ -468,7 +467,7 @@ namespace
             if (!pWIC)
                 return E_NOINTERFACE;
 
-            ComPtr<IWICFormatConverter> FC;
+            Microsoft::WRL::ComPtr<IWICFormatConverter> FC;
             hr = pWIC->CreateFormatConverter(FC.GetAddressOf());
             if (FAILED(hr))
                 return hr;
@@ -588,7 +587,7 @@ HRESULT DirectX::LoadWICTextureFromMemoryEx(
         return E_NOINTERFACE;
 
     // Create input stream for memory
-    ComPtr<IWICStream> stream;
+    Microsoft::WRL::ComPtr<IWICStream> stream;
     HRESULT hr = pWIC->CreateStream( stream.GetAddressOf() );
     if ( FAILED(hr) )
         return hr;
@@ -598,12 +597,12 @@ HRESULT DirectX::LoadWICTextureFromMemoryEx(
         return hr;
 
     // Initialize WIC
-    ComPtr<IWICBitmapDecoder> decoder;
+    Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
     hr = pWIC->CreateDecoderFromStream( stream.Get(), nullptr, WICDecodeMetadataCacheOnDemand, decoder.GetAddressOf() );
     if ( FAILED(hr) )
         return hr;
 
-    ComPtr<IWICBitmapFrameDecode> frame;
+    Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame;
     hr = decoder->GetFrame( 0, frame.GetAddressOf() );
     if ( FAILED(hr) )
         return hr;
@@ -669,12 +668,12 @@ HRESULT DirectX::LoadWICTextureFromFileEx(
         return E_NOINTERFACE;
 
     // Initialize WIC
-    ComPtr<IWICBitmapDecoder> decoder;
+    Microsoft::WRL::ComPtr<IWICBitmapDecoder> decoder;
     HRESULT hr = pWIC->CreateDecoderFromFilename( fileName, nullptr, GENERIC_READ, WICDecodeMetadataCacheOnDemand, decoder.GetAddressOf() );
     if ( FAILED(hr) )
         return hr;
 
-    ComPtr<IWICBitmapFrameDecode> frame;
+    Microsoft::WRL::ComPtr<IWICBitmapFrameDecode> frame;
     hr = decoder->GetFrame( 0, frame.GetAddressOf() );
     if ( FAILED(hr) )
         return hr;

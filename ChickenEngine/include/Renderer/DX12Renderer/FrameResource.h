@@ -6,11 +6,10 @@
 
 namespace ChickenEngine
 {
-
 	class FrameResource
 	{
 	public:
-		FrameResource(UINT passCount, UINT objectCount, UINT passCBSize, UINT objCBSize);
+		FrameResource(uint32_t passCount, uint32_t objectCount, uint32_t passCBSize, uint32_t objCBSize);
 		FrameResource(const FrameResource& rhs) = delete;
 		FrameResource& operator=(const FrameResource& rhs) = delete;
 		~FrameResource() {}
