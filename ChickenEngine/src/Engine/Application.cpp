@@ -104,9 +104,7 @@ namespace ChickenEngine
 	{
 		DX12Renderer& renderer = DX12Renderer::GetInstance();
 		renderer.Render();
-		// call actual render 
 		ImguiManager::instance().ImguiRender(); // later be substituted
-
 		renderer.EndRender();
 	}
 
@@ -200,8 +198,6 @@ namespace ChickenEngine
 			dy = std::clamp(dy, -0.05f, 0.05f);
 			SceneManager::GetCamera().RotateY(dx);
 			SceneManager::GetCamera().Pitch(dy);
-			
-			LOG_INFO("dx {0} , dy {1}", dx, dy);
 		}
 
 		previousMouseX = e.GetX();

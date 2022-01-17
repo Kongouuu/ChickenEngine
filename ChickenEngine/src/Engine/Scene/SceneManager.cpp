@@ -175,7 +175,11 @@ namespace ChickenEngine
 		
 		XMMATRIX invRotation = XMMatrixTranspose(XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotationPI)));
 		XMMATRIX invScale = XMMatrixScaling(1.0f / ro.scale.x, 1.0f / ro.scale.y, 1.0f / ro.scale.z);
-		XMStoreFloat4x4(&oc.InvWorld, XMMatrixTranspose(invScale * invRotation));
+		XMStoreFloat4x4(&oc.InvWorld, invScale * XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotationPI)));
+
+		//XMMATRIX invRotation = XMMatrixTranspose(XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&rotationPI)));
+		//XMMATRIX invScale = XMMatrixScaling(1.0f / ro.scale.x, 1.0f / ro.scale.y, 1.0f / ro.scale.z);
+		//XMStoreFloat4x4(&oc.InvWorld, XMMatrixTranspose(invRotation * invScale ));
 
 		oc.Roughness = ro.roughness;
 		oc.Metallic = ro.metallic;

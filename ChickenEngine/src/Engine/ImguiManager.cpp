@@ -22,12 +22,8 @@ namespace ChickenEngine
 	{
 		LOG_ERROR("Imgui Init");
 		this->bEnabled = true; 
-
-		LOG_INFO("Check version");
 		ImGui::DebugCheckVersionAndDataLayout(IMGUI_VERSION, sizeof(ImGuiIO), sizeof(ImGuiStyle), sizeof(ImVec2), sizeof(ImVec4), sizeof(ImDrawVert), sizeof(ImDrawIdx));
-		LOG_INFO("Create context");
 		ImGui::CreateContext();
-		LOG_INFO("Get io");
 		ImGuiIO& io = ImGui::GetIO(); 
 		(void)io;
 		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
@@ -116,7 +112,6 @@ namespace ChickenEngine
 		ShowViewPortPanel();
 		ImGui::Begin("Content");
 		ImGui::End();
-
 		ImguiEnd();
 	}
 
@@ -126,11 +121,11 @@ namespace ChickenEngine
 		const DX12Renderer& DXContext = DX12Renderer::GetInstance();
 		ImGuiIO& io = ImGui::GetIO();
 		io.DisplaySize = ImVec2(App.GetWindow()->GetWidth(), App.GetWindow()->GetHeight());
+
 		ImGui::Render();
-		DXContext.CommandList()->SetDescriptorHeaps(1, DXContext.SrvHeap().GetAddressOf());
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), DXContext.CommandList().Get());
 
-		// Update and Render additional Platform Windows
+		// If using imgui docking/viewport, has to do this for update
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			ImGui::UpdatePlatformWindows();
@@ -156,9 +151,14 @@ namespace ChickenEngine
 	{
 		ImGui::Begin("ViewPort Panel");
 		ImGuiIO& io = ImGui::GetIO();
+		// Focus在viewport的时候才会传控制给application，不然就截断消息
 		io.WantCaptureMouse = 1 ^ ImGui::IsWindowFocused();
 		io.WantCaptureKeyboard = 1 ^ ImGui::IsWindowFocused();
+
+		// 这个函数可以得到当前UI的大小
 		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+
+		// 如果UI有resize，那么标记为脏
 		if (abs(mViewportWidth - viewportPanelSize.x) >= 0.1 || abs(mViewportHeight - viewportPanelSize.y) >= 0.1)
 		{
 			mViewportWidth = viewportPanelSize.x;
@@ -166,6 +166,7 @@ namespace ChickenEngine
 			mViewportSizeDirty = true;
 		}
 
+		// 渲染贴图
 		ImGui::Image((ImTextureID)(DX12Renderer::GetInstance().CurrentViewportBufferGPUHandle().ptr), viewportPanelSize, ImVec2{ 0, 0 }, ImVec2{ 1, 1 });
 		ImGui::End();
 	}

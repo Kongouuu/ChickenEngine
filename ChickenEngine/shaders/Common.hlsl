@@ -68,7 +68,6 @@ float CalcShadowFactor(float4 shadowPosH)
 		float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
 		float2(-dx,  +dx), float2(0.0f,  +dx), float2(dx,  +dx)
 	};
-
 	[unroll]
 	for (int i = 0; i < 9; ++i)
 	{

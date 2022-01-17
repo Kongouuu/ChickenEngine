@@ -27,6 +27,7 @@ VertexOut VS(VertexIn vin)
 	vout.PosH = mul(PosW, gViewProj);
 	vout.PosW = PosW;
 	vout.ShadowPosH = mul(PosW, gShadowTransform);
+	// from [0,1] to ndc
 	float4x4 T = float4x4(
 		0.5f, 0.0f, 0.0f, 0.0f,
 		0.0f, -0.5f, 0.0f, 0.0f,
@@ -70,14 +71,16 @@ float4 PS(VertexOut pin) : SV_Target
 
 	// Only the first light casts a shadow.
 	float shadowFactor = 1.0f;
+	// lerp
 #ifdef SHADOW_MAP_ENABLED
 	shadowFactor = CalcShadowFactor(pin.ShadowPosH);
 #endif
 
 	float3 color = shadowFactor * (kD * diffuse +  kS * specular) * gDirLight.strength * NdotL;;
-	float3 ambient = albedo.xyz * 0.12;
+	float3 ambient = albedo.xyz * 0.08;
 	color += ambient;
 	color = pow(color, (1.0 / 2.2));
+	color = N;
 	return float4(color,1.0);
 }
 

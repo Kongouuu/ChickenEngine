@@ -164,7 +164,7 @@ namespace ChickenEngine
 
 	bool DescriptorHeapManager::RebindSrv(ID3D12Resource* resource, uint32_t offset)
 	{
-		LOG_INFO("rebind srv offset {0}", offset);
+		// 检查这个偏移是不是真的有已储存的描述符
 		if (instance().mSrvDescByOffset.find(offset) == instance().mSrvDescByOffset.end())
 			return false;
 		Device::device()->CreateShaderResourceView(resource, &instance().mSrvDescByOffset[offset], instance().mSrvHeap.GetCpuHandle(offset));

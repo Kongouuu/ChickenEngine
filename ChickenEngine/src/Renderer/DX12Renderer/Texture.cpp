@@ -17,12 +17,16 @@ namespace ChickenEngine
         nullTex2d->id = 0;
         nullTex2d->Resource = nullptr;
         nullTex2d->TextureDimension = ETextureDimension::TEXTURE2D;
+        nullTex2d->offset = DescriptorHeapManager::BindSrv(nullptr, ETextureDimension::TEXTURE2D);
+        nullTex2d->handle = DescriptorHeapManager::GetSrvGpuHandle(nullTex2d->offset);
         mTextures.push_back(nullTex2d);
 
         std::shared_ptr<DX12Texture> nullTex3d = std::make_shared<DX12Texture>();
         nullTex3d->id = 1;
         nullTex3d->Resource = nullptr;
         nullTex3d->TextureDimension = ETextureDimension::TEXTURE3D;
+        nullTex3d->offset = DescriptorHeapManager::BindSrv(nullptr, ETextureDimension::TEXTURE3D);
+        nullTex3d->handle = DescriptorHeapManager::GetSrvGpuHandle(nullTex3d->offset);
         mTextures.push_back(nullTex3d);
         textureCount = 2;
     }
