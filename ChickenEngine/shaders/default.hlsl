@@ -1,5 +1,5 @@
 #include "Common.hlsl"
-#include "ShadingUtil.hlsl"
+#include "BRDF.hlsl"
 
 struct VertexIn
 {

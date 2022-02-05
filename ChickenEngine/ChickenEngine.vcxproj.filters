@@ -569,9 +569,10 @@
   <ItemGroup>
     <FxCompile Include="shaders\Default.hlsl" />
     <FxCompile Include="shaders\Common.hlsl" />
-    <FxCompile Include="shaders\ShadingUtil.hlsl" />
+    <FxCompile Include="shaders\BRDF.hlsl" />
     <FxCompile Include="shaders\Shadow.hlsl" />
     <FxCompile Include="shaders\ShadowDebug.hlsl" />
+    <FxCompile Include="shaders\ToneMapping.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\ThirdParty\assimp\.editorconfig" />
