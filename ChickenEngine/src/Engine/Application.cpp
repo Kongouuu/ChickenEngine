@@ -90,7 +90,7 @@ namespace ChickenEngine
 		SceneManager::UpdateRenderObjects();
 		UpdateCamera();
 		SceneManager::UpdateSceneData(ImguiManager::ViewportWidth(), ImguiManager::ViewportHeight());
-		
+		SceneManager::UpdateRenderSettings();
 		DX12Renderer::GetInstance().UpdateFrame();
 		// resize events
 		if (ImguiManager::ViewportSizeDirty())

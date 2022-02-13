@@ -3,7 +3,7 @@
 
 namespace ChickenEngine
 {
-    FrameResource::FrameResource(uint32_t passCount, uint32_t objectCount, uint32_t passCBSize, uint32_t objCBSize)
+    FrameResource::FrameResource(uint32_t passCount, uint32_t objectCount, uint32_t passCBSize, uint32_t objCBSize, uint32_t settingCBSize)
     {
         ThrowIfFailed(Device::device()->CreateCommandAllocator(
             D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -11,7 +11,7 @@ namespace ChickenEngine
 
         PassCB = std::make_unique<UploadBufferV2>(passCount, true, passCBSize);
         ObjectCB = std::make_unique<UploadBufferV2>(objectCount, true, objCBSize);
-
+        SettingCB = std::make_unique<UploadBufferV2>(passCount, true, settingCBSize);
         //MaterialCB = std::make_unique<UploadBuffer<MaterialConstants>>(materialCount, false);
         //ObjectCB = std::make_unique<UploadBuffer<ObjectConstants>>(objectCount, true);
     }

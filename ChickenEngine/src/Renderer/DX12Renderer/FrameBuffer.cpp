@@ -3,7 +3,7 @@
 
 namespace ChickenEngine
 {
-	void FrameBuffer::BuildResource(int width, int height, DXGI_FORMAT format)
+	void FrameBuffer::BuildResource(int width, int height, DXGI_FORMAT format,int miplevels)
 	{
 		mScreenViewport.TopLeftX = 0;
 		mScreenViewport.TopLeftY = 0;
@@ -20,7 +20,7 @@ namespace ChickenEngine
 		texDesc.Width = width;
 		texDesc.Height = height;
 		texDesc.DepthOrArraySize = 1;
-		texDesc.MipLevels = 1;
+		texDesc.MipLevels = miplevels;
 		texDesc.Format = format;
 		texDesc.SampleDesc.Count = 1;
 		texDesc.SampleDesc.Quality = 0;

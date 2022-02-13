@@ -97,6 +97,7 @@ namespace ChickenEngine
 		// Init constants
 		mPassCBByteSize = sizeof(PassConstants);
 		mObjectCBByteSize = sizeof(ObjectConstants);
+		mSettingCBByteSize = sizeof(RenderSettings);
 
 		for (int i = 0; i < SwapChainBufferCount; i++)
 		{
@@ -299,11 +300,6 @@ namespace ChickenEngine
 		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
 		mViewPortBuffer->BuildResource(width, height, mBackBufferFormat);
-		if (bEnableShadowPass)
-		{
-			ShadowMap::OnResize(width, height);
-		}
-
 
 		// Execute the resize commands.
 		ThrowIfFailed(mCmdList->Close());
@@ -314,18 +310,13 @@ namespace ChickenEngine
 		FlushCommandQueue();
 	}
 
-	void DX12Renderer::SetEnableShadowPass(bool enable)
-	{
-		bEnableShadowPass = enable;
-	}
-
 	void DX12Renderer::CreateFrameResources()
 	{
 		for (int i = 0; i < mNumFrameResources; ++i)
 		{
 			// one pass cb for default, one for shadow
 			mFrameResources.push_back(std::make_shared<FrameResource>(
-				1, mObjectCBCount, mPassCBByteSize, mObjectCBByteSize));
+				1, mObjectCBCount, mPassCBByteSize, mObjectCBByteSize, mSettingCBByteSize));
 		}
 	}
 
@@ -394,10 +385,7 @@ namespace ChickenEngine
 		ExecuteCommands();
 		FlushCommandQueue();
 
-		if (bEnableShadowPass)
-		{
-			ShadowMap::Init(mWidth, mHeight);
-		}
+		ShadowMap::Init(2048,2048);
 	}
 
 #pragma endregion InitPipeline
@@ -408,6 +396,7 @@ namespace ChickenEngine
 		SwapFrameResource();
 		UpdatePassCB();
 		UpdateObjectCB();
+		UpdateSettingCB();
 	}
 
 	void DX12Renderer::SwapFrameResource()
@@ -445,6 +434,21 @@ namespace ChickenEngine
 				mObjectCBFramesDirty[i]--;
 			}
 		}
+	}
+
+	void DX12Renderer::UpdateSettingCB()
+	{
+		mCurrFrameResource->SettingCB->CopyData(0, mSettingCBData.data());
+	}
+
+
+	void DX12Renderer::UpdateRenderSettings(RenderSettings rs)
+	{
+		mRenderSetting = rs;
+		BYTE data[sizeof(RenderSettings)];
+		memcpy(&data, &rs, sizeof(rs));
+		std::vector<BYTE> dataVector(data, data + sizeof(rs));
+		mSettingCBData = dataVector;
 	}
 
 	void DX12Renderer::SetPassSceneData(BYTE* data)
@@ -501,12 +505,13 @@ namespace ChickenEngine
 
 	void DX12Renderer::BindAllMapToNull()
 	{
-		mCmdList->SetGraphicsRootDescriptorTable(2, TextureManager::NullTex3DHandle());
-		mCmdList->SetGraphicsRootDescriptorTable(3, TextureManager::NullTex2DHandle());
+		mCmdList->SetGraphicsRootDescriptorTable(3, TextureManager::NullTex3DHandle());
 		mCmdList->SetGraphicsRootDescriptorTable(4, TextureManager::NullTex2DHandle());
 		mCmdList->SetGraphicsRootDescriptorTable(5, TextureManager::NullTex2DHandle());
 		mCmdList->SetGraphicsRootDescriptorTable(6, TextureManager::NullTex2DHandle());
 		mCmdList->SetGraphicsRootDescriptorTable(7, TextureManager::NullTex2DHandle());
+		mCmdList->SetGraphicsRootDescriptorTable(8, TextureManager::NullTex2DHandle());
+		mCmdList->SetGraphicsRootDescriptorTable(9, TextureManager::NullTex2DHandle());
 	}
 
 	void DX12Renderer::BindMap(uint32_t slot, D3D12_GPU_DESCRIPTOR_HANDLE handle)
@@ -516,41 +521,56 @@ namespace ChickenEngine
 
 	void DX12Renderer::Render()
 	{
+		/* Stage 0: Reset */
 		assert(mCmdList);
-
 		auto cmdListAlloc = mCurrFrameResource->CmdListAlloc;
 		assert(cmdListAlloc);
-		// Reuse the memory associated with command recording.
-		// We can only reset when the associated command lists have finished execution on the GPU.
 		ThrowIfFailed(cmdListAlloc->Reset());
-		
-		// A command list can be reset after it has been added to the command queue via ExecuteCommandList.
-		// Reusing the command list reuses memory.
 		ThrowIfFailed(mCmdList->Reset(cmdListAlloc.Get(), PSOManager::GetPSO("default").Get()));
-
 		ID3D12DescriptorHeap* descriptorHeaps[] = { DescriptorHeapManager::GetSrvHeap().Get() };
 		mCmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 		mCmdList->SetGraphicsRootSignature(RootSignatureManager::GetRootSignature("default").Get());
 		BindAllMapToNull();
 		
-		if (bEnableShadowPass)
+
+		/* Stage 1: Generate Render-Based Resources*/
+		if (mRenderSetting.sm_generateSM)
 		{
 			ShadowMap::BeginShadowMap(mPassCBByteSize, mCurrFrameResource->PassCB->Resource());
 			RenderAllItems();
 			ShadowMap::EndShadowMap();
 		}
 
+		/* Stage 2: Actual Render */
 		RenderDefault();
+
+		/* Stage 3: Post-Process */
+
+		// Stage 4: Debug Plane */
+		PSOManager::UsePSO("shadowDebug");
+		RenderRenderItem(debugItem);
+		
+		/* Stage 5: End Render*/
+		mViewPortBuffer->EndRender();
+		// Set render target back to back buffer for ImGui
+		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
+		mCmdList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::LightSteelBlue, 0, nullptr);
+		mCmdList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 	}
 
 	void DX12Renderer::RenderDefault()
 	{
 		mViewPortBuffer->StartRender(DepthStencilView());
 		
-		if (bEnableShadowPass)
+		if (mRenderSetting.sm_generateSM)
 		{
-			PSOManager::UsePSO("defaultSM");
+			PSOManager::UsePSO("default");
 			BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
+			if (mRenderSetting.sm_type == EShadowType::SM_VSSM)
+			{
+				BindMap(ETextureSlot::SLOT_SHADOWSQUARE, ShadowMap::SrvGpuHandleSquared());
+			}
 		}
 		else
 		{
@@ -558,19 +578,11 @@ namespace ChickenEngine
 		}
 
 		auto passCB = mCurrFrameResource->PassCB->Resource();
+		auto settingCB = mCurrFrameResource->SettingCB->Resource();
 		mCmdList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
-
+		mCmdList->SetGraphicsRootConstantBufferView(2, settingCB->GetGPUVirtualAddress());
 		RenderAllItems();
-		// debug
-		PSOManager::UsePSO("shadowDebug");
-		RenderRenderItem(debugItem);
-		// Indicate a state transition on the resource usage.
-		mViewPortBuffer->EndRender();
 
-		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
-			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
-		mCmdList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::LightSteelBlue, 0, nullptr);
-		mCmdList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
 	}
 
 	void DX12Renderer::RenderAllItems()

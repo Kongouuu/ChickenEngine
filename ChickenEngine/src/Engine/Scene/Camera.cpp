@@ -18,7 +18,7 @@ namespace ChickenEngine
 	Camera::Camera(bool ortho)
 	{
 		if (ortho)
-			SetLensOrtho(500, 500, 1.0f, 1000.0f);
+			SetLensOrtho(1024,1024, 1.0f, 1000.0f);
 		else
 			SetLens(0.25f * MathHelper::Pi, 1.0f, 1.0f, 1000.0f);
 	}

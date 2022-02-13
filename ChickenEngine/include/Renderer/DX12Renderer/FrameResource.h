@@ -9,7 +9,7 @@ namespace ChickenEngine
 	class FrameResource
 	{
 	public:
-		FrameResource(uint32_t passCount, uint32_t objectCount, uint32_t passCBSize, uint32_t objCBSize);
+		FrameResource(uint32_t passCount, uint32_t objectCount, uint32_t passCBSize, uint32_t objCBSize, uint32_t settingCBSize);
 		FrameResource(const FrameResource& rhs) = delete;
 		FrameResource& operator=(const FrameResource& rhs) = delete;
 		~FrameResource() {}
@@ -23,6 +23,7 @@ namespace ChickenEngine
 
 		std::unique_ptr<UploadBufferV2> PassCB = nullptr;
 		std::unique_ptr<UploadBufferV2> ObjectCB = nullptr;
+		std::unique_ptr<UploadBufferV2> SettingCB = nullptr;
 
 		//std::unique_ptr<UploadBuffer<ObjectConstants>> ObjectCB = nullptr;
 		//std::unique_ptr<UploadBuffer<MaterialConstants>> MaterialCB = nullptr;

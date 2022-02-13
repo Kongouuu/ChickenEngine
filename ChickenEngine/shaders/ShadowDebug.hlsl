@@ -1,4 +1,4 @@
-#include "Common.hlsl"
+#include "Util/Common.hlsl"
 struct VertexIn
 {
 	float3 PosL  : POSITION;
@@ -13,6 +13,7 @@ struct VertexOut
 	float4 PosH  : SV_POSITION;
 	float2 uv : TEXCOORD;
 };
+
 VertexOut VS(VertexIn vin)
 {
 	VertexOut vout = (VertexOut)0.0f;
@@ -27,5 +28,5 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	return float4(gShadowMap.Sample(gSamLinearWarp , pin.uv).rrr,1.0f);
+	return float4(gShadowMap.SampleLevel(gSamLinearWarp , pin.uv, 7).rrr,1.0f);
 }

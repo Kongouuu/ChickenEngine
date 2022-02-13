@@ -36,6 +36,9 @@ namespace ChickenEngine
 		DirectionLightData data;
 		DirectX::XMFLOAT3 Position = { 0.0f, 50.0f, 0.0f };
 		DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,10.0f };
+		bool bAutoPosition = true;
+		float distFrustumCenter = 0.0;
+		float offsetViewDir = 0.0;
 	};
 
 	struct PassConstants
@@ -65,6 +68,23 @@ namespace ChickenEngine
 		DirectX::XMFLOAT4 Color = { 0.0,0.0,0.0,0.0 };
 		float Roughness = 0.0;
 		float Metallic = 0.0;
+	};
+
+	enum EShadowType
+	{
+		SM_DISABLED = 0,
+		SM_DEFAULT,
+		SM_PCF,
+		SM_PCSS,
+		SM_VSSM
+	};
+
+	struct RenderSettings
+	{
+		int sm_type;
+		bool sm_generateSM;
+		//bool sm_generateVSM;
+		
 	};
 
 	enum ETextureDimension

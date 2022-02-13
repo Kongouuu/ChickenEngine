@@ -3,6 +3,7 @@
 #include "DescriptorHeap.h"
 #include "PSO.h"
 #include "UploadBuffer.h"
+#include "FrameBuffer.h"
 
 namespace ChickenEngine
 {
@@ -13,7 +14,11 @@ namespace ChickenEngine
 		static void OnResize(uint32_t width, uint32_t height);
 		static void BeginShadowMap(uint32_t passCBByteSize, Microsoft::WRL::ComPtr<ID3D12Resource> passCB);
 		static void EndShadowMap();
+
 		inline static D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuHandle() { return instance().mSrvGpuHandle; }
+		inline static D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuHandleSquared() { return instance().mSquaredShadowMap.GetSrvHandle(); }
+
+		bool bEnableVSM = true;
 	protected:
 		void BuildDescriptors();
 		void BuildResource();
@@ -30,6 +35,8 @@ namespace ChickenEngine
 		int mDsvOffset = -1;
 		D3D12_GPU_DESCRIPTOR_HANDLE mSrvGpuHandle;
 		D3D12_CPU_DESCRIPTOR_HANDLE mDsvCpuHandle;
+		
+		FrameBuffer mSquaredShadowMap;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> mShadowMap = nullptr;
 	};

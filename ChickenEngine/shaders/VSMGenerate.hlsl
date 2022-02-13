@@ -1,4 +1,4 @@
-#include "Common.hlsl"
+#include "Util/Common.hlsl"
 
 struct VertexIn
 {
@@ -23,6 +23,7 @@ VertexOut VS(VertexIn vin)
 	return vout;
 }
 
-void PS(VertexOut pin)
+float PS(VertexOut pin) : SV_Target
 {
+	return float(pin.PosH.z * pin.PosH.z);
 }

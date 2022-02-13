@@ -24,12 +24,10 @@ namespace ChickenEngine
 		defaultPsoDesc.VS = VSByteCode("default");
 		defaultPsoDesc.PS = PSByteCode("default");
 		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&defaultPsoDesc, IID_PPV_ARGS(&instance().mPSOs["default"])));
-		defaultPsoDesc.PS = PSByteCode("defaultSM");
-		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&defaultPsoDesc, IID_PPV_ARGS(&instance().mPSOs["defaultSM"])));
 
 		// shadow map generation
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC smapPsoDesc = defaultPsoDesc;
-		smapPsoDesc.RasterizerState.DepthBias = 100000;
+		smapPsoDesc.RasterizerState.DepthBias = 50000;
 		smapPsoDesc.RasterizerState.DepthBiasClamp = 0.0f;
 		smapPsoDesc.RasterizerState.SlopeScaledDepthBias = 1.0f;
 		smapPsoDesc.VS = VSByteCode("shadow");
@@ -38,7 +36,14 @@ namespace ChickenEngine
 		smapPsoDesc.RTVFormats[0] = DXGI_FORMAT_UNKNOWN;
 		smapPsoDesc.NumRenderTargets = 0;
 		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&smapPsoDesc, IID_PPV_ARGS(&instance().mPSOs["shadow"])));
-		
+
+		// vsm map generation
+		smapPsoDesc.VS = VSByteCode("vsm");
+		smapPsoDesc.PS = PSByteCode("vsm");
+		smapPsoDesc.RTVFormats[0] = DXGI_FORMAT_R16_UNORM;
+		smapPsoDesc.NumRenderTargets = 1;
+		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&smapPsoDesc, IID_PPV_ARGS(&instance().mPSOs["vsm"])));
+
 		// shadow debug
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC debugPsoDesc = defaultPsoDesc;
 		debugPsoDesc.VS = VSByteCode("shadowDebug");

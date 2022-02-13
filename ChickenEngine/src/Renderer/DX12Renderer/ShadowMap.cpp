@@ -13,6 +13,7 @@ namespace ChickenEngine
 
 		instance().BuildResource();
 		instance().BuildDescriptors();
+		instance().mSquaredShadowMap.BuildResource(width, height, DXGI_FORMAT_R16_UNORM, 7);
 		LOG_INFO("");
 	}
 
@@ -39,7 +40,7 @@ namespace ChickenEngine
 		texDesc.Width = mWidth;
 		texDesc.Height = mHeight;
 		texDesc.DepthOrArraySize = 1;
-		texDesc.MipLevels = 1;
+		texDesc.MipLevels = 7;
 		texDesc.Format = mFormat;
 		texDesc.SampleDesc.Count = 1;
 		texDesc.SampleDesc.Quality = 0;
@@ -62,6 +63,7 @@ namespace ChickenEngine
 
 	void ShadowMap::BuildDescriptors()
 	{
+		/* Shadow Map*/
 		if (mSrvOffset < 0)
 		{
 			mSrvOffset = DescriptorHeapManager::BindSrv(mShadowMap.Get(), ETextureDimension::TEXTURE2D, DXGI_FORMAT_R24_UNORM_X8_TYPELESS);
@@ -72,7 +74,6 @@ namespace ChickenEngine
 			if (!DescriptorHeapManager::RebindSrv(mShadowMap.Get(), mSrvOffset))
 				assert(0);
 		}
-
 		if (mDsvOffset < 0)
 		{
 			mDsvOffset = DescriptorHeapManager::BindDsv(mShadowMap.Get());
@@ -83,21 +84,39 @@ namespace ChickenEngine
 			if (!DescriptorHeapManager::RebindDsv(mShadowMap.Get(), mDsvOffset))
 				assert(0);
 		}
-
 	}
 
 	void ShadowMap::BeginShadowMap(uint32_t passCBByteSize, Microsoft::WRL::ComPtr<ID3D12Resource> passCB)
 	{
-		PSOManager::UsePSO("shadow");
-		auto& cmdList = CommandList::cmdList();
 		auto& sm = instance();
+
+		if (sm.bEnableVSM)
+		{
+			PSOManager::UsePSO("vsm");
+		}
+		else
+		{
+			PSOManager::UsePSO("shadow");
+		}
+		
+		auto& cmdList = CommandList::cmdList();
+
 		cmdList->RSSetViewports(1, &sm.mViewport);
 		cmdList->RSSetScissorRects(1, &sm.mScissorRect);
 		cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(sm.mShadowMap.Get(),
 			D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_DEPTH_WRITE));
 		cmdList->ClearDepthStencilView(instance().mDsvCpuHandle,
 			D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-		cmdList->OMSetRenderTargets(0, nullptr, false, &instance().mDsvCpuHandle);
+
+		if (sm.bEnableVSM)
+		{
+			sm.mSquaredShadowMap.StartRender(instance().mDsvCpuHandle);
+		}
+		else
+		{
+			cmdList->OMSetRenderTargets(0, nullptr, false, &instance().mDsvCpuHandle);
+		}
+	
 
 		D3D12_GPU_VIRTUAL_ADDRESS passCBAddress = passCB->GetGPUVirtualAddress();
 		cmdList->SetGraphicsRootConstantBufferView(0, passCBAddress);
@@ -105,6 +124,8 @@ namespace ChickenEngine
 
 	void ShadowMap::EndShadowMap()
 	{
+		if(instance().bEnableVSM)
+			instance().mSquaredShadowMap.EndRender();
 		CommandList::cmdList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(instance().mShadowMap.Get(),
 			D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));
 	}

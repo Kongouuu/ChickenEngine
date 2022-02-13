@@ -24,12 +24,24 @@ namespace ChickenEngine
 
 		static void UpdateRenderObjects();
 		static void UpdateSceneData(int width, int height);
+		static void UpdateRenderSettings();
 		static void ToggleRenderObjectVisibility(uint32_t id);
 
+		void UpdateDirLightPosition();
+
+		/* Light */
 		inline static XMFLOAT3& GetDirLightRotation(){return instance().mDirLight.Rotation;	}
-		inline static XMFLOAT3 GetDirLightDirection() { return instance().mDirLight.data.Direction; }
+		inline static XMFLOAT3  GetDirLightDirection() { return instance().mDirLight.data.Direction; }
 		inline static XMFLOAT3& GetDirLightStrength() { return instance().mDirLight.data.Strength; }
 		inline static XMFLOAT3& GetDirLightPosition() { return instance().mDirLight.Position; }
+		inline static bool&     GetDirLightAutoPos() { return instance().mDirLight.bAutoPosition; }
+		inline static float&    GetDirLightDist() { return instance().mDirLight.distFrustumCenter; }
+		inline static float&    GetDirLightOffset() { return instance().mDirLight.offsetViewDir; }
+
+		inline static Camera& GetLightCamera() { return instance().mLightCamera; }
+		/* Render Setting */
+		inline static RenderSettings& GetRenderSettings() { return instance().mRenderSettings; }
+
 
 	private:
 		static std::vector<BYTE> GetSceneData(int width, int height);
@@ -43,6 +55,7 @@ namespace ChickenEngine
 		DirectionLight mDirLight;
 		PassConstants mPassCB;
 		std::deque<std::shared_ptr<RenderObject>> mRenderObjects;
+		RenderSettings mRenderSettings;
 
 		static uint32_t renderObjectCount;
 	};

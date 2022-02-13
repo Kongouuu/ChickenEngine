@@ -44,7 +44,8 @@ namespace ChickenEngine
 		// normal
 		mVertexShaders["default"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Default.hlsl")), nullptr, "VS", "vs_5_1");
 		// shadow
-		mVertexShaders["shadow"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Shadow.hlsl")), nullptr, "VS", "vs_5_1");
+		mVertexShaders["shadow"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("ShadowGenerate.hlsl")), nullptr, "VS", "vs_5_1");
+		mVertexShaders["vsm"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("VSMGenerate.hlsl")), nullptr, "VS", "vs_5_1");
 		// shadow debug
 		mVertexShaders["shadowDebug"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("ShadowDebug.hlsl")), nullptr, "VS", "vs_5_1");
 	}
@@ -58,9 +59,10 @@ namespace ChickenEngine
 		};
 		// normal
 		mPixelShaders["default"] =  CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Default.hlsl")), nullptr, "PS", "ps_5_1");
-		mPixelShaders["defaultSM"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Default.hlsl")), smDefines, "PS", "ps_5_1");
 		// shadow
-		mPixelShaders["shadow"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Shadow.hlsl")), nullptr, "PS", "ps_5_1");
+		mPixelShaders["shadow"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("ShadowGenerate.hlsl")), nullptr, "PS", "ps_5_1");
+		mPixelShaders["vsm"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("VSMGenerate.hlsl")), nullptr, "PS", "ps_5_1");
+
 		// shadow debug
 		mPixelShaders["shadowDebug"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("ShadowDebug.hlsl")), nullptr, "PS", "ps_5_1");
 	}

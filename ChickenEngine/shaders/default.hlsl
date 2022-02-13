@@ -1,5 +1,6 @@
-#include "Common.hlsl"
-#include "BRDF.hlsl"
+#include "Util/Common.hlsl"
+#include "Util/BRDF.hlsl"
+#include "Util/ShadowUtil.hlsl"
 
 struct VertexIn
 {
@@ -72,15 +73,12 @@ float4 PS(VertexOut pin) : SV_Target
 	// Only the first light casts a shadow.
 	float shadowFactor = 1.0f;
 	// lerp
-#ifdef SHADOW_MAP_ENABLED
 	shadowFactor = CalcShadowFactor(pin.ShadowPosH);
-#endif
 
-	float3 color = shadowFactor * (kD * diffuse +  kS * specular) * gDirLight.strength * NdotL;;
+	float3 color = shadowFactor *(kD * diffuse +  kS * specular) * gDirLight.strength * NdotL;;
 	float3 ambient = albedo.xyz * 0.08;
 	color += ambient;
 	color = pow(color, (1.0 / 2.2));
-	color = N;
 	return float4(color,1.0);
 }
 

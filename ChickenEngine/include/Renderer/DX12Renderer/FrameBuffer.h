@@ -6,10 +6,11 @@ namespace ChickenEngine
 	class FrameBuffer
 	{
 	public:
-		void BuildResource(int width, int height, DXGI_FORMAT format);
+		void BuildResource(int width, int height, DXGI_FORMAT format, int miplevels = 1);
 		void StartRender(D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle);
 		void EndRender();
 		inline D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandle() { return mBufferSrvGpuHandle; }
+		inline Microsoft::WRL::ComPtr<ID3D12Resource> Resource() { return mBuffer; }
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource> mBuffer;
 

@@ -56,7 +56,9 @@ namespace ChickenEngine
 		void UpdateFrame();
 		void SwapFrameResource();
 		void UpdatePassCB();
+		void UpdateSettingCB();
 		void UpdateObjectCB();
+		void UpdateRenderSettings(RenderSettings rs);
 
 		// Called update
 		void SetPassSceneData(BYTE* data);
@@ -66,7 +68,6 @@ namespace ChickenEngine
 		//
 		void OnWindowResize(int width, int height);
 		void OnViewportResize(int width, int height);
-		void SetEnableShadowPass(bool enable);
 
 		// Render
 		void BindObjectCB(uint32_t id);
@@ -136,10 +137,14 @@ namespace ChickenEngine
 		DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 		uint32_t mPassCBByteSize;
-		uint32_t mObjectCBByteSize;
 		std::vector<BYTE> mPassCBData;
 
+		RenderSettings mRenderSetting;
+		uint32_t mSettingCBByteSize;
+		std::vector<BYTE> mSettingCBData;
+
 		uint32_t mObjectCBCount = 0;
+		uint32_t mObjectCBByteSize;
 		std::unordered_map<UINT, std::vector<BYTE>> mObjectCBData;
 		std::unordered_map<UINT, UINT> mObjectCBFramesDirty;
 		
@@ -149,6 +154,7 @@ namespace ChickenEngine
 		// Special passes
 		bool bEnableShadowPass = true;
 		std::shared_ptr<RenderItem> debugItem;
+
 	};
 }
 

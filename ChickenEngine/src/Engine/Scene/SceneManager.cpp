@@ -128,6 +128,7 @@ namespace ChickenEngine
 	void SceneManager::UpdateLightCamera()
 	{
 		auto& sm = instance();
+		sm.UpdateDirLightPosition();
 		XMFLOAT3 dir = sm.GetDirLightDirection();
 		XMFLOAT3 pos = sm.mDirLight.Position;
 
@@ -142,6 +143,51 @@ namespace ChickenEngine
 		UpdateLightCamera();
 		std::vector<BYTE> data = GetSceneData(width , height);
 		DX12Renderer::GetInstance().SetPassSceneData(data.data());
+	}
+
+	void SceneManager::UpdateRenderSettings()
+	{
+		auto& sm = instance();
+		DX12Renderer::GetInstance().UpdateRenderSettings(sm.mRenderSettings);
+	}
+
+	void SceneManager::UpdateDirLightPosition()
+	{
+		if (mRenderSettings.sm_generateSM == false)
+			return;
+		float nearDist = mCamera.GetNearZ();
+		float farDist = mCamera.GetFarZ();
+		float simpleLongestSide = max(farDist-nearDist,max(mCamera.GetFarWindowWidth(), mCamera.GetFarWindowHeight()));
+
+		XMVECTOR up = mCamera.GetUp();
+		XMVECTOR right = mCamera.GetRight();
+
+		XMVECTOR centerFar = mCamera.GetPosition() + mCamera.GetLook() * farDist;
+		XMVECTOR centerNear = mCamera.GetPosition() + mCamera.GetLook() * nearDist;
+		XMVECTOR frustumCenter = (centerFar - centerNear) * 0.5f;
+
+		XMVECTOR dir = XMLoadFloat3(&mDirLight.data.Direction);
+		static bool bInit = false;
+		if (!mDirLight.bAutoPosition)
+			bInit = false;
+		if (mDirLight.bAutoPosition)
+		{
+			XMVECTOR position;
+			if (!bInit)
+			{
+				mDirLight.distFrustumCenter = simpleLongestSide / 2.0;
+				mDirLight.offsetViewDir = 0.0;
+				position = frustumCenter - dir * (simpleLongestSide / 2.0);
+				bInit = true;
+			}
+			else
+			{
+				position = frustumCenter - dir * (mDirLight.distFrustumCenter);
+				float offset = mDirLight.offsetViewDir - ((farDist - nearDist) / 2.0);
+				position = position + mCamera.GetLook() * offset;
+			}
+			XMStoreFloat3(&mDirLight.Position, position);
+		}
 	}
 
 	void SceneManager::ToggleRenderObjectVisibility(uint32_t id)

@@ -110,8 +110,7 @@ namespace ChickenEngine
 		ShowScenePanel();
 		ShowLightPanel();
 		ShowViewPortPanel();
-		ImGui::Begin("Content");
-		ImGui::End();
+		ShowSettingsPanel();
 		ImguiEnd();
 	}
 
@@ -259,6 +258,9 @@ namespace ChickenEngine
 			DirectX::XMFLOAT3& str = SceneManager::GetDirLightStrength();
 			DirectX::XMFLOAT3& rot = SceneManager::GetDirLightRotation();
 			DirectX::XMFLOAT3& pos = SceneManager::GetDirLightPosition();
+			bool& bAutoPos = SceneManager::GetDirLightAutoPos();
+			float& distFrustum = SceneManager::GetDirLightDist();
+			float& offsetViewDir = SceneManager::GetDirLightOffset();
 
 			ImGui::Text("Direction: ");
 			ImGui::Text("%.2f  %.2f  %.2f", dir.x, dir.y, dir.z);
@@ -268,14 +270,32 @@ namespace ChickenEngine
 			IMGUI_LEFT_LABEL(ImGui::DragFloat, "b: ", &str.z, 0.2f, 0.0, +FLT_MAX, "%.3f");
 
 			ImGui::Text("Rotation: ");
-			IMGUI_LEFT_LABEL(ImGui::DragFloat, "x: ", &rot.x, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
-			IMGUI_LEFT_LABEL(ImGui::DragFloat, "y: ", &rot.y, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
-			IMGUI_LEFT_LABEL(ImGui::DragFloat, "z: ", &rot.z, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot x: ", &rot.x, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot y: ", &rot.y, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot z: ", &rot.z, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
 
 			ImGui::Text("Position: ");
-			IMGUI_LEFT_LABEL2(ImGui::DragFloat, "x: ", "1", &pos.x, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
-			IMGUI_LEFT_LABEL2(ImGui::DragFloat, "y: ", "2", &pos.y, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
-			IMGUI_LEFT_LABEL2(ImGui::DragFloat, "z: ", "3", &pos.z, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+			ImGui::Text("%.2f  %.2f  %.2f", pos.x, pos.y, pos.z);
+			static bool autoPos = bAutoPos;
+			IMGUI_LEFT_LABEL(ImGui::Checkbox, "Auto Adjust Position", &autoPos);
+			bAutoPos = autoPos;
+			if (bAutoPos)
+			{
+				ImGui::Text("Distance From Frustum: ");
+				ImGui::DragFloat("##", &distFrustum, 1.0f, -FLT_MAX, +FLT_MAX, "%.3f");
+				ImGui::Text("Offset View Direction :");
+				ImGui::DragFloat("####", &offsetViewDir, 1.0f, -FLT_MAX, +FLT_MAX, "%.3f");
+				//IMGUI_LEFT_LABEL(ImGui::DragFloat, "Distance From Frustum: ", &distFrustum, 1.0f, -FLT_MAX, +FLT_MAX, "%.3f");
+				//IMGUI_LEFT_LABEL(ImGui::DragFloat, "Offset View Direction: ", &offsetViewDir, 1.0f, -FLT_MAX, +FLT_MAX, "%.3f");
+			}
+			else
+			{
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos x: ", &pos.x, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos y: ", &pos.y, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+				IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos z: ", &pos.z, 0.2f, -FLT_MAX, +FLT_MAX, "%.3f");
+			}
+
+
 
 			ImGui::TreePop();
 			ImGui::Separator();
@@ -285,6 +305,50 @@ namespace ChickenEngine
 
 	void ImguiManager::ShowSettingsPanel()
 	{
+		ImGui::Begin("Settings Panel");
+		if (ImGui::TreeNode("Shadow"))
+		{
+			RenderSettings& rs = SceneManager::GetRenderSettings();
+			static bool bEnabledSM;
+			IMGUI_LEFT_LABEL(ImGui::Checkbox, "Generate Shadow Map", &bEnabledSM);
+			rs.sm_generateSM = bEnabledSM;
+			if (!bEnabledSM)
+			{
+				rs.sm_type = static_cast<int>(EShadowType::SM_DISABLED);
+				ImGui::BeginDisabled();
+			}
+			Camera& lightCam = SceneManager::GetLightCamera();
+			static float size = lightCam.GetFarWindowHeight();
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "Frustum Size ", &size, 1.0f, 10.0f, +FLT_MAX, "%.3f");
+
+			static float farZ = lightCam.GetFarZ();
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "Far Z ", &farZ, 1.0f, 20.0f , +FLT_MAX, "%.3f");
+
+			if (farZ!= lightCam.GetFarZ() || size != lightCam.GetFarWindowHeight())
+			{
+				lightCam.SetLensOrtho(size, size, lightCam.GetNearZ(), farZ);
+			}
+
+			ImGui::Text("Shadow Type: ");
+			static int select = -1;
+			IMGUI_LEFT_LABEL(ImGui::RadioButton, "Disabled", &select, 0);
+			IMGUI_LEFT_LABEL(ImGui::RadioButton, "Default", &select,1);
+			IMGUI_LEFT_LABEL(ImGui::RadioButton, "PCF", &select, 2);
+			IMGUI_LEFT_LABEL(ImGui::RadioButton, "PCSS", &select, 3);
+			IMGUI_LEFT_LABEL(ImGui::RadioButton, "VSSM", &select, 4);
+			if (select >= 0)
+			{
+				rs.sm_type = select;
+			}
+			if (!bEnabledSM)
+			{
+				ImGui::EndDisabled();
+			}
+
+			ImGui::TreePop();
+			ImGui::Separator();
+		}
+		ImGui::End();
 	}
 
 	void ImguiManager::ShowStatsPanel()
