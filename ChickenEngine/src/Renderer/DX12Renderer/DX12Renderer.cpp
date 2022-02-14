@@ -511,7 +511,6 @@ namespace ChickenEngine
 		mCmdList->SetGraphicsRootDescriptorTable(6, TextureManager::NullTex2DHandle());
 		mCmdList->SetGraphicsRootDescriptorTable(7, TextureManager::NullTex2DHandle());
 		mCmdList->SetGraphicsRootDescriptorTable(8, TextureManager::NullTex2DHandle());
-		mCmdList->SetGraphicsRootDescriptorTable(9, TextureManager::NullTex2DHandle());
 	}
 
 	void DX12Renderer::BindMap(uint32_t slot, D3D12_GPU_DESCRIPTOR_HANDLE handle)
@@ -567,10 +566,6 @@ namespace ChickenEngine
 		{
 			PSOManager::UsePSO("default");
 			BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
-			if (mRenderSetting.sm_type == EShadowType::SM_VSSM)
-			{
-				BindMap(ETextureSlot::SLOT_SHADOWSQUARE, ShadowMap::SrvGpuHandleSquared());
-			}
 		}
 		else
 		{

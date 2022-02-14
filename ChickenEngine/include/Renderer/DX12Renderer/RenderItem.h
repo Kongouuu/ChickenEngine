@@ -39,6 +39,7 @@ namespace ChickenEngine
 		D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 		void Init(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
+		void Init();
 		//void AddTexture(std::string name);
 
 

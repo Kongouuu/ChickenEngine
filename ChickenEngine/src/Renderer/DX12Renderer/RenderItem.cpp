@@ -10,12 +10,6 @@ namespace ChickenEngine
         const uint32_t vbByteSize = (UINT)vertexCount * vertexSize;
         const uint32_t ibByteSize = (UINT)indices.size() * sizeof(uint16_t);
 
-        //ThrowIfFailed(D3DCreateBlob(vbByteSize, &vb.VertexBufferCPU));
-        //CopyMemory(vb.VertexBufferCPU->GetBufferPointer(), vertexData, vbByteSize);
-
-        //ThrowIfFailed(D3DCreateBlob(ibByteSize, &ib.IndexBufferCPU));
-        //CopyMemory(ib.IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
-
         indexCount = (UINT)indices.size();
         vb.VertexBufferGPU = BufferManager::CreateDefaultBuffer(vertexData, vbByteSize, vb.VertexBufferUploader);
         ib.IndexBufferGPU = BufferManager::CreateDefaultBuffer(indices.data(), ibByteSize, ib.IndexBufferUploader);
@@ -25,8 +19,34 @@ namespace ChickenEngine
         ib.IndexFormat = DXGI_FORMAT_R16_UINT;
         ib.IndexBufferByteSize = ibByteSize;
 
-        //LOG_ERROR("ID: {0}, vertexCount: {1}, vertexSize: {2}, vbbytesize: {3}, ibbytsize: {4}",
-           // renderItemID, vertexCount, vertexSize, vbByteSize, ibByteSize);
+    }
+
+    void RenderItem::Init()
+    {
+        LOG_INFO("RenderItem - Init render item");
+
+        const uint32_t vbByteSize = (UINT)4 * sizeof(Vertex);
+        const uint32_t ibByteSize = (UINT)6 * sizeof(uint16_t);
+
+        indexCount = 6;
+        std::vector<Vertex> vertices = std::vector<Vertex>(4);
+        vertices[0] = Vertex({ 0.5, -0.5, 0.0 }, { 0.0,1.0,0.0 }, { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 0.0,0.0 });
+        vertices[1] = Vertex({ 1.0, -0.5, 0.0 }, { 0.0,1.0,0.0 }, { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,0.0 });
+        vertices[2] = Vertex({ 0.5, -1.0, 0.0 }, { 0.0,1.0,0.0 }, { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 0.0,1.0 });
+        vertices[3] = Vertex({ 1.0, -1.0, -5.0 }, { 0.0,1.0,0.0 }, { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,1.0 });
+        BYTE* data = reinterpret_cast<BYTE*>(vertices.data());
+        vb.VertexBufferGPU = BufferManager::CreateDefaultBuffer(data, vbByteSize, vb.VertexBufferUploader);
+        std::vector<uint16_t> i = std::vector<uint16_t>(6);
+
+        i[0] = 0; i[1] = 1; i[2] = 2;
+        i[3] = 2; i[4] = 1; i[5] = 3;
+
+        ib.IndexBufferGPU = BufferManager::CreateDefaultBuffer(i.data(), ibByteSize, ib.IndexBufferUploader);
+
+        vb.VertexByteStride = sizeof(Vertex);
+        vb.VertexBufferByteSize = vbByteSize;
+        ib.IndexFormat = DXGI_FORMAT_R16_UINT;
+        ib.IndexBufferByteSize = ibByteSize;
     }
 
     int RenderItemManager::renderItemCount = 0;

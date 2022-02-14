@@ -575,6 +575,7 @@
     <FxCompile Include="shaders\Util\ToneMapping.hlsl" />
     <FxCompile Include="shaders\VSMGenerate.hlsl" />
     <FxCompile Include="shaders\Util\ShadowUtil.hlsl" />
+    <FxCompile Include="shaders\ShadowBlur.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\ThirdParty\assimp\.editorconfig" />

@@ -19,50 +19,36 @@ namespace ChickenEngine
 	{
 		LOG_INFO("RootSignature - Load root signatures");
 		//  ---------------- 简易root signature ----------------
-		// Root parameter can be a table, root descriptor or root constants.
-		CD3DX12_ROOT_PARAMETER slotRootParameter[10];
+		// 3cbv: objectcb, passcb, setting cb
+		// 6srv: sky, shadow, diffuse, specular, normal, height
+		CreateRootSignatureSimple("default", 3, 6);
 
+		CreateRootSignatureSimple("shadowBlur", 0, 2);
+	}
 
-		// b0 为每个物体的变换矩阵
-		slotRootParameter[0].InitAsConstantBufferView(0);
-		// b1 为每一次pass的其他信息(例如摄像机，灯光)
-		slotRootParameter[1].InitAsConstantBufferView(1);
-		// b2 为渲染设置(控制分支)
-		slotRootParameter[2].InitAsConstantBufferView(2);
+	void RootSignatureManager::CreateRootSignatureSimple(std::string name, int numCBV, int numSRV)
+	{
+		int totalNum = numCBV + numSRV;
+		std::vector<CD3DX12_ROOT_PARAMETER> slotRootParameter = std::vector<CD3DX12_ROOT_PARAMETER>(totalNum);
+		for (int i = 0; i < numCBV; i++)
+		{
+			slotRootParameter[i].InitAsConstantBufferView(i);
+		}
 
-		CD3DX12_DESCRIPTOR_RANGE skyTex;
-		skyTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
-
-		CD3DX12_DESCRIPTOR_RANGE shadowTex;
-		shadowTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 0);
-
-		CD3DX12_DESCRIPTOR_RANGE shadowSquareTex;
-		shadowSquareTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 1);
-
-		CD3DX12_DESCRIPTOR_RANGE diffuseTex;
-		diffuseTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 0);
-
-		CD3DX12_DESCRIPTOR_RANGE specularTex;
-		specularTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 0);
-
-		CD3DX12_DESCRIPTOR_RANGE normalTex;
-		normalTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 0);
-
-		CD3DX12_DESCRIPTOR_RANGE heightTex;
-		heightTex.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5, 0);
-
-		slotRootParameter[3].InitAsDescriptorTable(1, &skyTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[4].InitAsDescriptorTable(1, &shadowTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[5].InitAsDescriptorTable(1, &shadowSquareTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[6].InitAsDescriptorTable(1, &diffuseTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[7].InitAsDescriptorTable(1, &specularTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[8].InitAsDescriptorTable(1, &normalTex, D3D12_SHADER_VISIBILITY_PIXEL);
-		slotRootParameter[9].InitAsDescriptorTable(1, &heightTex, D3D12_SHADER_VISIBILITY_PIXEL);
+		std::vector<CD3DX12_DESCRIPTOR_RANGE> tex = std::vector < CD3DX12_DESCRIPTOR_RANGE>(numSRV);
+		for (int i = 0; i < numSRV; i++)
+		{
+			tex[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, i, 0);
+		}
+		for (int i = 0; i < numSRV; i++)
+		{
+			slotRootParameter[i + numCBV].InitAsDescriptorTable(1, &tex[i], D3D12_SHADER_VISIBILITY_PIXEL);
+		}
 
 		auto staticSamplers = GetStaticSamplers();
 
 		// A root signature is an array of root parameters.
-		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(10, slotRootParameter,
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(totalNum, slotRootParameter.data(),
 			(UINT)staticSamplers.size(), staticSamplers.data(),
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
@@ -77,13 +63,12 @@ namespace ChickenEngine
 			LOG_ERROR((char*)errorBlob->GetBufferPointer());
 		}
 
-		mRootSignatures["default"] = nullptr;
+		mRootSignatures[name] = nullptr;
 		ThrowIfFailed(Device::device()->CreateRootSignature(
 			0,
 			serializedRootSig->GetBufferPointer(),
 			serializedRootSig->GetBufferSize(),
-			IID_PPV_ARGS(mRootSignatures["default"].GetAddressOf())));
-		// other
+			IID_PPV_ARGS(mRootSignatures[name].GetAddressOf())));
 	}
 
 	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> RootSignatureManager::GetStaticSamplers()

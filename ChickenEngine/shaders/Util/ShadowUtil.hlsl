@@ -49,7 +49,7 @@ float PCF(float4 shadowPos, uint width, float scale)
 	for (int i = 0; i < NUM_SAMPLES; ++i)
 	{
 		float2 uv = shadowPos.xy + poissonDisk[i] * offsetScale;
-		percentLit += gShadowMap.SampleCmpLevelZero(gSamShadow,uv, shadowPos.z-0.002).r;
+		percentLit += gShadowMap.SampleCmpLevelZero(gSamShadow,uv, shadowPos.z).r;
 	}
 
 	return percentLit / ((float)NUM_SAMPLES);
@@ -66,8 +66,8 @@ float findBlocker(float4 shadowPos, uint width, float scale) {
 	for (int i = 0; i < NUM_SAMPLES; i++) {
 		float2 uv = shadowPos.xy + (poissonDisk[i] * offsetScale);
 		float shadowMapDepth = gShadowMap.Sample(gSamLinearWarp, uv).r;
-		totalDepth = totalDepth + step(shadowMapDepth+0.002, shadowPos.z) * shadowMapDepth;
-		blockCount = blockCount + step(shadowMapDepth + 0.002, shadowPos.z);
+		totalDepth = totalDepth + step(shadowMapDepth, shadowPos.z) * shadowMapDepth;
+		blockCount = blockCount + step(shadowMapDepth, shadowPos.z);
 	}
 
 	if (blockCount == 0) {
@@ -94,7 +94,7 @@ float PCSS(float4 shadowPos, uint width)
 	float penumbraSize = (shadowPos.z - avgDepth) / avgDepth;
 
 	// pcf
-	return PCF(shadowPos, width, penumbraSize*30.0f);
+	return PCF(shadowPos, width, penumbraSize*20.0f);
 }
 
 // ---------------VSSM ------------------
@@ -147,6 +147,6 @@ float CalcShadowFactor(float4 shadowPos)
 
 	// return default;
 	float shadowMapDepth = gShadowMap.Sample(gSamLinearWarp, shadowPos.xy).r;
-	return step(shadowPos.z, shadowMapDepth+0.002);
+	return step(shadowPos.z, shadowMapDepth);
 
 }
