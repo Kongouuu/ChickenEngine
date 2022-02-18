@@ -13,7 +13,8 @@ namespace ChickenEngine
 
 		instance().BuildResource();
 		instance().BuildDescriptors();
-		instance().mSquaredShadowMap.BuildResource(width, height, DXGI_FORMAT_R16_UNORM, 7);
+		instance().mSquaredShadowMap.BuildResource(width, height, DXGI_FORMAT_R16G16_UNORM, 8);
+		instance().mSquaredShadowMap.EnableMipmap();
 		LOG_INFO("");
 	}
 
@@ -67,7 +68,7 @@ namespace ChickenEngine
 		if (mSrvOffset < 0)
 		{
 			mSrvOffset = DescriptorHeapManager::BindSrv(mShadowMap.Get(), ETextureDimension::TEXTURE2D, DXGI_FORMAT_R24_UNORM_X8_TYPELESS);
-			mSrvGpuHandle = DescriptorHeapManager::GetSrvGpuHandle(mSrvOffset);
+			mSrvGpuHandle = DescriptorHeapManager::GetSrvUavGpuHandle(mSrvOffset);
 		}
 		else
 		{
@@ -92,6 +93,26 @@ namespace ChickenEngine
 
 		if (sm.bEnableVSM)
 		{
+			D3D12_FEATURE_DATA_D3D12_OPTIONS FeatureData;
+			ZeroMemory(&FeatureData, sizeof(FeatureData));
+			HRESULT hr = Device::device()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &FeatureData, sizeof(FeatureData));
+			if (SUCCEEDED(hr))
+			{
+				// TypedUAVLoadAdditionalFormats contains a Boolean that tells you whether the feature is supported or not
+				if (FeatureData.TypedUAVLoadAdditionalFormats)
+				{
+					// Cannot assume other formats are supported, so we check:
+					D3D12_FEATURE_DATA_FORMAT_SUPPORT FormatSupport = { DXGI_FORMAT_R16G16_UNORM, D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2_NONE };
+					hr = Device::device()->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &FormatSupport, sizeof(FormatSupport));
+					if (SUCCEEDED(hr) && (FormatSupport.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD) != 0)
+					{
+					}
+				}
+			}
+			else
+			{
+				assert(0);
+			}
 			PSOManager::UsePSO("vsm");
 		}
 		else
@@ -110,7 +131,7 @@ namespace ChickenEngine
 
 		if (sm.bEnableVSM)
 		{
-			sm.mSquaredShadowMap.StartRender(instance().mDsvCpuHandle);
+			sm.mSquaredShadowMap.StartRender(instance().mDsvCpuHandle, DirectX::Colors::White);
 		}
 		else
 		{
@@ -124,9 +145,17 @@ namespace ChickenEngine
 
 	void ShadowMap::EndShadowMap()
 	{
-		if(instance().bEnableVSM)
+		if (instance().bEnableVSM)
+		{
 			instance().mSquaredShadowMap.EndRender();
+		}
+			
 		CommandList::cmdList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(instance().mShadowMap.Get(),
 			D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_STATE_GENERIC_READ));
+		
+	}
+	void ShadowMap::GenerateVSMMipMap()
+	{
+		instance().mSquaredShadowMap.GenerateMipmap();
 	}
 }

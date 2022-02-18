@@ -20,12 +20,12 @@ namespace ChickenEngine
 		mSwapChainBufferCount = swapChainBufferCount;
 
 
-		mSrvAvailable = std::vector<uint32_t>(srvSize);
-		for (size_t i = 0; i < srvSize; i++)
+		mSrvUavAvailable = std::vector<uint32_t>(srvuavSize);
+		for (size_t i = 0; i < srvuavSize; i++)
 		{
-			mSrvAvailable[i] = srvSize - i - 1;
+			mSrvUavAvailable[i] = srvuavSize - i - 1;
 		}
-		mSrvAvailable.pop_back();
+		mSrvUavAvailable.pop_back();
 
 		// save 2 for back buffer
 		mRtvAvailable = std::vector<uint32_t>(rtvSize);
@@ -44,12 +44,12 @@ namespace ChickenEngine
 		}
 		mDsvAvailable.pop_back();
 
-		LOG_INFO("srv last {0}, rtv last {1}, dsv last {2}", mSrvAvailable.back(), mRtvAvailable.back(), mDsvAvailable.back());
+		LOG_INFO("srv last {0}, rtv last {1}, dsv last {2}", mSrvUavAvailable.back(), mRtvAvailable.back(), mDsvAvailable.back());
 	}
 
 	void DescriptorHeapManager::BuildDesc()
 	{
-		mSrvHeap.Create(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvSize, true);
+		mSrvUavHeap.Create(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, srvuavSize, true);
 		mRtvHeap.Create(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, rtvSize);
 		mDsvHeap.Create(D3D12_DESCRIPTOR_HEAP_TYPE_DSV,dsvSize);
 	}
@@ -70,22 +70,19 @@ namespace ChickenEngine
 
 	uint32_t DescriptorHeapManager::BindSrv(ID3D12Resource* resource, ETextureDimension dimension, DXGI_FORMAT format, UINT16 mipLevels)
 	{
-		if (instance().mSrvAvailable.empty())
+		if (instance().mSrvUavAvailable.empty())
 		{
 			LOG_ERROR("DescriptorHeapManager: No available srv descriptor slot left");
 			assert(0);
 		}
 
-		uint32_t offset = instance().mSrvAvailable.back();
-		instance().mSrvAvailable.pop_back();
+		uint32_t offset = instance().mSrvUavAvailable.back();
+		instance().mSrvUavAvailable.pop_back();
 		LOG_INFO("DescriptorHeapManager: Binding srv heap, offset {0}", offset);
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 		srvDesc.Texture2D.MostDetailedMip = 0;
-		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.Texture2D.MostDetailedMip = 0;
-		srvDesc.Texture2D.ResourceMinLODClamp = 0.0;
 		srvDesc.Format = format;
 		srvDesc.Texture2D.MipLevels = mipLevels;
 
@@ -98,7 +95,7 @@ namespace ChickenEngine
 		}
 		instance().mSrvDescByOffset[offset] = srvDesc;
 		LOG_INFO("sizeof srvdesc: {0}, sizeof int{1}", sizeof(D3D12_SHADER_RESOURCE_VIEW_DESC), sizeof(int));
-		Device::device()->CreateShaderResourceView(resource, &srvDesc, instance().mSrvHeap.GetCpuHandle(offset));
+		Device::device()->CreateShaderResourceView(resource, &srvDesc, instance().mSrvUavHeap.GetCpuHandle(offset));
 		return offset;
 	}
 
@@ -162,12 +159,43 @@ namespace ChickenEngine
 		return offset;
 	}
 
+	uint32_t DescriptorHeapManager::BindUav(ID3D12Resource* resource, size_t mipSlice, ETextureDimension dimension)
+	{
+		if (!resource)
+			return -1;
+		return BindUav(resource, mipSlice, dimension,resource->GetDesc().Format, resource->GetDesc().MipLevels);
+	}
+
+	uint32_t DescriptorHeapManager::BindUav(ID3D12Resource* resource, size_t mipSlice, ETextureDimension dimension, DXGI_FORMAT format, UINT16 mipLevels)
+	{
+		if (instance().mSrvUavAvailable.empty())
+		{
+			LOG_ERROR("DescriptorHeapManager: No available uav descriptor slot left");
+			assert(0);
+		}
+
+		uint32_t offset = instance().mSrvUavAvailable.back();
+		instance().mSrvUavAvailable.pop_back();
+		LOG_INFO("DescriptorHeapManager: Binding srvuav heap, offset {0}", offset);
+
+		D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+		uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+		uavDesc.Texture2D.MipSlice = mipSlice;
+		LOG_INFO("DescriptorHeapManager: Mip slice {0}", mipSlice);
+		uavDesc.Format = format;
+
+		instance().mUavDescByOffset[offset] = uavDesc;
+		Device::device()->CreateUnorderedAccessView(resource, nullptr, &uavDesc, instance().mSrvUavHeap.GetCpuHandle(offset));
+
+		return offset;
+	}
+
 	bool DescriptorHeapManager::RebindSrv(ID3D12Resource* resource, uint32_t offset)
 	{
 		// 检查这个偏移是不是真的有已储存的描述符
 		if (instance().mSrvDescByOffset.find(offset) == instance().mSrvDescByOffset.end())
 			return false;
-		Device::device()->CreateShaderResourceView(resource, &instance().mSrvDescByOffset[offset], instance().mSrvHeap.GetCpuHandle(offset));
+		Device::device()->CreateShaderResourceView(resource, &instance().mSrvDescByOffset[offset], instance().mSrvUavHeap.GetCpuHandle(offset));
 		return true;
 	}
 
@@ -187,9 +215,17 @@ namespace ChickenEngine
 		return true;
 	}
 
+	bool DescriptorHeapManager::RebindUav(ID3D12Resource* resource, uint32_t offset)
+	{
+		if (instance().mUavDescByOffset.find(offset) == instance().mUavDescByOffset.end())
+			return false;
+		Device::device()->CreateUnorderedAccessView(resource, nullptr, &instance().mUavDescByOffset[offset], instance().mSrvUavHeap.GetCpuHandle(offset));
+		return false;
+	}
+
 	void DescriptorHeapManager::UnbindSrv(uint32_t offset)
 	{
-		instance().mSrvAvailable.push_back(offset);
+		instance().mSrvUavAvailable.push_back(offset);
 	}
 
 	void DescriptorHeapManager::UnbindRtv(uint32_t offset)
@@ -199,6 +235,12 @@ namespace ChickenEngine
 
 	void DescriptorHeapManager::UnbindDsv(uint32_t offset)
 	{
+
 		instance().mDsvAvailable.push_back(offset);
+	}
+
+	void DescriptorHeapManager::UnbindUav(uint32_t offset)
+	{
+		instance().mSrvUavAvailable.push_back(offset);
 	}
 }

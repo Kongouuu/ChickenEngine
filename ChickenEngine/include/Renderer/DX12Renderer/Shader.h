@@ -4,6 +4,13 @@
 
 namespace ChickenEngine
 {
+	enum EShaderType
+	{
+		VERTEX_SHADER = 0,
+		PIXEL_SHADER,
+		COMPUTE_SHADER
+	};
+
 	class CHICKEN_API ShaderManager : public Singleton<ShaderManager>
 	{
 	public:
@@ -11,6 +18,8 @@ namespace ChickenEngine
 		static void Init();
 		static Microsoft::WRL::ComPtr<ID3DBlob> GetVS(std::string name);
 		static Microsoft::WRL::ComPtr<ID3DBlob> GetPS(std::string name);
+		static Microsoft::WRL::ComPtr<ID3DBlob> GetCS(std::string name);
+		static void LoadShader(std::string name, std::string path, EShaderType st);
 
 	private:
 
@@ -25,6 +34,7 @@ namespace ChickenEngine
 	private:
 		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>> mVertexShaders;
 		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>> mPixelShaders;
+		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>> mComputeShaders;
 	};
 
 }

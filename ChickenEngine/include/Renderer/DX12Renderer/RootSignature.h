@@ -20,10 +20,11 @@ namespace ChickenEngine
 
 		static void Init();
 		static Microsoft::WRL::ComPtr<ID3D12RootSignature>& GetRootSignature(std::string name);
+		void CreateRootSignatureSimple(std::string name, int numCBV, int numSRV, int numUAV);
+		void CreateRootSignatureFromParam(std::string name, std::vector<CD3DX12_ROOT_PARAMETER> param, int numSlot);
 
 	private:
 		void LoadRootSignatures();
-		void CreateRootSignatureSimple(std::string name, int numCBV, int numSRV);
 		std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
 	private:
 		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3D12RootSignature>> mRootSignatures;

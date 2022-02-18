@@ -3,8 +3,10 @@
 
 namespace ChickenEngine
 {
-	void FrameBuffer::BuildResource(int width, int height, DXGI_FORMAT format,int miplevels)
+	void FrameBuffer::BuildResource(int width, int height, DXGI_FORMAT format, int miplevels)
 	{
+		mMiplevels = miplevels;
+
 		mScreenViewport.TopLeftX = 0;
 		mScreenViewport.TopLeftY = 0;
 		mScreenViewport.Width = static_cast<float>(width);
@@ -26,28 +28,21 @@ namespace ChickenEngine
 		texDesc.SampleDesc.Quality = 0;
 		texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+		
 
-		XMFLOAT4 clearColor;
-		XMStoreFloat4(&clearColor, DirectX::Colors::LightSteelBlue);
-		D3D12_CLEAR_VALUE optClear;
-		optClear.Format = format;
-		optClear.Color[0] = clearColor.x;
-		optClear.Color[1] = clearColor.y;
-		optClear.Color[2] = clearColor.z;
-		optClear.Color[3] = clearColor.w;
 
 		ThrowIfFailed(Device::device()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&texDesc,
 			D3D12_RESOURCE_STATE_GENERIC_READ,
-			&optClear,
+			nullptr,
 			IID_PPV_ARGS(&mBuffer)));
 		
 		if (mSrvOffset < 0)
 		{
 			mSrvOffset = DescriptorHeapManager::BindSrv(mBuffer.Get());
-			mBufferSrvGpuHandle = DescriptorHeapManager::GetSrvGpuHandle(mSrvOffset);
+			mBufferSrvGpuHandle = DescriptorHeapManager::GetSrvUavGpuHandle(mSrvOffset);
 		}
 		else
 		{
@@ -66,15 +61,52 @@ namespace ChickenEngine
 				assert(0);
 		}
 
+		//if (bMipmapEnabled)
+		//{
+		//	for (auto& o : mUavOffset)
+		//	{
+		//		DescriptorHeapManager::RebindUav(mBuffer.Get(), mUavOffset[o]);
+		//	}
+		//}
+
 	}
 
-	void FrameBuffer::StartRender(D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle)
+	void FrameBuffer::EnableMipmap()
+	{
+		if (bMipmapEnabled == true)
+			return;
+		bMipmapEnabled = true;
+
+		//int offset;
+		//for (int i=0; i< mMiplevels; i++)
+		//{
+		//	offset = DescriptorHeapManager::BindUav(mBuffer.Get(), i);
+		//	mUavOffset.push_back(offset);
+		//	mBufferUavGpuHandle.push_back(DescriptorHeapManager::GetSrvUavGpuHandle(offset));
+		//}
+	}
+
+	void FrameBuffer::GenerateMipmap()
+	{
+		MipMapManager::instance().Init();
+		bool res = MipMapManager::instance().GenerateMipsf2(mBuffer.Get(), mBufferSrvGpuHandle);
+		if (res)
+		{
+			//LOG_INFO("FrameBuffer: Generate mipmap succeed");
+		}
+		else
+		{
+			//LOG_INFO("FrameBuffer: Generate mipmap fail");
+		}
+	}
+
+	void FrameBuffer::StartRender(D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle, const FLOAT* colorRGBA)
 	{
 		CommandList::cmdList()->RSSetViewports(1, &mScreenViewport);
 		CommandList::cmdList()->RSSetScissorRects(1, &mScissorRect);
 		CommandList::cmdList()->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mBuffer.Get(),
 			D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_RENDER_TARGET));
-		CommandList::cmdList()->ClearRenderTargetView(mBufferRtvCpuHandle, DirectX::Colors::LightSteelBlue, 0, nullptr);
+		CommandList::cmdList()->ClearRenderTargetView(mBufferRtvCpuHandle, colorRGBA, 0, nullptr);
 		CommandList::cmdList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 		CommandList::cmdList()->OMSetRenderTargets(1, &mBufferRtvCpuHandle, true, &dsvHandle);
 	}

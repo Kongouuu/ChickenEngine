@@ -15,10 +15,11 @@ namespace ChickenEngine
 		static void BeginShadowMap(uint32_t passCBByteSize, Microsoft::WRL::ComPtr<ID3D12Resource> passCB);
 		static void EndShadowMap();
 
+		static void GenerateVSMMipMap();
 		inline static D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuHandle() { return instance().mSrvGpuHandle; }
 		inline static D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuHandleSquared() { return instance().mSquaredShadowMap.GetSrvHandle(); }
 
-		bool bEnableVSM = true;
+		bool bEnableVSM = false;
 	protected:
 		void BuildDescriptors();
 		void BuildResource();

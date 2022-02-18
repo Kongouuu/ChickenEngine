@@ -450,6 +450,12 @@
     <ClInclude Include="include\Renderer\DX12Renderer\SSAO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Renderer\DX12Renderer\MipMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MipMapBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\Application.cpp">
@@ -560,6 +566,12 @@
     <ClCompile Include="src\Renderer\DX12Renderer\SSAO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\DX12Renderer\MipMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MipMapBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ChickenEngine.rc">
@@ -575,7 +587,8 @@
     <FxCompile Include="shaders\Util\ToneMapping.hlsl" />
     <FxCompile Include="shaders\VSMGenerate.hlsl" />
     <FxCompile Include="shaders\Util\ShadowUtil.hlsl" />
-    <FxCompile Include="shaders\ShadowBlur.hlsl" />
+    <FxCompile Include="shaders\Mipfloat4.hlsl" />
+    <FxCompile Include="shaders\Mipfloat2.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\ThirdParty\assimp\.editorconfig" />

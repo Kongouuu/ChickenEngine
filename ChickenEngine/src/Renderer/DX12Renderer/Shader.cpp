@@ -38,6 +38,35 @@ namespace ChickenEngine
 		return psMap[name];
 	}
 
+	Microsoft::WRL::ComPtr<ID3DBlob> ShaderManager::GetCS(std::string name)
+	{
+		std::unordered_map<std::string, Microsoft::WRL::ComPtr<ID3DBlob>>& csMap = instance().mComputeShaders;
+		if (csMap.find(name) == csMap.end())
+		{
+			LOG_ERROR("ShaderManager - No ComputeShader Found");
+			assert(0);
+			return nullptr;
+		};
+		return csMap[name];
+	}
+
+	void ShaderManager::LoadShader(std::string name, std::string path, EShaderType st)
+	{
+		switch (st)
+		{
+		case EShaderType::VERTEX_SHADER:
+			instance().mVertexShaders[name] = instance().CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath(path)), nullptr, "VS", "vs_5_1");
+			break;
+		case EShaderType::PIXEL_SHADER:
+			instance().mPixelShaders[name] = instance().CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath(path)), nullptr, "PS", "ps_5_1");
+			break;
+		case EShaderType::COMPUTE_SHADER:
+			instance().mComputeShaders[name] = instance().CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath(path)), nullptr, "CS", "cs_5_0");
+			break;
+		default:
+			break;
+		}
+	}
 
 	void ShaderManager::LoadVS()
 	{

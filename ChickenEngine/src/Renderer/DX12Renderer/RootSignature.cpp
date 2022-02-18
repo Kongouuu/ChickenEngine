@@ -12,6 +12,8 @@ namespace ChickenEngine
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature>& RootSignatureManager::GetRootSignature(std::string name)
 	{
+		if (instance().mRootSignatures.find(name) == instance().mRootSignatures.end())
+			LOG_ERROR("no such root signature found");
 		return instance().mRootSignatures[name];
 	}
 
@@ -21,14 +23,12 @@ namespace ChickenEngine
 		//  ---------------- ¼òÒ×root signature ----------------
 		// 3cbv: objectcb, passcb, setting cb
 		// 6srv: sky, shadow, diffuse, specular, normal, height
-		CreateRootSignatureSimple("default", 3, 6);
-
-		CreateRootSignatureSimple("shadowBlur", 0, 2);
+		CreateRootSignatureSimple("default", 3, 6, 0);
 	}
 
-	void RootSignatureManager::CreateRootSignatureSimple(std::string name, int numCBV, int numSRV)
+	void RootSignatureManager::CreateRootSignatureSimple(std::string name, int numCBV, int numSRV, int numUAV)
 	{
-		int totalNum = numCBV + numSRV;
+		int totalNum = numCBV + numSRV + numUAV;
 		std::vector<CD3DX12_ROOT_PARAMETER> slotRootParameter = std::vector<CD3DX12_ROOT_PARAMETER>(totalNum);
 		for (int i = 0; i < numCBV; i++)
 		{
@@ -45,10 +45,48 @@ namespace ChickenEngine
 			slotRootParameter[i + numCBV].InitAsDescriptorTable(1, &tex[i], D3D12_SHADER_VISIBILITY_PIXEL);
 		}
 
+		std::vector<CD3DX12_DESCRIPTOR_RANGE> uavtex = std::vector < CD3DX12_DESCRIPTOR_RANGE>(numUAV);
+		for (int i = 0; i < numUAV; i++)
+		{
+			uavtex[i].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, i, 0);
+		}
+		for (int i = 0; i < numUAV; i++)
+		{
+			slotRootParameter[i + numCBV + numSRV].InitAsDescriptorTable(1, &uavtex[i]);
+		}
+
 		auto staticSamplers = GetStaticSamplers();
 
 		// A root signature is an array of root parameters.
 		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(totalNum, slotRootParameter.data(),
+			(UINT)staticSamplers.size(), staticSamplers.data(),
+			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+
+		// create a root signature with a single slot which points to a descriptor range consisting of a single constant buffer
+		Microsoft::WRL::ComPtr<ID3DBlob> serializedRootSig = nullptr;
+		Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
+		HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
+			serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+
+		if (errorBlob != nullptr)
+		{
+			LOG_ERROR((char*)errorBlob->GetBufferPointer());
+		}
+
+		mRootSignatures[name] = nullptr;
+		ThrowIfFailed(Device::device()->CreateRootSignature(
+			0,
+			serializedRootSig->GetBufferPointer(),
+			serializedRootSig->GetBufferSize(),
+			IID_PPV_ARGS(mRootSignatures[name].GetAddressOf())));
+	}
+
+	void RootSignatureManager::CreateRootSignatureFromParam(std::string name, std::vector<CD3DX12_ROOT_PARAMETER> param, int numSlot)
+	{
+		auto staticSamplers = GetStaticSamplers();
+
+		// A root signature is an array of root parameters.
+		CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(numSlot, param.data(),
 			(UINT)staticSamplers.size(), staticSamplers.data(),
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 

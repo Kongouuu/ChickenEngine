@@ -40,7 +40,7 @@ namespace ChickenEngine
 		// vsm map generation
 		smapPsoDesc.VS = VSByteCode("vsm");
 		smapPsoDesc.PS = PSByteCode("vsm");
-		smapPsoDesc.RTVFormats[0] = DXGI_FORMAT_R16_UNORM;
+		smapPsoDesc.RTVFormats[0] = DXGI_FORMAT_R16G16_UNORM;
 		smapPsoDesc.NumRenderTargets = 1;
 		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&smapPsoDesc, IID_PPV_ARGS(&instance().mPSOs["vsm"])));
 
@@ -49,6 +49,7 @@ namespace ChickenEngine
 		debugPsoDesc.VS = VSByteCode("shadowDebug");
 		debugPsoDesc.PS = PSByteCode("shadowDebug");
 		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&debugPsoDesc, IID_PPV_ARGS(&instance().mPSOs["shadowDebug"])));
+
 	}
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState>& PSOManager::GetPSO(std::string name)

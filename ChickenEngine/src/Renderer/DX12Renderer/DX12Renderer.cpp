@@ -51,6 +51,10 @@ namespace ChickenEngine
 		}
 		CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory));
 
+		Microsoft::WRL::ComPtr<ID3D12Debug> debugController;
+		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
+		debugController->EnableDebugLayer();
+
 		// Try to create hardware device.
 		HRESULT hardwareResult = D3D12CreateDevice(
 			nullptr,             // default adapter
@@ -105,6 +109,7 @@ namespace ChickenEngine
 		}
 		
 		InitSubsystems();
+
 		return true;
 	}
 
@@ -227,10 +232,8 @@ namespace ChickenEngine
 			mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i]));
 			uint32_t offset = DescriptorHeapManager::BindRtv(mSwapChainBuffer[i].Get(), true, i);
 			mBackBufferHandleCPU[i] = DescriptorHeapManager::GetRtvCpuHandle(offset);
-			mBackBufferHandleGPU[i] = DescriptorHeapManager::GetSrvGpuHandle(offset);
+			mBackBufferHandleGPU[i] = DescriptorHeapManager::GetSrvUavGpuHandle(offset);
 		}
-
-		//InitViewportBuffer();
 
 
 		// Create the depth/stencil buffer and view.
@@ -251,6 +254,7 @@ namespace ChickenEngine
 		optClear.Format = mDepthStencilFormat;
 		optClear.DepthStencil.Depth = 1.0f;
 		optClear.DepthStencil.Stencil = 0;
+
 		ThrowIfFailed(Device::device()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
@@ -300,7 +304,6 @@ namespace ChickenEngine
 		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 
 		mViewPortBuffer->BuildResource(width, height, mBackBufferFormat);
-
 		// Execute the resize commands.
 		ThrowIfFailed(mCmdList->Close());
 		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
@@ -356,8 +359,7 @@ namespace ChickenEngine
 	{
 		auto ri = RenderItemManager::CreateRenderItem(RI_OPAQUE);
 		debugItem = ri;
-		debugItem->Init(vertexCount, vertexSize, vertexData, indices);
-		debugItem->debug = true;
+		debugItem->Init();
 		return debugItem->renderItemID;
 	}
 #pragma endregion InputAssembly
@@ -449,6 +451,8 @@ namespace ChickenEngine
 		memcpy(&data, &rs, sizeof(rs));
 		std::vector<BYTE> dataVector(data, data + sizeof(rs));
 		mSettingCBData = dataVector;
+
+		ShadowMap::instance().bEnableVSM = (rs.sm_type == EShadowType::SM_VSSM);
 	}
 
 	void DX12Renderer::SetPassSceneData(BYTE* data)
@@ -528,6 +532,7 @@ namespace ChickenEngine
 		ThrowIfFailed(mCmdList->Reset(cmdListAlloc.Get(), PSOManager::GetPSO("default").Get()));
 		ID3D12DescriptorHeap* descriptorHeaps[] = { DescriptorHeapManager::GetSrvHeap().Get() };
 		mCmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
+
 		mCmdList->SetGraphicsRootSignature(RootSignatureManager::GetRootSignature("default").Get());
 		BindAllMapToNull();
 		
@@ -540,6 +545,10 @@ namespace ChickenEngine
 			ShadowMap::EndShadowMap();
 		}
 
+		if (mRenderSetting.sm_generateSM && mRenderSetting.sm_type == EShadowType::SM_VSSM)
+		{
+			ShadowMap::GenerateVSMMipMap();
+		}
 		/* Stage 2: Actual Render */
 		RenderDefault();
 
@@ -556,6 +565,8 @@ namespace ChickenEngine
 			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 		mCmdList->ClearRenderTargetView(CurrentBackBufferView(), DirectX::Colors::LightSteelBlue, 0, nullptr);
 		mCmdList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+
+
 	}
 
 	void DX12Renderer::RenderDefault()
@@ -608,6 +619,8 @@ namespace ChickenEngine
 		{
 			BindObjectCB(ri->cbOffset);
 			BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
+			if (mRenderSetting.sm_type == EShadowType::SM_VSSM)
+				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandleSquared());
 			BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseHandle);
 			BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularHandle);
 			BindMap(ETextureSlot::SLOT_NORMAL, ri->normalHandle);
@@ -621,6 +634,10 @@ namespace ChickenEngine
 
 	void DX12Renderer::EndRender()
 	{
+
+		mCmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
+			 D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT));
+
 		ExecuteCommands();
 		// swap the back and front buffers
 		ThrowIfFailed(mSwapChain->Present(0, 0));
@@ -628,6 +645,7 @@ namespace ChickenEngine
 		mCurrFrameResource->Fence = ++mCurrentFence;
 
 		mCmdQueue->Signal(mFence.Get(), mCurrentFence);
+
 	}
 
 	void DX12Renderer::StartDirectCommands()

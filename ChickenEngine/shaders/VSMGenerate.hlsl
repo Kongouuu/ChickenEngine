@@ -23,7 +23,7 @@ VertexOut VS(VertexIn vin)
 	return vout;
 }
 
-float PS(VertexOut pin) : SV_Target
+float2 PS(VertexOut pin) : SV_Target
 {
-	return float(pin.PosH.z * pin.PosH.z);
+	return float2(pin.PosH.z, pin.PosH.z * pin.PosH.z);
 }

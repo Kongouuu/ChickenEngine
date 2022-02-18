@@ -11,5 +11,7 @@ namespace ChickenEngine
 		inline static void SetCmdList(Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> _cmdList) { instance().mCmdList = _cmdList; }
 	private:
 		Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCmdList;
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
+		Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCmdQueue;
 	};
 }

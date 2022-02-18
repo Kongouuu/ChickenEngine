@@ -18,7 +18,7 @@ namespace ChickenEngine
         nullTex2d->Resource = nullptr;
         nullTex2d->TextureDimension = ETextureDimension::TEXTURE2D;
         nullTex2d->offset = DescriptorHeapManager::BindSrv(nullptr, ETextureDimension::TEXTURE2D);
-        nullTex2d->handle = DescriptorHeapManager::GetSrvGpuHandle(nullTex2d->offset);
+        nullTex2d->handle = DescriptorHeapManager::GetSrvUavGpuHandle(nullTex2d->offset);
         mTextures.push_back(nullTex2d);
 
         std::shared_ptr<DX12Texture> nullTex3d = std::make_shared<DX12Texture>();
@@ -26,7 +26,7 @@ namespace ChickenEngine
         nullTex3d->Resource = nullptr;
         nullTex3d->TextureDimension = ETextureDimension::TEXTURE3D;
         nullTex3d->offset = DescriptorHeapManager::BindSrv(nullptr, ETextureDimension::TEXTURE3D);
-        nullTex3d->handle = DescriptorHeapManager::GetSrvGpuHandle(nullTex3d->offset);
+        nullTex3d->handle = DescriptorHeapManager::GetSrvUavGpuHandle(nullTex3d->offset);
         mTextures.push_back(nullTex3d);
         textureCount = 2;
     }
@@ -70,7 +70,7 @@ namespace ChickenEngine
         tex->id = textureCount;
         textureCount++;
         tex->offset = DescriptorHeapManager::BindSrv(tex->Resource.Get(), tex->TextureDimension);
-        tex->handle = DescriptorHeapManager::GetSrvGpuHandle(tex->offset);
+        tex->handle = DescriptorHeapManager::GetSrvUavGpuHandle(tex->offset);
         instance().mTextures.push_back(tex);
 
         return tex->id;
