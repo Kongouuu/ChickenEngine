@@ -453,7 +453,7 @@
     <ClInclude Include="include\Renderer\DX12Renderer\MipMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MipMapBuffer.h">
+    <ClInclude Include="include\Renderer\DX12Renderer\MipMapBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -569,7 +569,7 @@
     <ClCompile Include="src\Renderer\DX12Renderer\MipMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MipMapBuffer.cpp">
+    <ClCompile Include="src\Renderer\DX12Renderer\MipMapBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -14,6 +14,7 @@
 #include "FrameResource.h"
 #include "ShadowMap.h"
 #include "FrameBuffer.h"
+#include "MipMap.h"
 namespace ChickenEngine
 {
 
@@ -76,7 +77,7 @@ namespace ChickenEngine
 		void Render();
 		void RenderDefault();
 		void RenderAllItems();
-		void RenderRenderItem(std::shared_ptr<RenderItem> ri);
+		void RenderDebugPlane();
 		void EndRender();
 
 		// Other

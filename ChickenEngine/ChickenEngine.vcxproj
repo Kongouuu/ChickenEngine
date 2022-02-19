@@ -264,7 +264,7 @@
     <ClInclude Include="include\Renderer\DX12Renderer\PSO.h" />
     <ClInclude Include="include\Engine\Scene\Model.h" />
     <ClInclude Include="include\Renderer\DX12Renderer\MipMap.h" />
-    <ClInclude Include="MipMapBuffer.h" />
+    <ClInclude Include="include\Renderer\DX12Renderer\MipMapBuffer.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="include\Engine\Window.h" />
     <ClInclude Include="include\Engine\ImguiManager.h" />
@@ -309,7 +309,7 @@
     <ClInclude Include="include\Renderer\DX12Renderer\SSAO.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MipMapBuffer.cpp" />
+    <ClCompile Include="src\Renderer\DX12Renderer\MipMapBuffer.cpp" />
     <ClCompile Include="src\Renderer\DX12Renderer\MipMap.cpp" />
     <ClCompile Include="src\Renderer\DX12Renderer\FrameBuffer.cpp" />
     <ClCompile Include="src\Helper\DX12Util.cpp" />

@@ -384,6 +384,8 @@ namespace ChickenEngine
 		PSOManager::Init(mBackBufferFormat, mDepthStencilFormat, m4xMsaaState, m4xMsaaQuality);
 		PSOManager::BuildPSOs();
 
+		MipMapManager::instance().Init();
+
 		ExecuteCommands();
 		FlushCommandQueue();
 
@@ -556,7 +558,7 @@ namespace ChickenEngine
 
 		// Stage 4: Debug Plane */
 		PSOManager::UsePSO("shadowDebug");
-		RenderRenderItem(debugItem);
+		RenderDebugPlane();
 		
 		/* Stage 5: End Render*/
 		mViewPortBuffer->EndRender();
@@ -613,14 +615,15 @@ namespace ChickenEngine
 		}
 	}
 
-	void DX12Renderer::RenderRenderItem(std::shared_ptr<RenderItem> ri)
+	void DX12Renderer::RenderDebugPlane()
 	{
+		auto ri = debugItem;
 		if (ri->visible)
 		{
 			BindObjectCB(ri->cbOffset);
 			BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
 			if (mRenderSetting.sm_type == EShadowType::SM_VSSM)
-				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandleSquared());
+				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandleVSM());
 			BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseHandle);
 			BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularHandle);
 			BindMap(ETextureSlot::SLOT_NORMAL, ri->normalHandle);

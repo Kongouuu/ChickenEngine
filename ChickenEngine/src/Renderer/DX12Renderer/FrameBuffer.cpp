@@ -71,35 +71,6 @@ namespace ChickenEngine
 
 	}
 
-	void FrameBuffer::EnableMipmap()
-	{
-		if (bMipmapEnabled == true)
-			return;
-		bMipmapEnabled = true;
-
-		//int offset;
-		//for (int i=0; i< mMiplevels; i++)
-		//{
-		//	offset = DescriptorHeapManager::BindUav(mBuffer.Get(), i);
-		//	mUavOffset.push_back(offset);
-		//	mBufferUavGpuHandle.push_back(DescriptorHeapManager::GetSrvUavGpuHandle(offset));
-		//}
-	}
-
-	void FrameBuffer::GenerateMipmap()
-	{
-		MipMapManager::instance().Init();
-		bool res = MipMapManager::instance().GenerateMipsf2(mBuffer.Get(), mBufferSrvGpuHandle);
-		if (res)
-		{
-			//LOG_INFO("FrameBuffer: Generate mipmap succeed");
-		}
-		else
-		{
-			//LOG_INFO("FrameBuffer: Generate mipmap fail");
-		}
-	}
-
 	void FrameBuffer::StartRender(D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle, const FLOAT* colorRGBA)
 	{
 		CommandList::cmdList()->RSSetViewports(1, &mScreenViewport);

@@ -4,6 +4,7 @@
 #include "PSO.h"
 #include "UploadBuffer.h"
 #include "FrameBuffer.h"
+#include "MipMapBuffer.h"
 
 namespace ChickenEngine
 {
@@ -17,7 +18,7 @@ namespace ChickenEngine
 
 		static void GenerateVSMMipMap();
 		inline static D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuHandle() { return instance().mSrvGpuHandle; }
-		inline static D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuHandleSquared() { return instance().mSquaredShadowMap.GetSrvHandle(); }
+		inline static D3D12_GPU_DESCRIPTOR_HANDLE SrvGpuHandleVSM() { return instance().mVsmBuffer.GetSrvHandle(); }
 
 		bool bEnableVSM = false;
 	protected:
@@ -40,6 +41,7 @@ namespace ChickenEngine
 		FrameBuffer mSquaredShadowMap;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> mShadowMap = nullptr;
+		MipMapBuffer mVsmBuffer;
 	};
 }
 
