@@ -28,7 +28,8 @@ VertexOut VS(VertexIn vin)
 	vout.PosH = mul(PosW, gViewProj);
 	vout.PosW = PosW;
 	vout.ShadowPosH = mul(PosW, gShadowTransform);
-	// from [0,1] to ndc
+	vout.ShadowPosH /= vout.ShadowPosH.w;
+	// from ndc to texture 
 	float4x4 T = float4x4(
 		0.5f, 0.0f, 0.0f, 0.0f,
 		0.0f, -0.5f, 0.0f, 0.0f,
@@ -42,7 +43,7 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	float4 albedo = gDiffuseMap.Sample(gSamLinearWarp, pin.uv) + mColor;
+	float4 albedo = gDiffuseMap.Sample(gSamLinearWrap, pin.uv) + mColor;
 	// Diffuse
 	float3 diffuse = albedo.xyz / PI;
 
@@ -74,7 +75,6 @@ float4 PS(VertexOut pin) : SV_Target
 	float shadowFactor = 1.0f;
 	// lerp
 	shadowFactor = CalcShadowFactor(pin.ShadowPosH);
-
 	float3 color = shadowFactor *(kD * diffuse +  kS * specular) * gDirLight.strength * NdotL;;
 	float3 ambient = albedo.xyz * 0.08;
 	color += ambient;

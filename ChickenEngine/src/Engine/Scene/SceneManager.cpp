@@ -91,7 +91,7 @@ namespace ChickenEngine
 	std::vector<BYTE> SceneManager::GetSceneData(int width, int height)
 	{
 		Camera& camera = instance().mCamera;
-		PassConstants pc;
+		PassConstants& pc = instance().mPassCB;
 		XMMATRIX view = camera.GetView();
 		XMMATRIX proj = camera.GetProj();
 		XMMATRIX viewProj = XMMatrixMultiply(view, proj);
@@ -110,7 +110,7 @@ namespace ChickenEngine
 		pc.InvRenderTargetSize = XMFLOAT2(1.0f / width, 1.0f / height);
 		pc.NearZ = 1.0f;
 		pc.FarZ = 1000.0f;
-
+		
 		// light data
 		pc.DirLight = instance().mDirLight.data;
 
@@ -164,12 +164,10 @@ namespace ChickenEngine
 
 		XMVECTOR centerFar = mCamera.GetPosition() + mCamera.GetLook() * farDist;
 		XMVECTOR centerNear = mCamera.GetPosition() + mCamera.GetLook() * nearDist;
-		XMVECTOR frustumCenter = (centerFar - centerNear) * 0.5f;
+		XMVECTOR frustumCenter = (centerFar + centerNear) * 0.5f;
 
 		XMVECTOR dir = XMLoadFloat3(&mDirLight.data.Direction);
 		static bool bInit = false;
-		if (!mDirLight.bAutoPosition)
-			bInit = false;
 		if (mDirLight.bAutoPosition)
 		{
 			XMVECTOR position;
@@ -183,8 +181,9 @@ namespace ChickenEngine
 			else
 			{
 				position = frustumCenter - dir * (mDirLight.distFrustumCenter);
-				float offset = mDirLight.offsetViewDir - ((farDist - nearDist) / 2.0);
+				int offset = mDirLight.offsetViewDir - (farDist + nearDist) / 2.0f;
 				position = position + mCamera.GetLook() * offset;
+
 			}
 			XMStoreFloat3(&mDirLight.Position, position);
 		}

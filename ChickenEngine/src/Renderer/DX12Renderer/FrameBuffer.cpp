@@ -19,8 +19,8 @@ namespace ChickenEngine
 		ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
 		texDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
 		texDesc.Alignment = 0;
-		texDesc.Width = width;
-		texDesc.Height = height;
+		texDesc.Width = max(width,1);
+		texDesc.Height = max(height,1);
 		texDesc.DepthOrArraySize = 1;
 		texDesc.MipLevels = miplevels;
 		texDesc.Format = format;
@@ -28,9 +28,6 @@ namespace ChickenEngine
 		texDesc.SampleDesc.Quality = 0;
 		texDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
 		texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-		
-
-
 		ThrowIfFailed(Device::device()->CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,

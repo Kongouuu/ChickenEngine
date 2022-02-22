@@ -9,8 +9,8 @@ namespace ChickenEngine
 	void ShaderManager::Init()
 	{
 		LOG_INFO("Shader - Init");
-		instance().LoadVS();
-		instance().LoadPS();
+		instance().LoadDefaultVS();
+		instance().LoadDefaultPS();
 	}
 
 	Microsoft::WRL::ComPtr<ID3DBlob> ShaderManager::GetVS(std::string name)
@@ -50,25 +50,25 @@ namespace ChickenEngine
 		return csMap[name];
 	}
 
-	void ShaderManager::LoadShader(std::string name, std::string path, EShaderType st)
+	void ShaderManager::LoadShader(std::string name, std::string path, EShaderType st, std::string entry)
 	{
 		switch (st)
 		{
 		case EShaderType::VERTEX_SHADER:
-			instance().mVertexShaders[name] = instance().CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath(path)), nullptr, "VS", "vs_5_1");
+			instance().mVertexShaders[name] = instance().CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath(path)), nullptr, entry, "vs_5_1");
 			break;
 		case EShaderType::PIXEL_SHADER:
-			instance().mPixelShaders[name] = instance().CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath(path)), nullptr, "PS", "ps_5_1");
+			instance().mPixelShaders[name] = instance().CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath(path)), nullptr, entry, "ps_5_1");
 			break;
 		case EShaderType::COMPUTE_SHADER:
-			instance().mComputeShaders[name] = instance().CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath(path)), nullptr, "CS", "cs_5_0");
+			instance().mComputeShaders[name] = instance().CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath(path)), nullptr, entry, "cs_5_0");
 			break;
 		default:
 			break;
 		}
 	}
 
-	void ShaderManager::LoadVS()
+	void ShaderManager::LoadDefaultVS()
 	{
 		// normal
 		mVertexShaders["default"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("Default.hlsl")), nullptr, "VS", "vs_5_1");
@@ -79,7 +79,7 @@ namespace ChickenEngine
 		mVertexShaders["shadowDebug"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("ShadowDebug.hlsl")), nullptr, "VS", "vs_5_1");
 	}
 
-	void ShaderManager::LoadPS()
+	void ShaderManager::LoadDefaultPS()
 	{
 		const D3D_SHADER_MACRO smDefines[] =
 		{
@@ -102,7 +102,6 @@ namespace ChickenEngine
 #if defined(DEBUG) || defined(_DEBUG)  
 		compileFlags = D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
-
 		HRESULT hr = S_OK;
 
 		Microsoft::WRL::ComPtr<ID3DBlob> byteCode = nullptr;

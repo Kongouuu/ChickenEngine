@@ -29,8 +29,8 @@ cbuffer cbPass : register(b1)
 	float2 gInvRenderTargetSize;
 	float gNearZ;
 	float gFarZ;
-	float cbPerObjectPad2;
-	float cbPerObjectPad3;
+	float gVsmMinVar; // tmp, shoule be cbPerObjectPad2
+	float gVsmAmount;
 	DirLight gDirLight;
 };
 
@@ -41,16 +41,15 @@ cbuffer cbSetting : register(b2)
 };
 
 Texture3D    gSkyMap : register(t0);
-Texture2D    gShadowMap : register(t1, space0);
-Texture2D	 gShadowSquareMap : register(t1, space1);
+Texture2D    gShadowMap : register(t1);
 Texture2D    gDiffuseMap : register(t2);
 
 
 SamplerState gSamPointWrap : register(s0);
 SamplerState gSamPointClamp : register(s1);
-SamplerState gSamLinearWarp : register(s2);
+SamplerState gSamLinearWrap : register(s2);
 SamplerState gSamLinearClamp : register(s3);
-SamplerState gSamAnisotropicWarp : register(s4);
+SamplerState gSamAnisotropicWrap : register(s4);
 SamplerState gSamAnisotropicClamp : register(s5);
 SamplerComparisonState gSamShadow : register(s6);
 

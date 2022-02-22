@@ -37,11 +37,10 @@ namespace ChickenEngine
 		inline static bool&     GetDirLightAutoPos() { return instance().mDirLight.bAutoPosition; }
 		inline static float&    GetDirLightDist() { return instance().mDirLight.distFrustumCenter; }
 		inline static float&    GetDirLightOffset() { return instance().mDirLight.offsetViewDir; }
-
+		inline static PassConstants& GetPassCB() { return instance().mPassCB; }
 		inline static Camera& GetLightCamera() { return instance().mLightCamera; }
 		/* Render Setting */
 		inline static RenderSettings& GetRenderSettings() { return instance().mRenderSettings; }
-
 
 	private:
 		static std::vector<BYTE> GetSceneData(int width, int height);

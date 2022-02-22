@@ -98,12 +98,12 @@ namespace ChickenEngine
         ));
 
 
-        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(texture.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
-        CommandList::cmdList()->ResourceBarrier(1, &barrier);
+     /*   auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(texture.Get(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_COPY_DEST);
+        CommandList::cmdList()->ResourceBarrier(1, &barrier);*/
 
         UpdateSubresources(CommandList::cmdList().Get(), texture.Get(), uploadHeap.Get(), 0, 0, 1, &subresource);
 
-        barrier = CD3DX12_RESOURCE_BARRIER::Transition(texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+        auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(texture.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
         CommandList::cmdList()->ResourceBarrier(1, &barrier);
     }

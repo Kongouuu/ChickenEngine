@@ -111,6 +111,7 @@ namespace ChickenEngine
 		ShowLightPanel();
 		ShowViewPortPanel();
 		ShowSettingsPanel();
+		ShowStatsPanel();
 		ImguiEnd();
 	}
 
@@ -340,6 +341,15 @@ namespace ChickenEngine
 			{
 				rs.sm_type = select;
 			}
+
+			static float vsmVar;
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "VSM var ", &vsmVar, 0.01f, 0.0f, +FLT_MAX, "%.9f");
+			SceneManager::GetPassCB().vsmMinVariance = vsmVar;
+
+			static float vsmAmount;
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "VSM amount ", &vsmAmount, 0.01f, 0.0f, +FLT_MAX, "%.9f");
+			SceneManager::GetPassCB().vsmAmount = vsmAmount;
+
 			if (!bEnabledSM)
 			{
 				ImGui::EndDisabled();
@@ -353,6 +363,9 @@ namespace ChickenEngine
 
 	void ImguiManager::ShowStatsPanel()
 	{
+		ImGui::Begin("Stats Panel");
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::End();
 	}
 
 }

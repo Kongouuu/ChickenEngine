@@ -14,7 +14,7 @@ namespace ChickenEngine
 		instance().BuildResource();
 		instance().BuildDescriptors();
 		instance().mSquaredShadowMap.BuildResource(width, height, DXGI_FORMAT_R16G16_UNORM, 8);
-		instance().mVsmBuffer.Init(instance().mSquaredShadowMap.Resource().Get());
+		instance().mVsmBuffer.Init(instance().mSquaredShadowMap.Resource().Get(), instance().mSquaredShadowMap.GetSrvHandle());
 		LOG_INFO("");
 	}
 
@@ -156,6 +156,8 @@ namespace ChickenEngine
 	}
 	void ShadowMap::GenerateVSMMipMap()
 	{
+		//instance().mVsmBuffer.CopyToTarget();
+		instance().mVsmBuffer.BlurToTargetf2();
 		instance().mVsmBuffer.GenerateMipsf2();
 	}
 }

@@ -12,6 +12,8 @@ struct VertexIn
 struct VertexOut
 {
 	float4 PosH  : SV_POSITION;
+	float z : POSZ;
+	float w : POSW;
 };
 
 VertexOut VS(VertexIn vin)
@@ -20,10 +22,12 @@ VertexOut VS(VertexIn vin)
 	float4 PosW = float4(vin.PosL, 1.0f);
 	PosW = mul(PosW, gWorld);
 	vout.PosH = mul(PosW, gShadowTransform);
+	vout.z = vout.PosH.z;
+	vout.w = vout.PosH.w;
 	return vout;
 }
 
 float2 PS(VertexOut pin) : SV_Target
 {
-	return float2(pin.PosH.z, pin.PosH.z * pin.PosH.z);
+	return float2(pin.PosH.z, pin.PosH.z* pin.PosH.z);
 }

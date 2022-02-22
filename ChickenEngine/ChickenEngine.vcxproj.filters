@@ -453,7 +453,10 @@
     <ClInclude Include="include\Renderer\DX12Renderer\MipMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\Renderer\DX12Renderer\MipMapBuffer.h">
+    <ClInclude Include="include\Renderer\DX12Renderer\ComputeBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Renderer\DX12Renderer\BlurFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -569,7 +572,10 @@
     <ClCompile Include="src\Renderer\DX12Renderer\MipMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\DX12Renderer\MipMapBuffer.cpp">
+    <ClCompile Include="src\Renderer\DX12Renderer\ComputeBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\DX12Renderer\BlurFilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -588,7 +594,9 @@
     <FxCompile Include="shaders\VSMGenerate.hlsl" />
     <FxCompile Include="shaders\Util\ShadowUtil.hlsl" />
     <FxCompile Include="shaders\Mipfloat4.hlsl" />
-    <FxCompile Include="shaders\Mipfloat2.hlsl" />
+    <FxCompile Include="shaders\MipFloat2.hlsl" />
+    <FxCompile Include="shaders\BlurFloat4.hlsl" />
+    <FxCompile Include="shaders\BlurFloat2.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\ThirdParty\assimp\.editorconfig" />

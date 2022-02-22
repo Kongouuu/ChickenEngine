@@ -4,7 +4,7 @@
 #include "PSO.h"
 #include "UploadBuffer.h"
 #include "FrameBuffer.h"
-#include "MipMapBuffer.h"
+#include "ComputeBuffer.h"
 
 namespace ChickenEngine
 {
@@ -41,7 +41,7 @@ namespace ChickenEngine
 		FrameBuffer mSquaredShadowMap;
 
 		Microsoft::WRL::ComPtr<ID3D12Resource> mShadowMap = nullptr;
-		MipMapBuffer mVsmBuffer;
+		ComputeBuffer mVsmBuffer;
 	};
 }
 

@@ -2,6 +2,7 @@
 #define SM_PCF 2
 #define SM_PCSS 3
 #define SM_VSSM 4
+#define SM_MAX_MIPLEVEL 7
 
 #define NUM_SAMPLES 18
 #define NUM_RINGS 10
@@ -65,7 +66,7 @@ float findBlocker(float4 shadowPos, uint width, float scale) {
 	[unroll]
 	for (int i = 0; i < NUM_SAMPLES; i++) {
 		float2 uv = shadowPos.xy + (poissonDisk[i] * offsetScale);
-		float shadowMapDepth = gShadowMap.Sample(gSamLinearWarp, uv).r;
+		float shadowMapDepth = gShadowMap.Sample(gSamLinearWrap, uv).r;
 		totalDepth = totalDepth + step(shadowMapDepth, shadowPos.z) * shadowMapDepth;
 		blockCount = blockCount + step(shadowMapDepth, shadowPos.z);
 	}
@@ -84,32 +85,67 @@ float findBlocker(float4 shadowPos, uint width, float scale) {
 float PCSS(float4 shadowPos, uint width)
 {
 	// blocker search
-	float avgDepth = findBlocker(shadowPos, width, 20.0f);
-	if (avgDepth < 0.0f)
-		return 1.0f;
-	if (avgDepth > 1.0f)
-		return 0.0f;
+	float zocc = findBlocker(shadowPos, width, 2.0f);
 
+	if (zocc < 0.0f)
+		return 1.0f;
+	if (zocc > 1.0f)
+		return 0.0f;
 	// penumbra size
-	float penumbraSize = (shadowPos.z - avgDepth) / avgDepth;
+	float penumbraSize = (shadowPos.z - zocc) / zocc;
 
 	// pcf
-	return PCF(shadowPos, width, penumbraSize*20.0f);
+	return PCF(shadowPos, width, penumbraSize * 20.0f);
 }
 
-// ---------------VSSM ------------------
-float VSM(float4 shadowPos, uint width)
-{
 
+// ---------------VSSM ------------------
+float linstep(float min, float max, float v)
+{
+	return clamp((v - min) / (max - min), 0.0f, 1.0f);
+}
+
+float ReduceLightBleeding(float p_max, float amount)
+{
+	return linstep(amount, 1.0f, p_max);
+}
+
+float ChebyshevUpperBound(float2 moments, float t) {   
+ 
+	float p = float(t <= moments.x);
+	float Variance = moments.y - (moments.x*moments.x);   
+	Variance = max(Variance, gVsmMinVar);
+	float d = t - moments.x;  
+	float p_max = Variance / (Variance + d*d);  
+
+	return max(p, p_max);
+} 
+
+float VSM(float4 shadowPos, float scale)
+{
+	float miplevel = clamp(log2(scale),0.0f,7.0f);
+	float2 moments = gShadowMap.SampleLevel(gSamLinearWrap, shadowPos.xy, miplevel).rg;
+
+	float p = ChebyshevUpperBound(moments, shadowPos.z);
+	p = ReduceLightBleeding(p, gVsmAmount);
+	return  p;
 }
 
 float VSSM(float4 shadowPos, uint width)
 {
-	// blocker search
+	float2 moments = gShadowMap.SampleLevel(gSamLinearWrap, shadowPos.xy,1).rg;
+	float t = shadowPos.z ;
+	float p = ChebyshevUpperBound(moments, t);
+	float zocc = max(0.01f,((moments.x - p * t) / (1.0f - p)));
+	if (t < zocc || p >= 0.95)
+		return 1.0f;
 
-	// penumbra size
 
-	// 
+	//penumbra size
+	float penumbraSize = ((t - zocc) / zocc) * 20.f;
+	penumbraSize = clamp(penumbraSize, 2.0f, penumbraSize);
+	// vsm
+	return VSM(shadowPos, penumbraSize);
 }
 
 float CalcShadowFactor(float4 shadowPos)
@@ -124,7 +160,6 @@ float CalcShadowFactor(float4 shadowPos)
 		return 1.0f;
 	}
 
-	float depth = shadowPos.z;
 
 	uint width, height, numMips;
 	gShadowMap.GetDimensions(0, width, height, numMips);
@@ -142,11 +177,11 @@ float CalcShadowFactor(float4 shadowPos)
 
 	if (gShadowType == SM_VSSM)
 	{
-		// return vssm
+		return VSSM(shadowPos, width);
 	}
 
 	// return default;
-	float shadowMapDepth = gShadowMap.Sample(gSamLinearWarp, shadowPos.xy).r;
+	float shadowMapDepth = gShadowMap.Sample(gSamLinearWrap, shadowPos.xy).r;
 	return step(shadowPos.z, shadowMapDepth);
 
 }

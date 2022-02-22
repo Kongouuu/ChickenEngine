@@ -106,6 +106,7 @@ namespace ChickenEngine
 		renderer.Render();
 		ImguiManager::instance().ImguiRender(); // later be substituted
 		renderer.EndRender();
+		
 	}
 
 #pragma endregion Basic_Procedure

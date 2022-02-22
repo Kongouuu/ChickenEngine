@@ -28,5 +28,5 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	return float4(gShadowMap.SampleLevel(gSamLinearWarp , pin.uv, 7).rrr,1.0f);
+	return float4(gShadowMap.SampleLevel(gSamLinearWrap, pin.uv, 0).rrr,1.0f);
 }

@@ -302,7 +302,6 @@ namespace ChickenEngine
 		// Flush before changing any resources.
 		FlushCommandQueue();
 		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
-
 		mViewPortBuffer->BuildResource(width, height, mBackBufferFormat);
 		// Execute the resize commands.
 		ThrowIfFailed(mCmdList->Close());
@@ -360,6 +359,7 @@ namespace ChickenEngine
 		auto ri = RenderItemManager::CreateRenderItem(RI_OPAQUE);
 		debugItem = ri;
 		debugItem->Init();
+		debugItem->debug = true;
 		return debugItem->renderItemID;
 	}
 #pragma endregion InputAssembly
@@ -384,7 +384,9 @@ namespace ChickenEngine
 		PSOManager::Init(mBackBufferFormat, mDepthStencilFormat, m4xMsaaState, m4xMsaaQuality);
 		PSOManager::BuildPSOs();
 
+		// subsystem
 		MipMapManager::instance().Init();
+		BlurFilterManager::instance().Init();
 
 		ExecuteCommands();
 		FlushCommandQueue();
@@ -551,6 +553,7 @@ namespace ChickenEngine
 		{
 			ShadowMap::GenerateVSMMipMap();
 		}
+
 		/* Stage 2: Actual Render */
 		RenderDefault();
 
@@ -578,7 +581,14 @@ namespace ChickenEngine
 		if (mRenderSetting.sm_generateSM)
 		{
 			PSOManager::UsePSO("default");
-			BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
+			if (mRenderSetting.sm_type == EShadowType::SM_VSSM)
+			{
+				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandleVSM());
+			}
+			else
+			{
+				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
+			}
 		}
 		else
 		{

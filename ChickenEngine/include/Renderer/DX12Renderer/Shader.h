@@ -19,12 +19,12 @@ namespace ChickenEngine
 		static Microsoft::WRL::ComPtr<ID3DBlob> GetVS(std::string name);
 		static Microsoft::WRL::ComPtr<ID3DBlob> GetPS(std::string name);
 		static Microsoft::WRL::ComPtr<ID3DBlob> GetCS(std::string name);
-		static void LoadShader(std::string name, std::string path, EShaderType st);
+		static void LoadShader(std::string name, std::string path, EShaderType st, std::string entry);
 
 	private:
 
-		void LoadVS();
-		void LoadPS();
+		void LoadDefaultVS();
+		void LoadDefaultPS();
 		Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(
 			const std::wstring& filename,
 			const D3D_SHADER_MACRO* defines,

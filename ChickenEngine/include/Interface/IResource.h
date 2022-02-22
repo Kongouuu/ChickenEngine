@@ -56,8 +56,8 @@ namespace ChickenEngine
 		DirectX::XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
 		float NearZ = 0.0f;
 		float FarZ = 0.0f;
-		float cbPerObjectPad2 = 0.0f;
-		float cbPerObjectPad3 = 0.0f;
+		float vsmMinVariance = 0.0f;
+		float vsmAmount = 0.0f;
 		DirectionLightData DirLight;
 	};
 

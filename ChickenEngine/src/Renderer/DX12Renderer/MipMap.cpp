@@ -18,8 +18,8 @@ namespace ChickenEngine
 	void MipMapManager::InitShader()
 	{
 		LOG_INFO("MipMapManager: init shader");
-		ShaderManager::LoadShader("mipmap", "Mipfloat4.hlsl", EShaderType::COMPUTE_SHADER);
-		ShaderManager::LoadShader("mipmapf2", "Mipfloat2.hlsl", EShaderType::COMPUTE_SHADER);
+		ShaderManager::LoadShader("mipmap", "MipFloat4.hlsl", EShaderType::COMPUTE_SHADER, "CS");
+		ShaderManager::LoadShader("mipmapf2", "MipFloat2.hlsl", EShaderType::COMPUTE_SHADER, "CS");
 	}
 
 	void MipMapManager::InitRootsignature()
