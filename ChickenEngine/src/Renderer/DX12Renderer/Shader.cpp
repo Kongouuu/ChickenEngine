@@ -77,6 +77,8 @@ namespace ChickenEngine
 		mVertexShaders["vsm"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("VSMGenerate.hlsl")), nullptr, "VS", "vs_5_1");
 		// shadow debug
 		mVertexShaders["shadowDebug"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("ShadowDebug.hlsl")), nullptr, "VS", "vs_5_1");
+		// sky box
+		mVertexShaders["skyBox"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("SkyBox.hlsl")), nullptr, "VS", "vs_5_1");
 	}
 
 	void ShaderManager::LoadDefaultPS()
@@ -94,6 +96,8 @@ namespace ChickenEngine
 
 		// shadow debug
 		mPixelShaders["shadowDebug"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("ShadowDebug.hlsl")), nullptr, "PS", "ps_5_1");
+		// sky box
+		mPixelShaders["skyBox"] = CompileShader(FileHelper::String2WString(FileHelper::GetShaderPath("SkyBox.hlsl")), nullptr, "PS", "ps_5_1");
 	}
 
 	Microsoft::WRL::ComPtr<ID3DBlob> ShaderManager::CompileShader(const std::wstring& filename, const D3D_SHADER_MACRO* defines, const std::string& entrypoint, const std::string& target)

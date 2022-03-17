@@ -20,7 +20,11 @@ namespace ChickenEngine
 		static std::shared_ptr<RenderObject> CreateRenderObject(std::string n, XMFLOAT3 p, XMFLOAT3 r, XMFLOAT3 s, XMFLOAT4 c, float ro, float me);
 		static std::shared_ptr<RenderObject> CreateRenderObject(Mesh m, std::string n, XMFLOAT3 p, XMFLOAT3 r, XMFLOAT3 s, XMFLOAT4 c, float ro, float me);
 		static std::shared_ptr<RenderObject> CreateRenderObject(Model m, std::string n, XMFLOAT3 p, XMFLOAT3 r, XMFLOAT3 s, XMFLOAT4 c, float ro, float me);
+		static void LoadSkyBox();
+		static void LoadDebugPlane();
 		static void LoadAllRenderObjects(); // load to DX12
+		
+		static void BindSkyTex(Texture t);
 
 		static void UpdateRenderObjects();
 		static void UpdateSceneData(int width, int height);

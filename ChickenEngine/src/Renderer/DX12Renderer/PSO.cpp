@@ -50,6 +50,14 @@ namespace ChickenEngine
 		debugPsoDesc.PS = PSByteCode("shadowDebug");
 		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&debugPsoDesc, IID_PPV_ARGS(&instance().mPSOs["shadowDebug"])));
 
+		// sky box generation
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC skyPsoDesc = defaultPsoDesc;
+		skyPsoDesc.VS = VSByteCode("skyBox");
+		skyPsoDesc.PS = PSByteCode("skyBox");
+		skyPsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+		skyPsoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&skyPsoDesc, IID_PPV_ARGS(&instance().mPSOs["skyBox"])));
+
 	}
 
 	Microsoft::WRL::ComPtr<ID3D12PipelineState>& PSOManager::GetPSO(std::string name)

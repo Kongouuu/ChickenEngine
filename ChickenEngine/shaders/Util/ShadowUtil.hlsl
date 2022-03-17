@@ -133,17 +133,22 @@ float VSM(float4 shadowPos, float scale)
 
 float VSSM(float4 shadowPos, uint width)
 {
+	// blocker search
 	float2 moments = gShadowMap.SampleLevel(gSamLinearWrap, shadowPos.xy,1).rg;
 	float t = shadowPos.z ;
 	float p = ChebyshevUpperBound(moments, t);
 	float zocc = max(0.01f,((moments.x - p * t) / (1.0f - p)));
-	if (t < zocc || p >= 0.95)
+
+	// if zocc is deeper, or visibility is above 0.90
+	if (t < zocc || p >= 0.90)
 		return 1.0f;
 
 
 	//penumbra size
 	float penumbraSize = ((t - zocc) / zocc) * 20.f;
-	penumbraSize = clamp(penumbraSize, 2.0f, penumbraSize);
+	penumbraSize = max(penumbraSize, 2.0f);
+
+
 	// vsm
 	return VSM(shadowPos, penumbraSize);
 }

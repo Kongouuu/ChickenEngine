@@ -52,21 +52,48 @@ namespace ChickenEngine
 		return renderObject;
 	}
 
+	void SceneManager::LoadSkyBox()
+	{
+		DX12Renderer& renderer = DX12Renderer::GetInstance();
+		Mesh m = MeshManager::GenerateBox();
+		std::shared_ptr<RenderObject> renderObject = std::make_shared<RenderObject>("sky box");
+		renderObject->scale = { 1000.f, 1000.f, 1000.f };
+		renderObject->mMeshes.push_back(m);
+		renderObject->renderObjectID = renderObjectCount++;
+		renderObject->autoLoad = false;
+		instance().mRenderObjects.push_back(renderObject);
+
+		BYTE* data = reinterpret_cast<BYTE*>(m.vertices.data());
+		renderObject->mMeshes[0].renderItemID = renderer.CreateSkyBoxRenderItem(m.vertices.size(), sizeof(Vertex), data, m.GetIndices16(), renderObject->renderObjectID);
+		SetRenderObjectCB(*renderObject);
+	}
+
+	void SceneManager::LoadDebugPlane()
+	{
+		DX12Renderer& renderer = DX12Renderer::GetInstance();
+		Mesh m = ChickenEngine::MeshManager::GenerateDebugPlane();
+		BYTE* data = reinterpret_cast<BYTE*>(m.vertices.data());
+		m.renderItemID = renderer.CreateDebugRenderItem(m.vertices.size(), sizeof(Vertex), data, m.GetIndices16());
+
+		std::shared_ptr<RenderObject> renderObject = std::make_shared<RenderObject>("debug plane");
+		renderObject->mMeshes.push_back(m);
+		renderObject->renderObjectID = renderObjectCount++;
+		renderObject->fixed = true;
+		renderObject->autoLoad = false;
+		instance().mRenderObjects.push_back(renderObject);
+	}
+
 	void SceneManager::LoadAllRenderObjects()
 	{
 		DX12Renderer& renderer = DX12Renderer::GetInstance();
 		for (auto& ro : instance().mRenderObjects)
 		{
+			if (!ro->autoLoad)
+				continue;
 			for (auto& m : ro->mMeshes)
 			{
 				BYTE* data = reinterpret_cast<BYTE*>(m.vertices.data());
-				if (m.debug)
-				{
-					m.renderItemID = renderer.CreateDebugRenderItem(m.vertices.size(), sizeof(Vertex), data, m.GetIndices16());
-					continue;
-				}
-				
-				m.renderItemID = renderer.CreateRenderItem(m.vertices.size(), sizeof(Vertex), data, m.GetIndices16(), ro->renderObjectID);
+				m.renderItemID = renderer.CreateRenderItem(m.vertices.size(), sizeof(Vertex), data, m.GetIndices16(), ro->renderObjectID, ro->layer);
 				renderer.SetTexture(m.renderItemID, m.diffuseMap.id, ETextureType::DIFFUSE);
 				renderer.SetTexture(m.renderItemID, m.specularMap.id, ETextureType::SPECULAR);
 				renderer.SetTexture(m.renderItemID, m.normalMap.id, ETextureType::NORMAL);
@@ -74,6 +101,11 @@ namespace ChickenEngine
 			}
 			SetRenderObjectCB(*ro);
 		}
+	}
+
+	void SceneManager::BindSkyTex(Texture t)
+	{
+		DX12Renderer::GetInstance().BindSkyTex(t.id);
 	}
 
 	void SceneManager::UpdateRenderObjects()
@@ -194,6 +226,9 @@ namespace ChickenEngine
 		std::shared_ptr<RenderObject> ro = GetRenderObject(id);
 		for (auto& m : ro->mMeshes)
 		{
+			LOG_INFO("render obj: {0}", id);
+			LOG_INFO("mesh size: {0}", ro->mMeshes.size());
+			LOG_INFO("mesh id: {0}", m.renderItemID);
 			DX12Renderer::GetInstance().SetVisibility(m.renderItemID, ro->visible);
 		}
 	}

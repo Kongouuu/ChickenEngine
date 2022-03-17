@@ -459,6 +459,12 @@
     <ClInclude Include="include\Renderer\DX12Renderer\BlurFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Renderer\DX12Renderer\SkyBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\ThirdParty\DDSTextureLoader\DDSTextureLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\Application.cpp">
@@ -578,6 +584,12 @@
     <ClCompile Include="src\Renderer\DX12Renderer\BlurFilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\DX12Renderer\SkyBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ThirdParty\DDSTextureLoader\DDSTextureLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ChickenEngine.rc">
@@ -597,6 +609,7 @@
     <FxCompile Include="shaders\MipFloat2.hlsl" />
     <FxCompile Include="shaders\BlurFloat4.hlsl" />
     <FxCompile Include="shaders\BlurFloat2.hlsl" />
+    <FxCompile Include="shaders\SkyBox.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\ThirdParty\assimp\.editorconfig" />

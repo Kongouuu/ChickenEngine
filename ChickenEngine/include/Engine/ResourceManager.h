@@ -13,8 +13,8 @@ namespace ChickenEngine
 	public:
 		inline static Texture& GetTexture(std::string name) { return GetTexture(instance().name2id[name]); }
 		inline static Texture& GetTexture(uint32_t id) { return instance().mTextures[id]; }
-		static uint32_t LoadTexture(std::string path, std::string name);
-		static uint32_t LoadTexture(std::string path);
+		static uint32_t LoadTexture(std::string path, std::string name, ETextureDimension dimension = ETextureDimension::TEXTURE2D);
+		static uint32_t LoadTexture(std::string path, ETextureDimension dimension = ETextureDimension::TEXTURE2D);
 		
 	private:
 		std::unordered_map<UINT,Texture> mTextures;

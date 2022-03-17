@@ -40,7 +40,7 @@ cbuffer cbSetting : register(b2)
 	bool gEnableShadow;
 };
 
-Texture3D    gSkyMap : register(t0);
+TextureCube  gSkyMap : register(t0);
 Texture2D    gShadowMap : register(t1);
 Texture2D    gDiffuseMap : register(t2);
 

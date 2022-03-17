@@ -9,19 +9,12 @@
 
 namespace ChickenEngine
 {
-	/* TMP */
-	enum ERenderItemType
-	{
-		RI_OPAQUE = 0,
-		RI_TRANSPARENT,
-		RI_COUNT
-	};
 
 	struct CHICKEN_API RenderItem
 	{
 		uint32_t renderItemID = 0;
 		std::string name = "";
-		ERenderItemType riType = RI_OPAQUE;
+		ERenderLayer layer = ERenderLayer::L_DEFAULT;
 
 		uint32_t indexCount = 0;
 		VertexBuffer vb;
@@ -51,9 +44,10 @@ namespace ChickenEngine
 	{
 	public:
 		static std::shared_ptr<RenderItem> GetRenderItem(uint32_t id);
-		static std::shared_ptr<RenderItem> CreateRenderItem(ERenderItemType riType);
+		static std::shared_ptr<RenderItem> CreateRenderItem(ERenderLayer riLayer);
 
 		inline static std::vector<std::shared_ptr<RenderItem>>& GetAllRenderItems() { return instance().mRenderItems; }
+		inline static std::vector<std::shared_ptr<RenderItem>>& GetAllRenderItemsOfLayer(ERenderLayer layer) { return instance().mRenderItemOfType[int(layer)]; }
 		inline static int RenderItemCount() { return renderItemCount; }
 
 		//static void InitRenderItem(const Mesh& mesh, uint32_t id);
@@ -62,11 +56,9 @@ namespace ChickenEngine
 	private:
 		// std::string ValidifyName(std::string name);
 	private:
-		//std::unordered_map<ERenderItemType,std::vector<std::shared_ptr<RenderItem>>> mRenderItems;
 		std::vector<std::shared_ptr<RenderItem>> mRenderItems;
 		std::shared_ptr<RenderItem> mDebugRenderItem;
-		//std::vector < std::vector<std::shared_ptr<RenderItem>>> mRenderItemOfType[ERenderItemType::RI_COUNT];
-		//std::unordered_map<UINT, std::pair< ERenderItemType, UINT>> mIdToItem;
+		std::vector < std::vector<std::shared_ptr<RenderItem>>> mRenderItemOfType = std::vector < std::vector<std::shared_ptr<RenderItem>>>(ERenderLayer::L_COUNT);
 		static int renderItemCount;
 	};
 }

@@ -56,7 +56,7 @@ namespace ChickenEngine
 
         if (filePath.extension() == ".dds")
         {
-            // TODO
+            tm.LoadTextureFromDDS(file, tex->Resource, tex->UploadHeap);
         }
         else if (filePath.extension() == ".hdr")
         {
@@ -110,7 +110,9 @@ namespace ChickenEngine
 
     void TextureManager::LoadTextureFromDDS(std::wstring fileName, Microsoft::WRL::ComPtr<ID3D12Resource>& texture, Microsoft::WRL::ComPtr<ID3D12Resource>& uploadHeap)
     {
-
+        ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(Device::device().Get(),
+            CommandList::cmdList().Get(), fileName.c_str(),
+            texture, uploadHeap));
     }
 
  /*   void TextureManager::CheckNameValidity(std::string name)

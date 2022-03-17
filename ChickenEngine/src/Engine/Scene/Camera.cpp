@@ -238,7 +238,7 @@ namespace ChickenEngine
 		mViewDirty = true;
 	}
 
-	void Camera::RotateY(float angle)
+	void Camera::Yaw(float angle)
 	{
 		// Rotate the basis vectors about the world y-axis.
 
@@ -253,7 +253,6 @@ namespace ChickenEngine
 
 	void Camera::Roll(float angle)
 	{
-		// Rotate up and look vector about the right vector.
 
 		XMMATRIX R = XMMatrixRotationAxis(XMLoadFloat3(&mLook), angle);
 

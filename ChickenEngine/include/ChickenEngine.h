@@ -9,6 +9,7 @@
 #include "Engine/Scene/RenderObject.h"
 #include "Engine/GameLayer.h"
 #include "Helper/FileHelper.h"
+#include "Interface/IResource.h"
 
 // loaded last
 #include "Engine/EntryPoint.h"

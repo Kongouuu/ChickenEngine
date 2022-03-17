@@ -101,4 +101,14 @@ namespace ChickenEngine
 		HEIGHT,
 		NULL_TYPE
 	};
+
+	enum ERenderLayer
+	{
+		L_SKYBOX = 0,
+		L_BACKGROUND,
+		L_DEFAULT,
+		L_TRANSPARENT,
+		L_OVERLAY,
+		L_COUNT
+	};
 }

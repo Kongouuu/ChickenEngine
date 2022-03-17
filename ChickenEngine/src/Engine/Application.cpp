@@ -43,10 +43,11 @@ namespace ChickenEngine
 		// --------Init pipeline--------
 		renderer.StartDirectCommands();
 		gameLayer->LoadScene();
-		Mesh debugPlane = ChickenEngine::MeshManager::GenerateDebugPlane();
-		SceneManager::CreateRenderObject(debugPlane, std::string("debugPlane"), { 0.0,0.0,0.0 }, { 0.0,0.0,0.0 }, { 1.0,1.0,1.0 }, { 0.0,0.0,0.0,0.0 }, 0.15, 0.04);
-
+		SceneManager::LoadDebugPlane();
+		SceneManager::LoadSkyBox();
 		SceneManager::LoadAllRenderObjects();
+
+
 		renderer.CreateFrameResources();
 		renderer.InitPipeline();
 
@@ -183,7 +184,8 @@ namespace ChickenEngine
 	bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
 		LOG_INFO("Window resize application");
-		DX12Renderer::GetInstance().OnWindowResize(e.GetWidth(), e.GetHeight());
+		if(e.GetWidth() != 0 && e.GetHeight() !=0)
+			DX12Renderer::GetInstance().OnWindowResize(e.GetWidth(), e.GetHeight());
 		return false;
 	}
 
@@ -197,7 +199,7 @@ namespace ChickenEngine
 			float dy = XMConvertToRadians(0.25f * static_cast<float>(e.GetY() - previousMouseY));
 			dx = std::clamp(dx, -0.05f, 0.05f);
 			dy = std::clamp(dy, -0.05f, 0.05f);
-			SceneManager::GetCamera().RotateY(dx);
+			SceneManager::GetCamera().Yaw(dx);
 			SceneManager::GetCamera().Pitch(dy);
 		}
 

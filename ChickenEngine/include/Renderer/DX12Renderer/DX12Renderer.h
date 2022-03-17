@@ -15,6 +15,8 @@
 #include "ShadowMap.h"
 #include "FrameBuffer.h"
 #include "MipMap.h"
+#include "SkyBox.h"
+
 namespace ChickenEngine
 {
 
@@ -46,7 +48,10 @@ namespace ChickenEngine
 		// Input Assembly ( Called by Engine)
 		uint32_t LoadTexture2D(std::string fileName);
 		uint32_t LoadTexture3D(std::string fileName);
-		uint32_t CreateRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, uint32_t cbOffset);
+		uint32_t BindSkyTex(uint32_t id);
+		uint32_t CreateRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, ERenderLayer layer);
+		uint32_t CreateRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, uint32_t cbOffset, ERenderLayer layer);
+		uint32_t CreateSkyBoxRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, uint32_t cbOffset);
 		uint32_t CreateDebugRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices);
 
 		// Init pipeline
@@ -76,6 +81,7 @@ namespace ChickenEngine
 		void BindMap(uint32_t slot, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		void Render();
 		void RenderDefault();
+		void RenderSkyBox();
 		void RenderAllItems();
 		void RenderDebugPlane();
 		void EndRender();
@@ -156,6 +162,7 @@ namespace ChickenEngine
 		bool bEnableShadowPass = true;
 		std::shared_ptr<RenderItem> debugItem;
 
+		std::shared_ptr<DX12Texture> mSkyTex;
 	};
 }
 

@@ -57,7 +57,7 @@ namespace ChickenEngine
         return instance().mRenderItems[id];
     }
 
-    std::shared_ptr<RenderItem> RenderItemManager::CreateRenderItem(ERenderItemType riType)
+    std::shared_ptr<RenderItem> RenderItemManager::CreateRenderItem(ERenderLayer riLayer)
     {
         RenderItemManager& rim = instance();
         std::shared_ptr<RenderItem> ri = std::make_shared<RenderItem>();
@@ -67,14 +67,14 @@ namespace ChickenEngine
 
         // Get current render item count;
         ri->renderItemID = renderItemCount;
-        ri->riType = riType;
+        ri->layer = riLayer;
         D3D12_GPU_DESCRIPTOR_HANDLE nullHandle = TextureManager::NullTex2DHandle();
         ri->diffuseHandle = nullHandle;
         ri->specularHandle = nullHandle;
         ri->normalHandle = nullHandle;
         ri->heightHandle = nullHandle;
         rim.mRenderItems.emplace_back(ri);
-       // rim.mRenderItemOfType[(int)riType].emplace_back(ri);
+        rim.mRenderItemOfType[(int)riLayer].emplace_back(ri);
         renderItemCount++;
         return ri;
     }

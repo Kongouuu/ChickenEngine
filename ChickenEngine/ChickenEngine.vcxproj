@@ -272,6 +272,7 @@
     <ClInclude Include="include\ThirdParty\assimp\XmlParser.h" />
     <ClInclude Include="include\ThirdParty\assimp\XMLTools.h" />
     <ClInclude Include="include\ThirdParty\assimp\ZipArchiveIOSystem.h" />
+    <ClInclude Include="include\ThirdParty\DDSTextureLoader\DDSTextureLoader.h" />
     <ClInclude Include="include\ThirdParty\WICTextureLoader\WICTextureLoader12.h" />
     <ClInclude Include="include\Renderer\DX12Renderer\RenderItem.h" />
     <ClInclude Include="include\Engine\Scene\Mesh.h" />
@@ -321,8 +322,10 @@
     <ClInclude Include="include\Renderer\DX12Renderer\ShadowMap.h" />
     <ClInclude Include="include\Renderer\DX12Renderer\FrameBuffer.h" />
     <ClInclude Include="include\Renderer\DX12Renderer\SSAO.h" />
+    <ClInclude Include="include\Renderer\DX12Renderer\SkyBox.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Renderer\DX12Renderer\SkyBox.cpp" />
     <ClCompile Include="src\Renderer\DX12Renderer\BlurFilter.cpp" />
     <ClCompile Include="src\Renderer\DX12Renderer\ComputeBuffer.cpp" />
     <ClCompile Include="src\Renderer\DX12Renderer\MipMap.cpp" />
@@ -360,6 +363,7 @@
     </ClCompile>
     <ClCompile Include="src\Engine\Log.cpp" />
     <ClCompile Include="src\Engine\Application.cpp" />
+    <ClCompile Include="src\ThirdParty\DDSTextureLoader\DDSTextureLoader.cpp" />
     <ClCompile Include="src\ThirdParty\imgui\imgui.cpp" />
     <ClCompile Include="src\ThirdParty\imgui\imgui_demo.cpp" />
     <ClCompile Include="src\ThirdParty\imgui\imgui_draw.cpp" />
@@ -435,6 +439,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <DisableOptimizations Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</DisableOptimizations>
       <EnableDebuggingInformation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</EnableDebuggingInformation>
+    </FxCompile>
+    <FxCompile Include="shaders\SkyBox.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shaders\VSMGenerate.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>

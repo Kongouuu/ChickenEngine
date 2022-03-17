@@ -20,7 +20,6 @@ namespace ChickenEngine
 	struct CHICKEN_API Mesh
 	{
 		uint32_t renderItemID;
-		bool debug = false;
 		std::vector<Vertex> vertices;
 		std::vector<UINT> indices;
 		Texture diffuseMap;

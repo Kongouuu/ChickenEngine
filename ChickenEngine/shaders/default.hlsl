@@ -59,7 +59,7 @@ float4 PS(VertexOut pin) : SV_Target
 	float G = GeometrySmith(N, V, L, mRoughness);
 
 	float3 F0 = mMetallic * albedo.xyz + (1.0f - mMetallic) * float3(0.04f, 0.04f, 0.04f);
-	float3 F = fresnelSchlick(F0, V, H);
+	float3 F = FresnelSchlick(F0, V, H);
 
 	float3 numerator = NDF * G * F;
 	float denominator = max((4.0f * NdotL * NdotV), 0.001f);
@@ -75,7 +75,7 @@ float4 PS(VertexOut pin) : SV_Target
 	float shadowFactor = 1.0f;
 	// lerp
 	shadowFactor = CalcShadowFactor(pin.ShadowPosH);
-	float3 color = shadowFactor *(kD * diffuse +  kS * specular) * gDirLight.strength * NdotL;;
+	float3 color = shadowFactor *(kD * diffuse +  kS * specular) * gDirLight.strength * NdotL;
 	float3 ambient = albedo.xyz * 0.08;
 	color += ambient;
 	color = pow(color, (1.0 / 2.2));

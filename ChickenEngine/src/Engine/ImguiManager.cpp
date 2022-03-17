@@ -182,7 +182,7 @@ namespace ChickenEngine
 			{
 				ImGui::Text("Render Object id: %u",ro->renderObjectID);
 
-				if (ro->mMeshes[0].debug == false)
+				if (ro->fixed == false)
 				{
 					// Position
 					float posx = ro->position.x;

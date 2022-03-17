@@ -340,13 +340,26 @@ namespace ChickenEngine
 	{
 		std::wstring wFilePath(fileName.begin(), fileName.end());
 		uint32_t id = TextureManager::LoadTexture(wFilePath, ETextureDimension::TEXTURE3D);
-
 		return id;
 	}
 
-	uint32_t DX12Renderer::CreateRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, uint32_t cbOffset)
+	uint32_t DX12Renderer::BindSkyTex(uint32_t id)
 	{
-		auto ri = RenderItemManager::CreateRenderItem(RI_OPAQUE);
+		SkyBox::BindSkyTex(TextureManager::GetTexture(id));
+		return uint32_t();
+	}
+
+	uint32_t DX12Renderer::CreateRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, ERenderLayer layer)
+	{
+		auto ri = RenderItemManager::CreateRenderItem(layer);
+		ri->Init(vertexCount, vertexSize, vertexData, indices);
+
+		return ri->renderItemID;
+	}
+
+	uint32_t DX12Renderer::CreateRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, uint32_t cbOffset, ERenderLayer layer)
+	{
+		auto ri = RenderItemManager::CreateRenderItem(layer);
 		ri->Init(vertexCount, vertexSize, vertexData, indices);
 		ri->numFramesDirty = mNumFrameResources;
 		ri->cbOffset = cbOffset;
@@ -354,12 +367,25 @@ namespace ChickenEngine
 		return ri->renderItemID;
 	}
 
+	uint32_t DX12Renderer::CreateSkyBoxRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices, uint32_t cbOffset)
+	{
+		static bool sCreated = false;
+		if (sCreated == true)
+			return -1;
+		auto ri = RenderItemManager::CreateRenderItem(ERenderLayer::L_SKYBOX);
+		ri->Init(vertexCount, vertexSize, vertexData, indices);
+		ri->numFramesDirty = mNumFrameResources;
+		ri->cbOffset = cbOffset;
+		mObjectCBCount = max(mObjectCBCount, cbOffset + 1);
+		sCreated = true;
+		return ri->renderItemID;
+	}
+
 	uint32_t DX12Renderer::CreateDebugRenderItem(uint32_t vertexCount, size_t vertexSize, BYTE* vertexData, std::vector<uint16_t> indices)
 	{
-		auto ri = RenderItemManager::CreateRenderItem(RI_OPAQUE);
+		auto ri = RenderItemManager::CreateRenderItem(ERenderLayer::L_OVERLAY);
 		debugItem = ri;
 		debugItem->Init();
-		debugItem->debug = true;
 		return debugItem->renderItemID;
 	}
 #pragma endregion InputAssembly
@@ -539,7 +565,6 @@ namespace ChickenEngine
 
 		mCmdList->SetGraphicsRootSignature(RootSignatureManager::GetRootSignature("default").Get());
 		BindAllMapToNull();
-		
 
 		/* Stage 1: Generate Render-Based Resources*/
 		if (mRenderSetting.sm_generateSM)
@@ -578,9 +603,16 @@ namespace ChickenEngine
 	{
 		mViewPortBuffer->StartRender(DepthStencilView());
 		
+
+		auto passCB = mCurrFrameResource->PassCB->Resource();
+		auto settingCB = mCurrFrameResource->SettingCB->Resource();
+		mCmdList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
+		mCmdList->SetGraphicsRootConstantBufferView(2, settingCB->GetGPUVirtualAddress());
+
+		PSOManager::UsePSO("default");
 		if (mRenderSetting.sm_generateSM)
 		{
-			PSOManager::UsePSO("default");
+			
 			if (mRenderSetting.sm_type == EShadowType::SM_VSSM)
 			{
 				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandleVSM());
@@ -590,25 +622,40 @@ namespace ChickenEngine
 				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
 			}
 		}
-		else
-		{
-			PSOManager::UsePSO("default");
-		}
 
-		auto passCB = mCurrFrameResource->PassCB->Resource();
-		auto settingCB = mCurrFrameResource->SettingCB->Resource();
-		mCmdList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
-		mCmdList->SetGraphicsRootConstantBufferView(2, settingCB->GetGPUVirtualAddress());
 		RenderAllItems();
 
+		RenderSkyBox();
+	}
+
+	void DX12Renderer::RenderSkyBox()
+	{
+		std::vector<std::shared_ptr<RenderItem>>& renderItems = RenderItemManager::GetAllRenderItemsOfLayer(ERenderLayer::L_SKYBOX);
+		if (renderItems.size() == 0)
+			return;
+
+		// Should not enter at all
+		if (renderItems.size() > 1)
+			assert(0);
+		std::shared_ptr<RenderItem > skyBox = renderItems[0];
+
+		if (skyBox->visible == false)
+			return;
+		PSOManager::UsePSO("skyBox");
+		BindMap(ETextureSlot::SLOT_SKY, SkyBox::GetSkyTexHandle());
+		BindObjectCB(skyBox->cbOffset);
+		mCmdList->IASetVertexBuffers(0, 1, &skyBox->vb.VertexBufferView());
+		mCmdList->IASetIndexBuffer(&skyBox->ib.IndexBufferView());
+		mCmdList->IASetPrimitiveTopology(skyBox->PrimitiveType);
+		mCmdList->DrawIndexedInstanced(skyBox->indexCount, 1, 0, 0, 0);
 	}
 
 	void DX12Renderer::RenderAllItems()
 	{
-		std::vector<std::shared_ptr<RenderItem>>& renderItems = RenderItemManager::GetAllRenderItems();
+		std::vector<std::shared_ptr<RenderItem>>& renderItems = RenderItemManager::GetAllRenderItemsOfLayer(ERenderLayer::L_DEFAULT);
 		for (auto& ri : renderItems)
 		{
-			if (ri->visible == false || ri->debug)
+			if (ri->visible == false)
 			{
 				continue;
 			}
@@ -630,7 +677,6 @@ namespace ChickenEngine
 		auto ri = debugItem;
 		if (ri->visible)
 		{
-			BindObjectCB(ri->cbOffset);
 			BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
 			if (mRenderSetting.sm_type == EShadowType::SM_VSSM)
 				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandleVSM());

@@ -22,7 +22,6 @@ namespace ChickenEngine
 		static void LoadShader(std::string name, std::string path, EShaderType st, std::string entry);
 
 	private:
-
 		void LoadDefaultVS();
 		void LoadDefaultPS();
 		Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(

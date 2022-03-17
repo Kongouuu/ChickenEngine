@@ -3,10 +3,12 @@
 #include "Helper/DX12CommonHeader.h"
 #include "DescriptorHeap.h"
 #include "WICTextureLoader/WICTextureLoader12.h"
+#include "DDSTextureLoader/DDSTextureLoader.h"
 #include "Interface/IResource.h"
 
 namespace ChickenEngine
 {
+
 	struct DX12Texture
 	{
 		uint32_t id;

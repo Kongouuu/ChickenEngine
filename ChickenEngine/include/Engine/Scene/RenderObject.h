@@ -8,6 +8,7 @@ namespace ChickenEngine
 	struct CHICKEN_API RenderObject
 	{
 		uint32_t renderObjectID = 0;
+		ERenderLayer layer = ERenderLayer::L_DEFAULT;
 		std::string name = "";
 		XMFLOAT3 position;
 		XMFLOAT3 rotation ;
@@ -16,6 +17,8 @@ namespace ChickenEngine
 		float roughness = 0.0;
 		float metallic = 0.0;
 		bool visible = true;
+		bool fixed = false;
+		bool autoLoad = true;
 		bool dirty = false;
 		std::vector<Mesh> mMeshes;
 

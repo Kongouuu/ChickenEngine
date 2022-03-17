@@ -121,7 +121,6 @@ namespace ChickenEngine
         i[3] = 2; i[4] = 1; i[5] = 3;
 
         planeMesh.indices.assign(&i[0], &i[6]);
-        planeMesh.debug = true;
         return planeMesh;
     }
 
