@@ -1,6 +1,8 @@
 #include "Util/Common.hlsl"
+#include "Util/RegisterTexture.hlsl"
 #include "Util/BRDF.hlsl"
 #include "Util/ShadowUtil.hlsl"
+
 
 struct VertexIn
 {

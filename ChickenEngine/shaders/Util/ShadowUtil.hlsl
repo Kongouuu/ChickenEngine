@@ -91,10 +91,12 @@ float PCSS(float4 shadowPos, uint width)
 		return 1.0f;
 	if (zocc > 1.0f)
 		return 0.0f;
+
 	// penumbra size
 	float penumbraSize = (shadowPos.z - zocc) / zocc;
 
 	// pcf
+	// penumbra size's adjustment should follow ortho camera's size, will adjust later
 	return PCF(shadowPos, width, penumbraSize * 20.0f);
 }
 

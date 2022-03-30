@@ -14,7 +14,7 @@ namespace ChickenEngine
 
 	void PSOManager::BuildPSOs()
 	{
-		LOG_INFO("PSOManager - BuildPSO");
+		LOG_INFO("PSOManager - Build all PSO");
 		std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = InputLayout::GetInputLayout();
 
 		// default
@@ -44,9 +44,13 @@ namespace ChickenEngine
 		smapPsoDesc.NumRenderTargets = 1;
 		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&smapPsoDesc, IID_PPV_ARGS(&instance().mPSOs["vsm"])));
 
-		// shadow debug
+		// debug
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC debugPsoDesc = defaultPsoDesc;
-		debugPsoDesc.VS = VSByteCode("shadowDebug");
+		debugPsoDesc.VS = VSByteCode("debug");
+		debugPsoDesc.PS = PSByteCode("debug");
+		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&debugPsoDesc, IID_PPV_ARGS(&instance().mPSOs["debug"])));
+
+		// shadow debug
 		debugPsoDesc.PS = PSByteCode("shadowDebug");
 		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&debugPsoDesc, IID_PPV_ARGS(&instance().mPSOs["shadowDebug"])));
 
@@ -69,6 +73,30 @@ namespace ChickenEngine
 		}
 
 		return instance().mPSOs[name];
+	}
+
+	void PSOManager::BuildPSO(std::string name, std::string rootSignature, std::string vsName, std::string psName)
+	{
+		// Can also use initializer; but for further development might have more inputs for the detailed function.
+		// Some input might be kinda dynamic, cannot in initialized directly using inline
+		BuildPSO(name, rootSignature, vsName, psName, 1, instance().mBackBufferFormat);
+	}
+
+	void PSOManager::BuildPSO(std::string name, std::string rootSignature, std::string vsName, std::string psName, int numRenderTargets, DXGI_FORMAT rtvFormat)
+	{
+		LOG_INFO("PSOManager - BuildPSO");
+		std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = InputLayout::GetInputLayout();
+
+		// default
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = DefaultPsoDesc();
+		psoDesc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
+		psoDesc.pRootSignature = RootSignatureManager::GetRootSignature(rootSignature).Get();
+		psoDesc.NumRenderTargets = numRenderTargets;
+		for(int i=0; i < numRenderTargets; i++)
+			psoDesc.RTVFormats[i] = rtvFormat;
+		psoDesc.VS = VSByteCode(vsName);
+		psoDesc.PS = PSByteCode(psName);
+		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&instance().mPSOs[name])));
 	}
 
 	void PSOManager::UsePSO(std::string name)

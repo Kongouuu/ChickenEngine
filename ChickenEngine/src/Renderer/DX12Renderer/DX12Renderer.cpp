@@ -418,6 +418,7 @@ namespace ChickenEngine
 		FlushCommandQueue();
 
 		ShadowMap::Init(2048,2048);
+		GBuffer::Init(mWidth, mHeight);
 	}
 
 #pragma endregion InitPipeline
@@ -567,6 +568,7 @@ namespace ChickenEngine
 		BindAllMapToNull();
 
 		/* Stage 1: Generate Render-Based Resources*/
+		// Shadow Map
 		if (mRenderSetting.sm_generateSM)
 		{
 			ShadowMap::BeginShadowMap(mPassCBByteSize, mCurrFrameResource->PassCB->Resource());
@@ -579,13 +581,18 @@ namespace ChickenEngine
 			ShadowMap::GenerateVSMMipMap();
 		}
 
+		// GBuffer
+		GBuffer::BeginGBufferRender(DepthStencilView());
+		RenderAllItems();
+		GBuffer::EndGBufferRender();
+
 		/* Stage 2: Actual Render */
 		RenderDefault();
 
 		/* Stage 3: Post-Process */
 
 		// Stage 4: Debug Plane */
-		PSOManager::UsePSO("shadowDebug");
+		PSOManager::UsePSO("debug");
 		RenderDebugPlane();
 		
 		/* Stage 5: End Render*/
@@ -677,13 +684,7 @@ namespace ChickenEngine
 		auto ri = debugItem;
 		if (ri->visible)
 		{
-			BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
-			if (mRenderSetting.sm_type == EShadowType::SM_VSSM)
-				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandleVSM());
-			BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseHandle);
-			BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularHandle);
-			BindMap(ETextureSlot::SLOT_NORMAL, ri->normalHandle);
-			BindMap(ETextureSlot::SLOT_HEIGHT, ri->heightHandle);
+			BindMap(ETextureSlot::SLOT_DEBUG, GBuffer::NormalHandle());
 			mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
 			mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
 			mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);

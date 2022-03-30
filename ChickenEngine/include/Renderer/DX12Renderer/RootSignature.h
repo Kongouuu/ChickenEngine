@@ -8,6 +8,7 @@ namespace ChickenEngine
 	{
 		SLOT_SKY = 3,
 		SLOT_SHADOW = 4,
+		SLOT_DEBUG = 4,
 		SLOT_DIFFUSE = 5,
 		SLOT_SPECULAR = 6,
 		SLOT_NORMAL = 7,

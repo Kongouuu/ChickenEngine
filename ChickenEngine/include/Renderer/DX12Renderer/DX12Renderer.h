@@ -16,6 +16,7 @@
 #include "FrameBuffer.h"
 #include "MipMap.h"
 #include "SkyBox.h"
+#include "GBuffer.h"
 
 namespace ChickenEngine
 {

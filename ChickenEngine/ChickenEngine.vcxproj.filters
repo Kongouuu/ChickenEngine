@@ -465,6 +465,9 @@
     <ClInclude Include="include\ThirdParty\DDSTextureLoader\DDSTextureLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Renderer\DX12Renderer\GBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Engine\Application.cpp">
@@ -590,6 +593,9 @@
     <ClCompile Include="src\ThirdParty\DDSTextureLoader\DDSTextureLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Renderer\DX12Renderer\GBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ChickenEngine.rc">
@@ -601,7 +607,7 @@
     <FxCompile Include="shaders\Util\Common.hlsl" />
     <FxCompile Include="shaders\Util\BRDF.hlsl" />
     <FxCompile Include="shaders\ShadowGenerate.hlsl" />
-    <FxCompile Include="shaders\ShadowDebug.hlsl" />
+    <FxCompile Include="shaders\Debug.hlsl" />
     <FxCompile Include="shaders\Util\ToneMapping.hlsl" />
     <FxCompile Include="shaders\VSMGenerate.hlsl" />
     <FxCompile Include="shaders\Util\ShadowUtil.hlsl" />
@@ -610,6 +616,9 @@
     <FxCompile Include="shaders\BlurFloat4.hlsl" />
     <FxCompile Include="shaders\BlurFloat2.hlsl" />
     <FxCompile Include="shaders\SkyBox.hlsl" />
+    <FxCompile Include="shaders\GBufferGenerate.hlsl" />
+    <FxCompile Include="shaders\Util\Functions.hlsl" />
+    <FxCompile Include="shaders\Util\RegisterTexture.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\ThirdParty\assimp\.editorconfig" />

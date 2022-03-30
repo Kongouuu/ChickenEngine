@@ -1,4 +1,5 @@
 #include "Util/Common.hlsl"
+#include "Util/RegisterTexture.hlsl"
 
 struct VertexIn
 {

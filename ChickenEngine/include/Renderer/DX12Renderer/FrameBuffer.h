@@ -11,6 +11,7 @@ namespace ChickenEngine
 		void StartRender(D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle, const FLOAT* colorRGBA = DirectX::Colors::LightSteelBlue);
 		void EndRender();
 		inline D3D12_GPU_DESCRIPTOR_HANDLE GetSrvHandle() { return mBufferSrvGpuHandle; }
+		inline D3D12_CPU_DESCRIPTOR_HANDLE GetRtvHandle() { return mBufferRtvCpuHandle; }
 		inline Microsoft::WRL::ComPtr<ID3D12Resource> Resource() { return mBuffer; }
 	private:
 		Microsoft::WRL::ComPtr<ID3D12Resource> mBuffer;
