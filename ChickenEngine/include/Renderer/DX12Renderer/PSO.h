@@ -14,7 +14,7 @@ namespace ChickenEngine
 		static void Init(DXGI_FORMAT backBufferFormat, DXGI_FORMAT depthStencilFormat, bool msaaState, uint32_t msaaQuality);
 		static void BuildPSOs();
 		static void BuildPSO(std::string name, std::string rootSignature, std::string vsName, std::string psName);
-		static void BuildPSO(std::string name, std::string rootSignature, std::string vsName, std::string psName, int numRenderTargets, DXGI_FORMAT rtvFormat);
+		static void BuildPSO(std::string name, std::string rootSignature, std::string vsName, std::string psName, int numRenderTargets, DXGI_FORMAT rtvFormat, DXGI_FORMAT dsvFormat = DXGI_FORMAT_D24_UNORM_S8_UINT);
 		static Microsoft::WRL::ComPtr<ID3D12PipelineState>& GetPSO(std::string name);
 
 		static void UsePSO(std::string name);

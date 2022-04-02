@@ -22,8 +22,8 @@ namespace ChickenEngine
 		LOG_INFO("RootSignature - Load root signatures");
 		//  ---------------- ¼òÒ×root signature ----------------
 		// 3cbv: objectcb, passcb, setting cb
-		// 6srv: sky, shadow, diffuse, specular, normal, height
-		CreateRootSignatureSimple("default", 3, 6, 0);
+		// 6srv: sky, shadow, diffuse, specular, normal, height, ssao
+		CreateRootSignatureSimple("default", 3, 7, 0);
 	}
 
 	void RootSignatureManager::CreateRootSignatureSimple(std::string name, int numCBV, int numSRV, int numUAV)

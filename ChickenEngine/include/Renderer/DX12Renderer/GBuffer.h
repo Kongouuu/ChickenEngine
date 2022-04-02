@@ -13,6 +13,7 @@ namespace ChickenEngine
 	{
 	public:
 		static void Init(int width, int height);
+		static void OnResize(int width, int height);
 		static void BeginGBufferRender(D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle);
 		static void EndGBufferRender();
 		static inline D3D12_GPU_DESCRIPTOR_HANDLE AlbedoHandle() { return instance().mAlbedoBuffer.GetSrvHandle(); }
@@ -27,7 +28,7 @@ namespace ChickenEngine
 		D3D12_CPU_DESCRIPTOR_HANDLE mHandles[3];
 		// albedo + roughness
 		FrameBuffer mAlbedoBuffer;
-		// position
+		// world position, w is projected space's w
 		FrameBuffer mPositionBuffer;
 		// normal + metallic
 		FrameBuffer mNormalBuffer;

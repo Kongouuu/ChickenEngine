@@ -619,6 +619,7 @@
     <FxCompile Include="shaders\GBufferGenerate.hlsl" />
     <FxCompile Include="shaders\Util\Functions.hlsl" />
     <FxCompile Include="shaders\Util\RegisterTexture.hlsl" />
+    <FxCompile Include="shaders\SSAOGenerate.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="include\ThirdParty\assimp\.editorconfig" />

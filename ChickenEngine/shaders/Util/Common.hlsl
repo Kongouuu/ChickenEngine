@@ -40,8 +40,6 @@ cbuffer cbSetting : register(b2)
 	bool gEnableShadow;
 };
 
-
-
 SamplerState gSamPointWrap : register(s0);
 SamplerState gSamPointClamp : register(s1);
 SamplerState gSamLinearWrap : register(s2);

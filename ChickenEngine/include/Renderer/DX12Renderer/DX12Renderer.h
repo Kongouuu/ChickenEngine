@@ -17,6 +17,7 @@
 #include "MipMap.h"
 #include "SkyBox.h"
 #include "GBuffer.h"
+#include "SSAO.h"
 
 namespace ChickenEngine
 {

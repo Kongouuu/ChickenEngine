@@ -39,6 +39,7 @@ VertexOut VS(VertexIn vin)
 	PosW = mul(PosW, gWorld);
 	vout.PosH = mul(PosW, gViewProj);
 	vout.PosW = PosW;
+	vout.PosW.w = vout.PosH.w;
 	vout.ShadowPosH = mul(PosW, gShadowTransform);
 	vout.ShadowPosH /= vout.ShadowPosH.w;
 	// from ndc to texture 
@@ -57,13 +58,13 @@ PixelOut PS(VertexOut pin) : SV_Target
 {
 	PixelOut pout;
 	float4 albedo = gDiffuseMap.Sample(gSamLinearWrap, pin.uv) + mColor;
-	float3 normal = NDCToTexture(normalize(pin.Norm));
+	float3 normal = normalize(pin.Norm); //NDCToTexture(normalize(pin.Norm));
 	float shadowFactor = 1.0f;
 	// lerp
 	shadowFactor = CalcShadowFactor(pin.ShadowPosH);
 
 	pout.gbuffer0 = float4(albedo.xyz * shadowFactor, mRoughness);
-	pout.gbuffer1 = float4(pin.PosW.xyz, pin.PosH.z);
+	pout.gbuffer1 = float4(pin.PosW.xyzw);
 	pout.gbuffer2 = float4(normal, mMetallic);
 	return pout;
 }

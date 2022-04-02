@@ -6,6 +6,7 @@
 #include <D3Dcompiler.h>
 #include <DirectXColors.h>
 #include <DirectXMath.h>
+#include <DirectXPackedVector.h>
 #include <wrl.h>
 
 #include "d3dx12.h"

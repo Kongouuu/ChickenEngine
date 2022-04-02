@@ -419,6 +419,7 @@ namespace ChickenEngine
 
 		ShadowMap::Init(2048,2048);
 		GBuffer::Init(mWidth, mHeight);
+		SSAO::Init(mWidth, mHeight);
 	}
 
 #pragma endregion InitPipeline
@@ -565,6 +566,10 @@ namespace ChickenEngine
 		mCmdList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
 
 		mCmdList->SetGraphicsRootSignature(RootSignatureManager::GetRootSignature("default").Get());
+		auto passCB = mCurrFrameResource->PassCB->Resource();
+		auto settingCB = mCurrFrameResource->SettingCB->Resource();
+		mCmdList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
+		mCmdList->SetGraphicsRootConstantBufferView(2, settingCB->GetGPUVirtualAddress());
 		BindAllMapToNull();
 
 		/* Stage 1: Generate Render-Based Resources*/
@@ -585,6 +590,12 @@ namespace ChickenEngine
 		GBuffer::BeginGBufferRender(DepthStencilView());
 		RenderAllItems();
 		GBuffer::EndGBufferRender();
+
+		// SSAO
+		PSOManager::UsePSO("ssao");
+		BindMap(ETextureSlot::SLOT_POSITION, GBuffer::PositionHandle());
+		BindMap(ETextureSlot::SLOT_NORMAL, GBuffer::NormalHandle());
+		SSAO::SSAORender();
 
 		/* Stage 2: Actual Render */
 		RenderDefault();
@@ -609,12 +620,6 @@ namespace ChickenEngine
 	void DX12Renderer::RenderDefault()
 	{
 		mViewPortBuffer->StartRender(DepthStencilView());
-		
-
-		auto passCB = mCurrFrameResource->PassCB->Resource();
-		auto settingCB = mCurrFrameResource->SettingCB->Resource();
-		mCmdList->SetGraphicsRootConstantBufferView(1, passCB->GetGPUVirtualAddress());
-		mCmdList->SetGraphicsRootConstantBufferView(2, settingCB->GetGPUVirtualAddress());
 
 		PSOManager::UsePSO("default");
 		if (mRenderSetting.sm_generateSM)
@@ -684,7 +689,7 @@ namespace ChickenEngine
 		auto ri = debugItem;
 		if (ri->visible)
 		{
-			BindMap(ETextureSlot::SLOT_DEBUG, GBuffer::NormalHandle());
+			BindMap(ETextureSlot::SLOT_DEBUG, SSAO::SSAOHandle());
 			mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
 			mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
 			mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);

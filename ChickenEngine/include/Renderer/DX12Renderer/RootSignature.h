@@ -10,9 +10,11 @@ namespace ChickenEngine
 		SLOT_SHADOW = 4,
 		SLOT_DEBUG = 4,
 		SLOT_DIFFUSE = 5,
+		SLOT_POSITION = 5,
 		SLOT_SPECULAR = 6,
 		SLOT_NORMAL = 7,
-		SLOT_HEIGHT = 8
+		SLOT_HEIGHT = 8,
+		SLOT_SSAO = 9,
 	};
 
 	class CHICKEN_API RootSignatureManager : public Singleton<RootSignatureManager>

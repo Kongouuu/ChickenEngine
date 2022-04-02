@@ -28,6 +28,19 @@ void ChickenEngine::GBuffer::Init(int width, int height)
 	instance().mHandles[2] = instance().mNormalBuffer.GetRtvHandle();
 }
 
+void ChickenEngine::GBuffer::OnResize(int width, int height)
+{
+	instance().mWidth = width;
+	instance().mHeight = height;
+
+	instance().mViewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
+	instance().mScissorRect = { 0, 0, (int)width, (int)height };
+
+	instance().mAlbedoBuffer.BuildResource(width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	instance().mPositionBuffer.BuildResource(width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
+	instance().mNormalBuffer.BuildResource(width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
+}
+
 
 void ChickenEngine::GBuffer::BeginGBufferRender(D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle)
 {
@@ -42,7 +55,7 @@ void ChickenEngine::GBuffer::BeginGBufferRender(D3D12_CPU_DESCRIPTOR_HANDLE dsvH
 		D3D12_RESOURCE_STATE_GENERIC_READ, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
 	CommandList::cmdList()->ClearRenderTargetView(instance().mHandles[0], DirectX::Colors::Black, 0, nullptr);
-	CommandList::cmdList()->ClearRenderTargetView(instance().mHandles[1], DirectX::Colors::Black, 0, nullptr);
+	CommandList::cmdList()->ClearRenderTargetView(instance().mHandles[1], DirectX::Colors::White, 0, nullptr);
 	CommandList::cmdList()->ClearRenderTargetView(instance().mHandles[2], DirectX::Colors::Black, 0, nullptr);
 	CommandList::cmdList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 

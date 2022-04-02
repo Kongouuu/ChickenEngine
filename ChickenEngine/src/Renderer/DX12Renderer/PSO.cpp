@@ -48,6 +48,7 @@ namespace ChickenEngine
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC debugPsoDesc = defaultPsoDesc;
 		debugPsoDesc.VS = VSByteCode("debug");
 		debugPsoDesc.PS = PSByteCode("debug");
+		debugPsoDesc.DepthStencilState.DepthEnable = false;
 		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&debugPsoDesc, IID_PPV_ARGS(&instance().mPSOs["debug"])));
 
 		// shadow debug
@@ -82,7 +83,7 @@ namespace ChickenEngine
 		BuildPSO(name, rootSignature, vsName, psName, 1, instance().mBackBufferFormat);
 	}
 
-	void PSOManager::BuildPSO(std::string name, std::string rootSignature, std::string vsName, std::string psName, int numRenderTargets, DXGI_FORMAT rtvFormat)
+	void PSOManager::BuildPSO(std::string name, std::string rootSignature, std::string vsName, std::string psName, int numRenderTargets, DXGI_FORMAT rtvFormat, DXGI_FORMAT dsvFormat)
 	{
 		LOG_INFO("PSOManager - BuildPSO");
 		std::vector<D3D12_INPUT_ELEMENT_DESC> inputLayout = InputLayout::GetInputLayout();
@@ -92,6 +93,7 @@ namespace ChickenEngine
 		psoDesc.InputLayout = { inputLayout.data(), (UINT)inputLayout.size() };
 		psoDesc.pRootSignature = RootSignatureManager::GetRootSignature(rootSignature).Get();
 		psoDesc.NumRenderTargets = numRenderTargets;
+		psoDesc.DSVFormat = dsvFormat;
 		for(int i=0; i < numRenderTargets; i++)
 			psoDesc.RTVFormats[i] = rtvFormat;
 		psoDesc.VS = VSByteCode(vsName);

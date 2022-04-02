@@ -7,19 +7,7 @@
 #define NUM_SAMPLES 18
 #define NUM_RINGS 10
 
-#define EPS 1e-3
-#define PI 3.141592653589793
-#define PI2 6.283185307179586
-
 static float2 poissonDisk[NUM_SAMPLES];
-
-// from games 202
-float rand_2to1(float2 uv) {
-	// 0 - 1
-	const float a = 12.9898, b = 78.233, c = 43758.5453;
-	float dt = dot(uv.xy, float2(a, b)), sn = fmod(dt, PI);
-	return frac(sin(sn) * c);
-}
 
 // from games 202
 void poissonDiskSamples(float2 randomSeed) {
@@ -27,7 +15,7 @@ void poissonDiskSamples(float2 randomSeed) {
 	float ANGLE_STEP = PI2 * float(NUM_RINGS) / float(NUM_SAMPLES);
 	float INV_NUM_SAMPLES = 1.0 / float(NUM_SAMPLES);
 
-	float angle = rand_2to1(randomSeed) * PI2;
+	float angle = Rand2To1(randomSeed) * PI2;
 	float radius = INV_NUM_SAMPLES;
 	float radiusStep = radius;
 
@@ -37,7 +25,6 @@ void poissonDiskSamples(float2 randomSeed) {
 		angle += ANGLE_STEP;
 	}
 }
-
 
 // --------------- PCF ------------------
 float PCF(float4 shadowPos, uint width, float scale)
@@ -157,31 +144,30 @@ float VSSM(float4 shadowPos, uint width)
 
 float CalcShadowFactor(float4 shadowPos)
 {
-	if (gEnableShadow == false)
-	{
-		return 1.0f;
-	}
-
+	[branch]
 	if (gShadowType == 0)
 	{
 		return 1.0f;
 	}
 
-
 	uint width, height, numMips;
 	gShadowMap.GetDimensions(0, width, height, numMips);
+
+	[branch]
 	if (gShadowType == SM_PCF)
 	{
 		poissonDiskSamples(shadowPos.xy);
 		return PCF(shadowPos, width, 1.0f);
 	}
 
+	[branch]
 	if (gShadowType == SM_PCSS)
 	{
 		poissonDiskSamples(shadowPos.xy);
 		return PCSS(shadowPos, width);
 	}
 
+	[branch]
 	if (gShadowType == SM_VSSM)
 	{
 		return VSSM(shadowPos, width);

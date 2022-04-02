@@ -79,10 +79,17 @@ namespace ChickenEngine
 		SM_VSSM
 	};
 
-	struct RenderSettings
+	struct RenderBranch
 	{
 		int sm_type;
+		bool ssao_enable;
+	};
+
+	struct RenderSettings
+	{
+		RenderBranch branch;
 		bool sm_generateSM;
+		bool gbuffer_generate;
 		//bool sm_generateVSM;
 		
 	};
