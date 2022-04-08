@@ -32,6 +32,7 @@ namespace ChickenEngine
 		uint32_t mWidth = 0;
 		uint32_t mHeight = 0;
 		DXGI_FORMAT mFormat = DXGI_FORMAT_R24G8_TYPELESS;
+		DXGI_FORMAT mMomentFormat = DXGI_FORMAT_R32G32_FLOAT;
 
 		int mSrvOffset = -1;
 		int mDsvOffset = -1;

@@ -12,8 +12,8 @@ namespace ChickenEngine
 	class GBuffer : Singleton<GBuffer>
 	{
 	public:
-		static void Init(int width, int height);
-		static void OnResize(int width, int height);
+		static void Init();
+		static void BuildResource(int width, int height);
 		static void BeginGBufferRender(D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle);
 		static void EndGBufferRender();
 		static inline D3D12_GPU_DESCRIPTOR_HANDLE AlbedoHandle() { return instance().mAlbedoBuffer.GetSrvHandle(); }

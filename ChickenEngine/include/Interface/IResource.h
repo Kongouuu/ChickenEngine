@@ -88,8 +88,9 @@ namespace ChickenEngine
 	struct RenderSettings
 	{
 		RenderBranch branch;
-		bool sm_generateSM;
-		bool gbuffer_generate;
+		bool bGenerateSM;
+		bool bGenerateGBuffer;
+		bool bDeferredPass;
 		//bool sm_generateVSM;
 		
 	};
@@ -103,7 +104,6 @@ namespace ChickenEngine
 	enum ETextureType
 	{
 		DIFFUSE = 0,
-		SPECULAR,
 		NORMAL,
 		HEIGHT,
 		NULL_TYPE

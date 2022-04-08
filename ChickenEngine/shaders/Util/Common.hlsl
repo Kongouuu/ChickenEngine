@@ -37,7 +37,7 @@ cbuffer cbPass : register(b1)
 cbuffer cbSetting : register(b2)
 {
 	int gShadowType;
-	bool gEnableShadow;
+	bool gSSAOEnabled;
 };
 
 SamplerState gSamPointWrap : register(s0);

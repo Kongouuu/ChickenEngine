@@ -25,6 +25,13 @@ namespace ChickenEngine
 		defaultPsoDesc.PS = PSByteCode("default");
 		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&defaultPsoDesc, IID_PPV_ARGS(&instance().mPSOs["default"])));
 
+		// deferred
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC deferredPsoDesc = DefaultPsoDesc();
+		deferredPsoDesc.pRootSignature = RootSignatureManager::GetRootSignature("default").Get();
+		deferredPsoDesc.VS = VSByteCode("deferred");
+		deferredPsoDesc.PS = PSByteCode("deferred");
+		ThrowIfFailed(Device::device()->CreateGraphicsPipelineState(&deferredPsoDesc, IID_PPV_ARGS(&instance().mPSOs["deferred"])));
+
 		// shadow map generation
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC smapPsoDesc = defaultPsoDesc;
 		smapPsoDesc.RasterizerState.DepthBias = 50000;

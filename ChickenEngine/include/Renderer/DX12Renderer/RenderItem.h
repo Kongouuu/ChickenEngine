@@ -20,7 +20,6 @@ namespace ChickenEngine
 		VertexBuffer vb;
 		IndexBuffer ib;
 		D3D12_GPU_DESCRIPTOR_HANDLE diffuseHandle;
-		D3D12_GPU_DESCRIPTOR_HANDLE specularHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE normalHandle;
 		D3D12_GPU_DESCRIPTOR_HANDLE heightHandle;
 

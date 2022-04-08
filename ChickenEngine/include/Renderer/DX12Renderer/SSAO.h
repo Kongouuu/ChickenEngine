@@ -15,8 +15,8 @@ namespace ChickenEngine
 	{
 #define SSAO_SAMPLE_NUM 14
 		public:
-			static void Init(int width, int height);
-			static void OnResize(int width, int height);
+			static void Init();
+			static void BuildResource(int width, int height);
 			static void SSAORender();
 			static inline D3D12_GPU_DESCRIPTOR_HANDLE SSAOHandle() { return instance().mSSAOBuffer.GetSrvHandle(); }
 		private:

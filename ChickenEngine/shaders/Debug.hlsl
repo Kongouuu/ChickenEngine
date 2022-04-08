@@ -30,7 +30,7 @@ Texture2D    gDebugMap : register(t1);
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	return float4(gDebugMap.SampleLevel(gSamLinearWrap, pin.uv, 0).rgb,1.0f);
+	return float4(gDebugMap.SampleLevel(gSamLinearWrap, pin.uv, 0).rrr,1.0f);
 }
 
 

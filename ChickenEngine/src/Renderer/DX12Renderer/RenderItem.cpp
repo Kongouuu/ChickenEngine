@@ -70,7 +70,6 @@ namespace ChickenEngine
         ri->layer = riLayer;
         D3D12_GPU_DESCRIPTOR_HANDLE nullHandle = TextureManager::NullTex2DHandle();
         ri->diffuseHandle = nullHandle;
-        ri->specularHandle = nullHandle;
         ri->normalHandle = nullHandle;
         ri->heightHandle = nullHandle;
         rim.mRenderItems.emplace_back(ri);

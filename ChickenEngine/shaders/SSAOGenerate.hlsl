@@ -1,8 +1,8 @@
 #include "Util/Common.hlsl"
 #include "Util/Functions.hlsl"
 
-Texture2D    gGPositionMap : register(t2);
-Texture2D    gRandomVecMap : register(t3);
+Texture2D    gRandomVecMap : register(t2);
+Texture2D    gGPositionMap : register(t3);
 Texture2D    gGNormalMap : register(t4);
 
 

@@ -302,7 +302,14 @@ namespace ChickenEngine
 		// Flush before changing any resources.
 		FlushCommandQueue();
 		ThrowIfFailed(mCmdList->Reset(mDirectCmdListAlloc.Get(), nullptr));
+
+		// buffer resize
 		mViewPortBuffer->BuildResource(width, height, mBackBufferFormat);
+		if (mRenderSetting.bGenerateGBuffer)
+			GBuffer::BuildResource(width, height);
+		if (mRenderSetting.branch.ssao_enable)
+			SSAO::BuildResource(width, height);
+
 		// Execute the resize commands.
 		ThrowIfFailed(mCmdList->Close());
 		ID3D12CommandList* cmdsLists[] = { mCmdList.Get() };
@@ -418,8 +425,10 @@ namespace ChickenEngine
 		FlushCommandQueue();
 
 		ShadowMap::Init(2048,2048);
-		GBuffer::Init(mWidth, mHeight);
-		SSAO::Init(mWidth, mHeight);
+		int width = mViewPortBuffer->Width();
+		int height = mViewPortBuffer->Height();
+		GBuffer::Init();
+		SSAO::Init();
 	}
 
 #pragma endregion InitPipeline
@@ -480,11 +489,12 @@ namespace ChickenEngine
 	{
 		mRenderSetting = rs;
 		BYTE data[sizeof(RenderSettings)];
-		memcpy(&data, &rs, sizeof(rs));
-		std::vector<BYTE> dataVector(data, data + sizeof(rs));
+		memcpy(&data, &rs, sizeof(rs.branch));
+		std::vector<BYTE> dataVector(data, data + sizeof(rs.branch));
 		mSettingCBData = dataVector;
 
-		ShadowMap::instance().bEnableVSM = (rs.sm_type == EShadowType::SM_VSSM);
+		ShadowMap::instance().bEnableVSM = (rs.branch.sm_type == EShadowType::SM_VSSM);
+		OnViewportResize(mViewPortBuffer->Width(), mViewPortBuffer->Height());
 	}
 
 	void DX12Renderer::SetPassSceneData(BYTE* data)
@@ -513,9 +523,6 @@ namespace ChickenEngine
 			{
 			case ETextureType::DIFFUSE:
 				ri->diffuseHandle = TextureManager::GetTexture(texID)->handle;
-				break;
-			case ETextureType::SPECULAR:
-				ri->specularHandle = TextureManager::GetTexture(texID)->handle;
 				break;
 			case ETextureType::NORMAL:
 				ri->normalHandle = TextureManager::GetTexture(texID)->handle;
@@ -574,31 +581,64 @@ namespace ChickenEngine
 
 		/* Stage 1: Generate Render-Based Resources*/
 		// Shadow Map
-		if (mRenderSetting.sm_generateSM)
+		if (mRenderSetting.bGenerateSM)
 		{
 			ShadowMap::BeginShadowMap(mPassCBByteSize, mCurrFrameResource->PassCB->Resource());
 			RenderAllItems();
 			ShadowMap::EndShadowMap();
+			if (mRenderSetting.branch.sm_type == EShadowType::SM_VSSM)
+			{
+				ShadowMap::GenerateVSMMipMap();
+			}
 		}
 
-		if (mRenderSetting.sm_generateSM && mRenderSetting.sm_type == EShadowType::SM_VSSM)
-		{
-			ShadowMap::GenerateVSMMipMap();
-		}
+
 
 		// GBuffer
-		GBuffer::BeginGBufferRender(DepthStencilView());
-		RenderAllItems();
-		GBuffer::EndGBufferRender();
+		if (mRenderSetting.bGenerateGBuffer)
+		{
+			GBuffer::BeginGBufferRender(DepthStencilView());
+			RenderAllItems();
+			GBuffer::EndGBufferRender();
+		}
 
 		// SSAO
-		PSOManager::UsePSO("ssao");
-		BindMap(ETextureSlot::SLOT_POSITION, GBuffer::PositionHandle());
-		BindMap(ETextureSlot::SLOT_NORMAL, GBuffer::NormalHandle());
-		SSAO::SSAORender();
+		if (mRenderSetting.branch.ssao_enable)
+		{
+			PSOManager::UsePSO("ssao");
+			BindMap(ETextureSlot::SLOT_POSITION, GBuffer::PositionHandle());
+			BindMap(ETextureSlot::SLOT_NORMAL, GBuffer::NormalHandle());
+			SSAO::SSAORender();
+
+			BindMap(ETextureSlot::SLOT_SSAO, SSAO::SSAOHandle());
+		}
 
 		/* Stage 2: Actual Render */
-		RenderDefault();
+		mViewPortBuffer->StartRender(DepthStencilView());
+
+		RenderSkyBox();
+
+		if (mRenderSetting.bGenerateSM)
+		{
+
+			if (mRenderSetting.branch.sm_type == EShadowType::SM_VSSM)
+			{
+				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandleVSM());
+			}
+			else
+			{
+				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
+			}
+		}
+		if (!mRenderSetting.bDeferredPass)
+		{
+			RenderDefault();
+		}
+		else
+		{
+			RenderDeferred();
+		}
+		
 
 		/* Stage 3: Post-Process */
 
@@ -619,25 +659,23 @@ namespace ChickenEngine
 
 	void DX12Renderer::RenderDefault()
 	{
-		mViewPortBuffer->StartRender(DepthStencilView());
-
 		PSOManager::UsePSO("default");
-		if (mRenderSetting.sm_generateSM)
-		{
-			
-			if (mRenderSetting.sm_type == EShadowType::SM_VSSM)
-			{
-				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandleVSM());
-			}
-			else
-			{
-				BindMap(ETextureSlot::SLOT_SHADOW, ShadowMap::SrvGpuHandle());
-			}
-		}
-
 		RenderAllItems();
+	}
 
-		RenderSkyBox();
+	void DX12Renderer::RenderDeferred()
+	{
+		PSOManager::UsePSO("deferred");
+		BindMap(ETextureSlot::SLOT_POSITION, GBuffer::PositionHandle());
+		BindMap(ETextureSlot::SLOT_DIFFUSE, GBuffer::AlbedoHandle());
+		BindMap(ETextureSlot::SLOT_NORMAL, GBuffer::NormalHandle());
+		if (mRenderSetting.branch.ssao_enable)
+			BindMap(ETextureSlot::SLOT_SSAO, SSAO::SSAOHandle());
+		mCmdList->IASetVertexBuffers(0, 0, nullptr);
+		mCmdList->IASetIndexBuffer(nullptr);
+		mCmdList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		mCmdList->DrawInstanced(6, 1, 0, 0);
+
 	}
 
 	void DX12Renderer::RenderSkyBox()
@@ -674,7 +712,6 @@ namespace ChickenEngine
 			//LOG_INFO("ri id : {0},   ri diffuse: {1},   ri cb: {2}", ri->renderItemID, ri->diffuseOffset, ri->cbOffset);
 			BindObjectCB(ri->cbOffset);
 			BindMap(ETextureSlot::SLOT_DIFFUSE, ri->diffuseHandle);
-			BindMap(ETextureSlot::SLOT_SPECULAR, ri->specularHandle);
 			BindMap(ETextureSlot::SLOT_NORMAL, ri->normalHandle);
 			BindMap(ETextureSlot::SLOT_HEIGHT, ri->heightHandle);
 			mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
@@ -689,7 +726,7 @@ namespace ChickenEngine
 		auto ri = debugItem;
 		if (ri->visible)
 		{
-			BindMap(ETextureSlot::SLOT_DEBUG, SSAO::SSAOHandle());
+			BindMap(ETextureSlot::SLOT_DEBUG, ShadowMap::SrvGpuHandleVSM());
 			mCmdList->IASetVertexBuffers(0, 1, &ri->vb.VertexBufferView());
 			mCmdList->IASetIndexBuffer(&ri->ib.IndexBufferView());
 			mCmdList->IASetPrimitiveTopology(ri->PrimitiveType);

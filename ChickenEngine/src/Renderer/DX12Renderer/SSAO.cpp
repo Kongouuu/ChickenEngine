@@ -3,7 +3,7 @@
 
 namespace ChickenEngine
 {
-	void SSAO::Init(int width, int height)
+	void SSAO::Init()
 	{
 		static bool bShaderPSOInit = false;
 		if (bShaderPSOInit == false)
@@ -14,20 +14,12 @@ namespace ChickenEngine
 			// init pso
 			PSOManager::BuildPSO("ssao", "default", "ssao", "ssao", 1, DXGI_FORMAT_R16G16B16A16_FLOAT, DXGI_FORMAT_UNKNOWN);
 		}
-
-		instance().mWidth = width;
-		instance().mHeight = height;
-
-		instance().mViewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
-		instance().mScissorRect = { 0, 0, (int)width, (int)height };
-
-		instance().mSSAOBuffer.BuildResource(width, height, DXGI_FORMAT_R16G16B16A16_FLOAT);
-
+		instance().mSSAOBuffer.BuildResource(1,1, DXGI_FORMAT_R16G16B16A16_FLOAT);
 		instance().BuildOffsetVectors();
 		instance().BuildRandomVectorTexture();
 	}
 
-	void SSAO::OnResize(int width, int height)
+	void SSAO::BuildResource(int width, int height)
 	{
 		instance().mWidth = width;
 		instance().mHeight = height;
@@ -57,7 +49,7 @@ namespace ChickenEngine
 		// Specify the buffers we are going to render to.
 		cmdList->OMSetRenderTargets(1, &instance().mSSAOBuffer.GetRtvHandle(), true, nullptr);
 
-		cmdList->SetGraphicsRootDescriptorTable(6, instance().mRandomVectorHandle);
+		cmdList->SetGraphicsRootDescriptorTable(5, instance().mRandomVectorHandle);
 		// Draw fullscreen quad.
 		cmdList->IASetVertexBuffers(0, 0, nullptr);
 		cmdList->IASetIndexBuffer(nullptr);

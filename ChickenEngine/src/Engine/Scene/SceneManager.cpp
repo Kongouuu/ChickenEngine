@@ -95,7 +95,6 @@ namespace ChickenEngine
 				BYTE* data = reinterpret_cast<BYTE*>(m.vertices.data());
 				m.renderItemID = renderer.CreateRenderItem(m.vertices.size(), sizeof(Vertex), data, m.GetIndices16(), ro->renderObjectID, ro->layer);
 				renderer.SetTexture(m.renderItemID, m.diffuseMap.id, ETextureType::DIFFUSE);
-				renderer.SetTexture(m.renderItemID, m.specularMap.id, ETextureType::SPECULAR);
 				renderer.SetTexture(m.renderItemID, m.normalMap.id, ETextureType::NORMAL);
 				renderer.SetTexture(m.renderItemID, m.heightMap.id, ETextureType::HEIGHT);
 			}
@@ -185,7 +184,7 @@ namespace ChickenEngine
 
 	void SceneManager::UpdateDirLightPosition()
 	{
-		if (mRenderSettings.sm_generateSM == false)
+		if (mRenderSettings.bGenerateSM == false)
 			return;
 		float nearDist = mCamera.GetNearZ();
 		float farDist = mCamera.GetFarZ();

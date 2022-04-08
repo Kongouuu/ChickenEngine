@@ -133,13 +133,16 @@ float VSSM(float4 shadowPos, uint width)
 		return 1.0f;
 
 
-	//penumbra size
-	float penumbraSize = ((t - zocc) / zocc) * 20.f;
+	//penumbra size should be adjusted based on ortho camera & sm resolution though
+	float penumbraSize = ((t - zocc) / zocc) ;
+
+
+	// 1 are in real world = 2 pixel
 	penumbraSize = max(penumbraSize, 2.0f);
 
 
 	// vsm
-	return VSM(shadowPos, penumbraSize);
+	return VSM(shadowPos, penumbraSize );
 }
 
 float CalcShadowFactor(float4 shadowPos)

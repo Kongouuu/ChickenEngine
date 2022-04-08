@@ -13,7 +13,7 @@ namespace ChickenEngine
 
 		instance().BuildResource();
 		instance().BuildDescriptors();
-		instance().mSquaredShadowMap.BuildResource(width, height, DXGI_FORMAT_R16G16_UNORM, 8);
+		instance().mSquaredShadowMap.BuildResource(width, height, instance().mMomentFormat, 8);
 		instance().mVsmBuffer.Init(instance().mSquaredShadowMap.Resource().Get(), instance().mSquaredShadowMap.GetSrvHandle());
 		LOG_INFO("");
 	}
@@ -102,7 +102,7 @@ namespace ChickenEngine
 				if (FeatureData.TypedUAVLoadAdditionalFormats)
 				{
 					// Cannot assume other formats are supported, so we check:
-					D3D12_FEATURE_DATA_FORMAT_SUPPORT FormatSupport = { DXGI_FORMAT_R16G16_UNORM, D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2_NONE };
+					D3D12_FEATURE_DATA_FORMAT_SUPPORT FormatSupport = { instance().mMomentFormat, D3D12_FORMAT_SUPPORT1_NONE, D3D12_FORMAT_SUPPORT2_NONE };
 					hr = Device::device()->CheckFeatureSupport(D3D12_FEATURE_FORMAT_SUPPORT, &FormatSupport, sizeof(FormatSupport));
 					if (SUCCEEDED(hr) && (FormatSupport.Support2 & D3D12_FORMAT_SUPPORT2_UAV_TYPED_LOAD) != 0)
 					{

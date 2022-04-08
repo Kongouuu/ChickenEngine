@@ -83,6 +83,7 @@ namespace ChickenEngine
 		void BindMap(uint32_t slot, D3D12_GPU_DESCRIPTOR_HANDLE handle);
 		void Render();
 		void RenderDefault();
+		void RenderDeferred();
 		void RenderSkyBox();
 		void RenderAllItems();
 		void RenderDebugPlane();

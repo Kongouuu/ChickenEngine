@@ -5,6 +5,8 @@ namespace ChickenEngine
 {
 	void FrameBuffer::BuildResource(int width, int height, DXGI_FORMAT format, int miplevels)
 	{
+		mWidth = width;
+		mHeight = height;
 		mMiplevels = miplevels;
 
 		mScreenViewport.TopLeftX = 0;

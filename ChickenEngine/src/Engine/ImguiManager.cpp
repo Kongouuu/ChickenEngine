@@ -184,14 +184,16 @@ namespace ChickenEngine
 
 				if (ro->fixed == false)
 				{
+					ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.2f);
+
 					// Position
 					float posx = ro->position.x;
 					float posy = ro->position.y;
 					float posz = ro->position.z;
 					ImGui::Text("Local Position:");
-					IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos x: ", &ro->position.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-					IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos y: ", &ro->position.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-					IMGUI_LEFT_LABEL(ImGui::DragFloat, "pos z: ", &ro->position.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+					ImGui::DragFloat("##px", &ro->position.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f"); ImGui::SameLine();
+					ImGui::DragFloat("##py", &ro->position.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f"); ImGui::SameLine();
+					ImGui::DragFloat("##pz", &ro->position.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
 					if (posx != ro->position.x || posy != ro->position.y || posz != ro->position.z)
 						ro->dirty = true;
 
@@ -200,9 +202,9 @@ namespace ChickenEngine
 					float roty = ro->rotation.y;
 					float rotz = ro->rotation.z;
 					ImGui::Text("Rotation:");
-					IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot x: ", &ro->rotation.x, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f");
-					IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot y: ", &ro->rotation.y, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f");
-					IMGUI_LEFT_LABEL(ImGui::DragFloat, "rot z: ", &ro->rotation.z, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f");
+					ImGui::DragFloat("##rx", &ro->rotation.x, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f"); ImGui::SameLine();
+					ImGui::DragFloat("##ry", &ro->rotation.y, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f"); ImGui::SameLine();
+					ImGui::DragFloat("##rz", &ro->rotation.z, 0.02f, -FLT_MAX, +FLT_MAX, "%.3f");
 					if (rotx != ro->rotation.x || roty != ro->rotation.y || rotz != ro->rotation.z)
 						ro->dirty = true;
 
@@ -211,9 +213,9 @@ namespace ChickenEngine
 					float scay = ro->scale.y;
 					float scaz = ro->scale.z;
 					ImGui::Text("Scale:");
-					IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca x: ", &ro->scale.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-					IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca y: ", &ro->scale.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
-					IMGUI_LEFT_LABEL(ImGui::DragFloat, "sca z: ", &ro->scale.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
+					ImGui::DragFloat("##sx", &ro->scale.x, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f"); ImGui::SameLine();
+					ImGui::DragFloat("##sy", &ro->scale.y, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f"); ImGui::SameLine();
+					ImGui::DragFloat("##sz", &ro->scale.z, 0.005f, -FLT_MAX, +FLT_MAX, "%.3f");
 					if (scax != ro->scale.x || scay != ro->scale.y || scaz != ro->scale.z)
 						ro->dirty = true;
 
@@ -307,15 +309,42 @@ namespace ChickenEngine
 	void ImguiManager::ShowSettingsPanel()
 	{
 		ImGui::Begin("Settings Panel");
+		RenderSettings& rs = SceneManager::GetRenderSettings();
+		if (ImGui::TreeNode("Render Pass"))
+		{
+			static bool bGenerateGBuffer;
+			IMGUI_LEFT_LABEL(ImGui::Checkbox, "Generate GBuffer", &bGenerateGBuffer);
+			rs.bGenerateGBuffer = bGenerateGBuffer;
+			if (rs.bGenerateGBuffer == false)
+			{
+				rs.branch.ssao_enable = false;
+			}
+
+			if (!bGenerateGBuffer)
+			{
+				rs.bDeferredPass = false;
+				ImGui::BeginDisabled();
+			}
+			static bool bDeferred;
+			IMGUI_LEFT_LABEL(ImGui::Checkbox, "Deferred Rendering", &bDeferred);
+			rs.bDeferredPass = bDeferred;
+			if (!bGenerateGBuffer)
+			{
+				ImGui::EndDisabled();
+			}
+
+			ImGui::TreePop();
+			ImGui::Separator();
+		}
+
 		if (ImGui::TreeNode("Shadow"))
 		{
-			RenderSettings& rs = SceneManager::GetRenderSettings();
 			static bool bEnabledSM;
 			IMGUI_LEFT_LABEL(ImGui::Checkbox, "Generate Shadow Map", &bEnabledSM);
-			rs.sm_generateSM = bEnabledSM;
+			rs.bGenerateSM = bEnabledSM;
 			if (!bEnabledSM)
 			{
-				rs.sm_type = static_cast<int>(EShadowType::SM_DISABLED);
+				rs.branch.sm_type = static_cast<int>(EShadowType::SM_DISABLED);
 				ImGui::BeginDisabled();
 			}
 			Camera& lightCam = SceneManager::GetLightCamera();
@@ -323,9 +352,9 @@ namespace ChickenEngine
 			IMGUI_LEFT_LABEL(ImGui::DragFloat, "Frustum Size ", &size, 1.0f, 10.0f, +FLT_MAX, "%.3f");
 
 			static float farZ = lightCam.GetFarZ();
-			IMGUI_LEFT_LABEL(ImGui::DragFloat, "Far Z ", &farZ, 1.0f, 20.0f , +FLT_MAX, "%.3f");
+			IMGUI_LEFT_LABEL(ImGui::DragFloat, "Far Z ", &farZ, 1.0f, 20.0f, +FLT_MAX, "%.3f");
 
-			if (farZ!= lightCam.GetFarZ() || size != lightCam.GetFarWindowHeight())
+			if (farZ != lightCam.GetFarZ() || size != lightCam.GetFarWindowHeight())
 			{
 				lightCam.SetLensOrtho(size, size, lightCam.GetNearZ(), farZ);
 			}
@@ -333,13 +362,13 @@ namespace ChickenEngine
 			ImGui::Text("Shadow Type: ");
 			static int select = -1;
 			IMGUI_LEFT_LABEL(ImGui::RadioButton, "Disabled", &select, 0);
-			IMGUI_LEFT_LABEL(ImGui::RadioButton, "Default", &select,1);
+			IMGUI_LEFT_LABEL(ImGui::RadioButton, "Default", &select, 1);
 			IMGUI_LEFT_LABEL(ImGui::RadioButton, "PCF", &select, 2);
 			IMGUI_LEFT_LABEL(ImGui::RadioButton, "PCSS", &select, 3);
 			IMGUI_LEFT_LABEL(ImGui::RadioButton, "VSSM", &select, 4);
 			if (select >= 0)
 			{
-				rs.sm_type = select;
+				rs.branch.sm_type = select;
 			}
 
 			static float vsmVar;
@@ -354,10 +383,30 @@ namespace ChickenEngine
 			{
 				ImGui::EndDisabled();
 			}
+			ImGui::TreePop();
+			ImGui::Separator();
+		}
+
+		if (ImGui::TreeNode("Global Illumination Effects"))
+		{
+			if (rs.bGenerateGBuffer == false)
+			{
+				ImGui::BeginDisabled();
+			}
+
+			static bool bEnabledSSAO;
+			IMGUI_LEFT_LABEL(ImGui::Checkbox, "Enable SSAO", &bEnabledSSAO);
+			rs.branch.ssao_enable = bEnabledSSAO;
+
+			if (rs.bGenerateGBuffer == false)
+			{
+				ImGui::EndDisabled();
+			}
 
 			ImGui::TreePop();
 			ImGui::Separator();
 		}
+
 		ImGui::End();
 	}
 

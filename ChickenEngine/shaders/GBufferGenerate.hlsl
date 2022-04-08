@@ -16,7 +16,6 @@ struct VertexIn
 struct VertexOut
 {
 	float4 PosH  : SV_POSITION;
-	float4 ShadowPosH : POSITION_SHADOW;
 	float4 PosW  : POSITION_WORLD;
 	float3 Norm  : NORMAL;
 	float2 uv : TEXCOORD;
@@ -40,15 +39,7 @@ VertexOut VS(VertexIn vin)
 	vout.PosH = mul(PosW, gViewProj);
 	vout.PosW = PosW;
 	vout.PosW.w = vout.PosH.w;
-	vout.ShadowPosH = mul(PosW, gShadowTransform);
-	vout.ShadowPosH /= vout.ShadowPosH.w;
-	// from ndc to texture 
-	float4x4 T = float4x4(
-		0.5f, 0.0f, 0.0f, 0.0f,
-		0.0f, -0.5f, 0.0f, 0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f,
-		0.5f, 0.5f, 0.0f, 1.0f);
-	vout.ShadowPosH = mul(vout.ShadowPosH, T);
+
 	vout.Norm = mul(transpose((float3x3)gInvWorld), vin.Norm);
 	vout.uv = vin.uv;
 	return vout;
@@ -59,11 +50,9 @@ PixelOut PS(VertexOut pin) : SV_Target
 	PixelOut pout;
 	float4 albedo = gDiffuseMap.Sample(gSamLinearWrap, pin.uv) + mColor;
 	float3 normal = normalize(pin.Norm); //NDCToTexture(normalize(pin.Norm));
-	float shadowFactor = 1.0f;
 	// lerp
-	shadowFactor = CalcShadowFactor(pin.ShadowPosH);
 
-	pout.gbuffer0 = float4(albedo.xyz * shadowFactor, mRoughness);
+	pout.gbuffer0 = float4(albedo.xyz, mRoughness);
 	pout.gbuffer1 = float4(pin.PosW.xyzw);
 	pout.gbuffer2 = float4(normal, mMetallic);
 	return pout;

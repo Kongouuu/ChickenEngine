@@ -88,11 +88,9 @@ namespace ChickenEngine
 		Mesh m;
 		// 1. diffuse map
 		m.diffuseMap = LoadMaterialTexture(material, aiTextureType_DIFFUSE, ETextureType::DIFFUSE);
-		// 2. specular map
-		m.specularMap = LoadMaterialTexture(material, aiTextureType_SPECULAR, ETextureType::SPECULAR);
-		// 3. normal map
+		// 2. normal map
 		m.normalMap = LoadMaterialTexture(material, aiTextureType_NORMALS, ETextureType::NORMAL);
-		// 4. height map
+		// 3. height map
 		m.heightMap = LoadMaterialTexture(material, aiTextureType_HEIGHT, ETextureType::HEIGHT);
 
 		m.vertices = vertices;
