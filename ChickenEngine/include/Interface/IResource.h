@@ -25,21 +25,51 @@ namespace ChickenEngine
 
 	struct DirectionLightData
 	{
-		DirectX::XMFLOAT3 Strength = { 1.0f,1.0f,1.0f };
+		DirectX::XMFLOAT3 strength = { 1.0f,1.0f,1.0f };
 		float cbPerObjectPad1 = 0.0f;
-		DirectX::XMFLOAT3 Direction = { 0.0f,-0.99f,0.0f };
+		DirectX::XMFLOAT3 direction = { 0.0f,-0.99f,0.0f };
 		float cbPerObjectPad2 = 0.0f;
 	};
 
 	struct DirectionLight
 	{
 		DirectionLightData data;
-		DirectX::XMFLOAT3 Position = { 0.0f, 50.0f, 0.0f };
-		DirectX::XMFLOAT3 Rotation = { 0.0f,0.0f,10.0f };
+		DirectX::XMFLOAT3 position = { 0.0f, 50.0f, 0.0f };
+		DirectX::XMFLOAT3 rotation = { 0.0f,0.0f,10.0f };
 		bool bAutoPosition = true;
 		float distFrustumCenter = 0.0;
 		float offsetViewDir = 0.0;
 	};
+
+	struct PointLight
+	{
+		DirectX::XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
+		float cbPad;
+		DirectX::XMFLOAT3 strength = { 0.0f, 0.0f, 0.0f };
+		int attenIndex = 1;
+	};
+	
+	static std::unordered_map<int, int> attenMap({
+		{ 7, 0 },
+		{ 13, 1 },
+		{ 20, 2 },
+		{ 32, 3 },
+		{ 50, 4 },
+		{ 65, 5 },
+		{ 100, 6 },
+		{ 160, 7 },
+		{ 200, 8 },
+		{ 325, 9 },
+		{ 600, 10 },
+		{ 3250, 11 },
+	});
+
+	inline int AttenuationDistToIndex(int dist)
+	{
+		if (attenMap.find(dist) != attenMap.end())
+			return attenMap[dist];
+		return 11;
+	}
 
 	struct PassConstants
 	{
@@ -59,6 +89,8 @@ namespace ChickenEngine
 		float vsmMinVariance = 0.0f;
 		float vsmAmount = 0.0f;
 		DirectionLightData DirLight;
+		PointLight PointLights[16];
+		int NumPointLight = 0;
 	};
 
 	struct ObjectConstants

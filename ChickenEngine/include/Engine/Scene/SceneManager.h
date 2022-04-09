@@ -34,10 +34,10 @@ namespace ChickenEngine
 		void UpdateDirLightPosition();
 
 		/* Light */
-		inline static XMFLOAT3& GetDirLightRotation(){return instance().mDirLight.Rotation;	}
-		inline static XMFLOAT3  GetDirLightDirection() { return instance().mDirLight.data.Direction; }
-		inline static XMFLOAT3& GetDirLightStrength() { return instance().mDirLight.data.Strength; }
-		inline static XMFLOAT3& GetDirLightPosition() { return instance().mDirLight.Position; }
+		inline static XMFLOAT3& GetDirLightRotation(){return instance().mDirLight.rotation;	}
+		inline static XMFLOAT3  GetDirLightDirection() { return instance().mDirLight.data.direction; }
+		inline static XMFLOAT3& GetDirLightStrength() { return instance().mDirLight.data.strength; }
+		inline static XMFLOAT3& GetDirLightPosition() { return instance().mDirLight.position; }
 		inline static bool&     GetDirLightAutoPos() { return instance().mDirLight.bAutoPosition; }
 		inline static float&    GetDirLightDist() { return instance().mDirLight.distFrustumCenter; }
 		inline static float&    GetDirLightOffset() { return instance().mDirLight.offsetViewDir; }

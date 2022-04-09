@@ -145,6 +145,10 @@ namespace ChickenEngine
 		// light data
 		pc.DirLight = instance().mDirLight.data;
 
+		pc.NumPointLight = 1;
+		pc.PointLights[0].position = { 0.0f,1.0f,0.0f };
+		pc.PointLights[0].attenIndex = 11;
+		pc.PointLights[0].strength = { 1.0f,1.0f,0.0f };
 
 		XMMATRIX lView = instance().mLightCamera.GetView();
 		XMMATRIX lProj = instance().mLightCamera.GetProj();
@@ -161,7 +165,7 @@ namespace ChickenEngine
 		auto& sm = instance();
 		sm.UpdateDirLightPosition();
 		XMFLOAT3 dir = sm.GetDirLightDirection();
-		XMFLOAT3 pos = sm.mDirLight.Position;
+		XMFLOAT3 pos = sm.mDirLight.position;
 
 		XMFLOAT3 target = XMFLOAT3(dir.x + pos.x, dir.y + pos.y, dir.z + pos.z);
 		sm.mLightCamera.LookAt(pos, target, XMFLOAT3(0.0, 1.0, 0.0));
@@ -197,7 +201,7 @@ namespace ChickenEngine
 		XMVECTOR centerNear = mCamera.GetPosition() + mCamera.GetLook() * nearDist;
 		XMVECTOR frustumCenter = (centerFar + centerNear) * 0.5f;
 
-		XMVECTOR dir = XMLoadFloat3(&mDirLight.data.Direction);
+		XMVECTOR dir = XMLoadFloat3(&mDirLight.data.direction);
 		static bool bInit = false;
 		if (mDirLight.bAutoPosition)
 		{
@@ -216,7 +220,7 @@ namespace ChickenEngine
 				position = position + mCamera.GetLook() * offset;
 
 			}
-			XMStoreFloat3(&mDirLight.Position, position);
+			XMStoreFloat3(&mDirLight.position, position);
 		}
 	}
 
@@ -274,14 +278,14 @@ namespace ChickenEngine
 	void SceneManager::UpdateDirLightDirection()
 	{
 		XMFLOAT3 initialDir = XMFLOAT3(0.0, -1.0, 0.0);
-		XMFLOAT3 rotation = instance().mDirLight.Rotation;
+		XMFLOAT3 rotation = instance().mDirLight.rotation;
 		rotation.x *= (DirectX::XM_PI / 180.0f);
 		rotation.y *= (DirectX::XM_PI / 180.0f);
 		rotation.z *= (DirectX::XM_PI / 180.0f);
 		XMMATRIX transform = XMMatrixRotationRollPitchYaw(rotation.x, rotation.y, rotation.z);
 		XMVECTOR dir = XMLoadFloat3(&initialDir);
 		XMVECTOR newDir = XMVector3Transform(dir, transform);
-		XMStoreFloat3(&instance().mDirLight.data.Direction, newDir);
+		XMStoreFloat3(&instance().mDirLight.data.direction, newDir);
 	}
 
 }

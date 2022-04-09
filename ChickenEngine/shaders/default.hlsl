@@ -70,8 +70,7 @@ float4 PS(VertexOut pin) : SV_Target
 
 	float3 numerator = NDF * G * F;
 	float denominator = max((4.0f * NdotL * NdotV), 0.001f);
-	float3 BRDF = numerator / denominator;
-	float3 specular = BRDF;
+	float3 specular = numerator / denominator;
 
 	// Calculate result
 	float3 kS = F;
@@ -83,6 +82,33 @@ float4 PS(VertexOut pin) : SV_Target
 	// lerp
 	shadowFactor = CalcShadowFactor(pin.ShadowPosH);
 	float3 color = shadowFactor *(kD * diffuse +  kS * specular) * gDirLight.strength * NdotL;
+
+	float distance;
+	float attenuation;
+
+	[unroll]
+	for (int i = 0; i < gNumPointLight; i++)
+	{
+		// Recalculate specular
+		L = normalize(gPointLight[i].position - pin.PosW.xyz);
+		H = normalize(V + L);
+		NdotL = max(dot(N, L), 0.0f);
+		NDF = DistributionGGX(N, H, mRoughness);
+		G = GeometrySmith(N, V, L, mRoughness);
+		F = FresnelSchlick(F0, V, H);
+		numerator = NDF * G * F;
+		denominator = max((4.0f * NdotL * NdotV), 0.001f);
+		specular  = numerator / denominator;
+
+		// Add attenuation
+		distance = length(gPointLight[i].position - pin.PosW.xyz);
+		attenuation = 1.0f / (1.0f + attenuationCoeff[gPointLight[i].attenIndex].x * distance +
+			attenuationCoeff[gPointLight[i].attenIndex].y * (distance * distance));
+
+		// Add color
+		color += (kD * diffuse + kS * specular) * gPointLight[i].strength * attenuation *  NdotL;
+	}
+
 	float3 ambient = albedo.xyz * 0.08;
 
 	[branch]
